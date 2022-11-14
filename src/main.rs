@@ -33,8 +33,15 @@ fn main() {
     let cli = Cli::parse();
 
     println!("Hello {:?}!", cli.command);
+
     match cli.command {
-        Some(dl) => print!("yo"),
-        _ => print!("No command issued"),
+        Some(Commands::Dl { currency }) => {
+            if currency.is_some() {
+                println!("download for currency {:?}", currency)
+            } else {
+                println!("plain download")
+            }
+        },
+        _ => println!("No command issued"),
     }
 }
