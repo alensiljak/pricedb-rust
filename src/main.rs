@@ -1,4 +1,8 @@
-use clap::{Parser, Subcommand};
+use clap::{Parser};
+
+mod interface;
+
+use interface::Commands;
 
 #[derive(Parser, Debug)]
 #[command(name="Price Database")]
@@ -8,31 +12,7 @@ struct Cli {
     command: Option<Commands>,
 }
 
-#[derive(Subcommand, Debug)]
-enum Commands {
-    // Add
-    // Cfg
-    Dl {
-        //#[arg(short='x', long)]
-        // todo: exchange: Option<String>,
 
-        // todo: symbol
-        // todo: agent
-
-        #[arg(short, long)]
-        currency: Option<String>,
-    },
-
-    // todo: export
-    // todo: import
-    // todo: last
-    // todo: list
-    Prune {
-        //all: Option<>,
-        symbol: Option<String>
-    },
-    // securities
-}
 
 fn main() {
     let cli = Cli::parse();
