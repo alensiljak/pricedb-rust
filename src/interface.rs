@@ -2,7 +2,7 @@ use clap::{Parser, Subcommand};
 
 #[derive(Parser, Debug)]
 #[command(name="Price Database")]
-#[command(author, version, about, long_about = None)]
+#[command(author="Alen Šiljak", version, about, long_about = None)]
 pub(crate) struct Cli {
     #[command(subcommand)]
     pub(crate) command: Option<Commands>,
@@ -20,6 +20,7 @@ pub(crate) enum Commands {
         // todo: exchange: Option<String>,
 
         // todo: symbol
+        
         // todo: agent
 
         #[arg(short, long)]

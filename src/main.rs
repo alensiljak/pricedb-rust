@@ -1,4 +1,6 @@
+mod app;
 mod interface;
+mod repositories;
 
 use clap::Parser;
 use interface::{Cli, Commands};
@@ -22,12 +24,17 @@ fn main() {
 fn download(currency_option: &Option<String>) {
     trace!("In download...");
 
+    let mut options = app::DownloadOptions {
+        currency: String::new()
+    };
+
     match currency_option {
-        Some(currency) => debug!("currency option: {}", currency),
+        Some(currency) => options.currency = currency.to_string(),
         None => println!("no currency")
     }
 
-    // todo: download prices
+    // download prices
+    app::download_prices(options);
 }
 
 fn prune(symbol: &Option<String>) {
