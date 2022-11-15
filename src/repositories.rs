@@ -2,7 +2,11 @@
  * Operations on the database
  */
 
-use tracing::debug;
+use confy::ConfyError;
+use sqlite::{State};
+use tracing::{debug, error};
+
+use crate::config::PriceDbConfig;
 
 pub(crate) fn test_db() {
     let connection = sqlite::open(":memory:").unwrap();
@@ -17,8 +21,60 @@ pub(crate) fn test_db() {
 
     // query
     let query = "SELECT * FROM users;";
-    let result = connection.execute(query).unwrap();
-    debug!("sqlite: {:?}", result);
+    let mut statement = connection.prepare(query).unwrap();
 
+    //let result = connection.execute(query).unwrap();
+    //let result = statement.iter();
+    //debug!("sqlite: {:?}", result);
 
+    while let Ok(State::Row) = statement.next() {
+        println!("name = {}", statement.read::<String, _>("name").unwrap());
+        println!("age = {}", statement.read::<i64, _>("age").unwrap());
+    }
+}
+
+/// Load connection string from the configuration.
+fn load_connection_string() -> String {
+    let config_result: Result<PriceDbConfig, ConfyError> = confy::load("pricedb", "config");
+    let db_path: String;
+
+    debug!("configuration: {:?}", config_result);
+
+    match config_result {
+        Ok(config) => db_path = config.price_database_path,
+        Err(e) => {
+            error!("Error: {:?}", e);
+            panic!("{}", e);
+        }
+    }
+
+    debug!("Db path: {:?}", db_path);
+
+    return db_path;
+}
+
+/// Securities Repository
+/// Table: security
+pub(crate) struct SecurityRepository {}
+
+impl SecurityRepository {
+    /// Query the database.
+    pub(crate) fn all(&self) {
+        let con_str = load_connection_string();
+
+        // query database
+        let connection = sqlite::open(con_str).unwrap();
+        let query: &str = "select * from security";
+        let cursor = connection.prepare(query).unwrap().into_iter();
+        for row in cursor {
+            let values = row.unwrap();
+            let id = values.read::<i64, _>("id");
+
+            println!("security id: {}", id);
+        }
+    }
+
+    pub(crate) fn get(&self, id: i32) {
+        // load from db
+    }
 }

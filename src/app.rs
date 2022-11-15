@@ -4,7 +4,7 @@
 
 use tracing::debug;
 
-use crate::repositories;
+use crate::repositories::{self, SecurityRepository};
 
 #[derive(Debug)]
 pub(crate) struct DownloadOptions {
@@ -35,7 +35,8 @@ Fetches the securities that match the given filters
 */
 fn get_securities() -> Vec<&'static str> {
     // todo
-    repositories::test_db();
+    let sec_repo = SecurityRepository {};
+    sec_repo.all();
 
     let result = vec!["test"];
     return result;
