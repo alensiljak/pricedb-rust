@@ -3,6 +3,8 @@ use clap::{Parser};
 mod interface;
 
 use interface::Commands;
+use tracing::{debug, trace};
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[derive(Parser, Debug)]
 #[command(name="Price Database")]
@@ -13,25 +15,32 @@ struct Cli {
 }
 
 
-
 fn main() {
+    initialize_logging();
+
     let cli = Cli::parse();
 
-    println!("Debug: {:?}!", cli.command);
+    debug!("Command: {:?}", cli.command);
 
     match &cli.command {
-        Some(Commands::Dl { currency: _ }) => download(cli.command),
+        Some(Commands::Dl { currency }) => download(currency),
         _ => println!("No command issued"),
     }
 }
 
-fn download(dl: Option<Commands>) {
-    println!("{:?}", dl);
-    //dl = Commands::Dl
-    // if currency.is_some() {
-    //     println!("download for currency {:?}", currency)
-    // } else {
-    //     println!("plain download")
-    // }
+fn download(currency_option: &Option<String>) {
+    trace!("In download...");
+
+    match currency_option {
+        Some(currency) => debug!("currency option: {}", currency),
+        None => println!("no currency")
+    }
+
+}
+
+fn initialize_logging() {
+    tracing_subscriber::registry()
+        .with(tracing_subscriber::fmt::layer())
+        .init();
 
 }
