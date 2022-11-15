@@ -16,10 +16,10 @@ pub(crate) struct PriceDbConfig {
 impl ::std::default::Default for PriceDbConfig {
     fn default() -> Self {
         Self {
-            price_database_path: String::from("~/pricedb/prices.db"),
-            alphavantage_api_key: String::from(""),
+            price_database_path: "/home/user/pricedb/prices.db".to_string(),
+            alphavantage_api_key: "".to_string(),
             fixerio_api_key: "".to_string(),
-            export_destination: "".to_string(),
+            export_destination: "/home/user/pricedb/export.txt".to_string(),
         }
     }
 }
