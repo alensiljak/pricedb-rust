@@ -1,19 +1,9 @@
-use clap::{Parser};
-
 mod interface;
 
-use interface::Commands;
+use clap::Parser;
+use interface::{Cli, Commands};
 use tracing::{debug, trace};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-
-#[derive(Parser, Debug)]
-#[command(name="Price Database")]
-#[command(author, version, about, long_about = None)]
-struct Cli {
-    #[command(subcommand)]
-    command: Option<Commands>,
-}
-
 
 fn main() {
     initialize_logging();
@@ -24,6 +14,7 @@ fn main() {
 
     match &cli.command {
         Some(Commands::Dl { currency }) => download(currency),
+        Some(Commands::Prune { symbol }) => prune(symbol),
         _ => println!("No command issued"),
     }
 }
@@ -36,11 +27,15 @@ fn download(currency_option: &Option<String>) {
         None => println!("no currency")
     }
 
+    // todo: download prices
+}
+
+fn prune(symbol: &Option<String>) {
+    trace!("In prune. Incomplete. symbol: {:?}", symbol);
 }
 
 fn initialize_logging() {
     tracing_subscriber::registry()
         .with(tracing_subscriber::fmt::layer())
         .init();
-
 }
