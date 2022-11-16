@@ -24,15 +24,18 @@ fn main() {
 }
 
 fn download(currency_option: &Option<String>) {
-    trace!("In download...");
+    //trace!("In download...");
 
     let mut options = app::DownloadOptions {
-        currency: String::new()
+        exchange: None,
+        mnemonic: None,
+        currency: None,
+        agent: None,
     };
 
     match currency_option {
-        Some(currency) => options.currency = currency.to_string(),
-        None => println!("no currency")
+        Some(currency) => options.currency = Some(currency.to_string()),
+        None => println!("no currency"),
     }
 
     // download prices

@@ -8,20 +8,24 @@ use crate::{repositories::{self, SecurityRepository}, model::Security};
 
 #[derive(Debug)]
 pub(crate) struct DownloadOptions {
-    pub currency: String
+    pub exchange: Option<String>,
+    pub mnemonic: Option<String>,
+    pub currency: Option<String>,
+    pub agent: Option<String>,
 }
 
 pub(crate) fn download_prices(options: DownloadOptions) {
     debug!("download options: {:?}", options);
     
-    let currency = options.currency.to_uppercase();
-    // todo: agent
+    //let currency = options.currency.to_uppercase();
+    //let agent: options.agent;
     // todo: symbol
     // todo: exchange
 
     // securities = self.__get_securities(currency, agent, mnemonic, exchange)
     //let securities: Vec<String> = vec![];
-    let securities = get_securities(currency, agent, mnemonic, exchange);
+    let securities = get_securities(options.currency, options.agent, 
+        options.mnemonic, options.exchange);
 
     debug!("securities: {:?}", securities);
 
@@ -38,7 +42,7 @@ fn get_securities(currency: Option<String>, agent: Option<String>,
     // todo: pass the filter
     
     let sec_repo = SecurityRepository {};
-    let result = sec_repo.q;
+    let result = sec_repo.query(currency, agent, mnemonic, exchange);
 
     return result;
 }

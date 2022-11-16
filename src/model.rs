@@ -4,7 +4,7 @@
 #[derive(Debug)]
 #[allow(unused)]
  pub(crate) struct Security {
-    pub(crate) id: i64,
+    pub(crate) id: i32,
     pub(crate) symbol: String,
     pub(crate) namespace: String,
     pub(crate) updater: String,
