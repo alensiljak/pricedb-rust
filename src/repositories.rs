@@ -39,17 +39,24 @@ pub(crate) struct SecurityRepository {}
 
 impl SecurityRepository {
     /// Query the database.
-    pub(crate) fn all(&self) {
+    pub(crate) fn all(&self) -> Vec<String> {
         let connection = open_connection();
         let query = format!("select * from {}", "security");
+        
+        // todo: implement the filter
+
         let cursor = connection.prepare(query).unwrap().into_iter();
+        let mut result: Vec<String> = vec![];
 
         for row in cursor {
             let values = row.unwrap();
-            let id = values.read::<i64, _>("id");
+            //let id = values.read::<i64, _>("id");
+            let symbol = values.read::<&str, _>("symbol");
 
-            println!("security id: {}", id);
+            //println!("security id: {}", id);
+            result.push(symbol.to_string());
         }
+        return result;
     }
 
     pub(crate) fn get(&self, id: i32) {

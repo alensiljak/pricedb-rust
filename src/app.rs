@@ -33,11 +33,11 @@ pub(crate) fn download_prices(options: DownloadOptions) {
 /**
 Fetches the securities that match the given filters
 */
-fn get_securities() -> Vec<&'static str> {
-    // todo
+fn get_securities() -> Vec<String> {
+    // todo: pass the filter
+    
     let sec_repo = SecurityRepository {};
-    sec_repo.all();
+    let result = sec_repo.all();
 
-    let result = vec!["test"];
     return result;
 }

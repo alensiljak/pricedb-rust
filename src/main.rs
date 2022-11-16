@@ -1,6 +1,7 @@
 mod app;
 mod config;
 mod interface;
+mod model;
 mod repositories;
 
 use clap::Parser;
