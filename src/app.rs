@@ -2,9 +2,9 @@
  * Application
  */
 
-use tracing::debug;
+use tracing::{debug, error};
 
-use crate::{repositories::{self, SecurityRepository}, model::Security};
+use crate::{repositories::{SecurityRepository}, model::Security};
 
 #[derive(Debug)]
 pub(crate) struct DownloadOptions {
@@ -44,5 +44,11 @@ fn get_securities(currency: Option<String>, agent: Option<String>,
     let sec_repo = SecurityRepository {};
     let result = sec_repo.query(currency, agent, mnemonic, exchange);
 
-    return result;
+    match result {
+        Ok(value) => return value,
+        Err(e) => {
+            error!("Error fetching securities: {:?}", e);
+            return vec![];
+        }
+    }
 }

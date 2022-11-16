@@ -5,7 +5,7 @@
 use confy::ConfyError;
 // use sqlite::{Connection, Row, State};
 use rusqlite::{Connection, Result};
-use tracing::{debug, error, warn};
+use tracing::{debug, error};
 
 use crate::{config::PriceDbConfig, model::Security};
 
@@ -87,11 +87,11 @@ impl SecurityRepository {
 
         //     // result.push(security);
         // }
-        return result;
+        return Ok(result);
     }
 
     /// Get all the records.
-    pub(crate) fn all(&self) -> Vec<Security> {
+    pub(crate) fn all(&self) -> Result<Vec<Security>> {
         return self.query(None, None, None, None);
     }
 
