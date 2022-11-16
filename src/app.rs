@@ -37,12 +37,13 @@ pub(crate) fn download_prices(options: DownloadOptions) {
 /**
 Fetches the securities that match the given filters
 */
-fn get_securities(currency: Option<String>, agent: Option<String>, 
+fn get_securities(currency: Option<String>, agent: Option<Vec<String>>, 
     mnemonic: Option<String>, exchange: Option<String>) -> Vec<Security> {
     // todo: pass the filter
     
     let sec_repo = SecurityRepository {};
-    let result = sec_repo.query(currency, agent, mnemonic, exchange);
+    let result = sec_repo.query(currency, agent, 
+        mnemonic, exchange);
 
     match result {
         Ok(value) => return value,
