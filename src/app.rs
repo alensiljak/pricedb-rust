@@ -37,7 +37,7 @@ pub(crate) fn download_prices(options: DownloadOptions) {
 /**
 Fetches the securities that match the given filters
 */
-fn get_securities(currency: Option<String>, agent: Option<Vec<String>>, 
+fn get_securities(currency: Option<String>, agent: Option<String>, 
     mnemonic: Option<String>, exchange: Option<String>) -> Vec<Security> {
     // todo: pass the filter
     
