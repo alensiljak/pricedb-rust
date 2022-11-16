@@ -91,7 +91,7 @@ impl SecurityRepository {
     }
 
     /// Get all the records.
-    pub(crate) fn all(&self) -> Vec<Security> {
+    pub(crate) fn all(&self) -> Result<Vec<Security>> {
         return self.query(None, None, None, None);
     }
 
