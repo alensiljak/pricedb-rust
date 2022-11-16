@@ -3,10 +3,10 @@
  */
 
 use confy::ConfyError;
-use sqlite::{State, Connection};
-use tracing::{debug, error};
+use sqlite::{Connection, Row, State};
+use tracing::{debug, error, warn};
 
-use crate::config::PriceDbConfig;
+use crate::{config::PriceDbConfig, model::Security};
 
 pub(crate) fn test_db() {
     let connection = sqlite::open(":memory:").unwrap();
@@ -39,29 +39,68 @@ pub(crate) struct SecurityRepository {}
 
 impl SecurityRepository {
     /// Query the database.
-    pub(crate) fn all(&self) -> Vec<String> {
+    pub fn query() {
+        todo!("query the database");
+    }
+
+    /// Get all the records.
+    pub(crate) fn all(&self) -> Vec<Security> {
         let connection = open_connection();
         let query = format!("select * from {}", "security");
-        
+
         // todo: implement the filter
 
         let cursor = connection.prepare(query).unwrap().into_iter();
-        let mut result: Vec<String> = vec![];
+        let mut result: Vec<Security> = vec![];
 
         for row in cursor {
             let values = row.unwrap();
-            //let id = values.read::<i64, _>("id");
-            let symbol = values.read::<&str, _>("symbol");
+            let security = read_security(values);
 
-            //println!("security id: {}", id);
-            result.push(symbol.to_string());
+            result.push(security);
         }
         return result;
     }
 
-    pub(crate) fn get(&self, id: i32) {
-        // load from db
+    // pub(crate) fn get(&self, id: i32) {
+    //     // load from db
+    // }
+}
+
+fn read_security(row: Row) -> Security {
+    let mut security = Security::new();
+
+    match row.try_read::<i64, _>("id") {
+        Ok(id) => security.id = id,
+        Err(e) => warn!("Could not read id field. {}", e)
     }
+
+    match row.try_read::<&str, _>("namespace") {
+        Ok(value) => security.namespace = value.to_string(),
+        Err(e) => warn!("Could not read namespace field. {}", e)
+    }
+
+    match row.try_read::<&str, _>("symbol") {
+        Ok(value) => security.symbol = value.to_string(),
+        Err(e) => warn!("Could not read symbol field. {}", e)
+    }
+
+    match row.try_read::<&str, _>("currency") {
+        Ok(value) => security.currency = value.to_string(),
+        Err(e) => warn!("Could not read currency field. {}", e)
+    }
+
+    match row.try_read::<&str, _>("updater") {
+        Ok(value) => security.updater = value.to_string(),
+        Err(e) => warn!("Could not read updater field. {}", e)
+    }
+
+    match row.try_read::<&str, _>("ledger_symbol") {
+        Ok(value) => security.ledger_symbol = value.to_string(),
+        Err(e) => warn!("Could not read ledger_symbol field. {}", e)
+    }
+
+    return security;
 }
 
 /// Load connection string from the configuration.

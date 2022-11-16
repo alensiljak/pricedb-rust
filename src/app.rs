@@ -4,7 +4,7 @@
 
 use tracing::debug;
 
-use crate::repositories::{self, SecurityRepository};
+use crate::{repositories::{self, SecurityRepository}, model::Security};
 
 #[derive(Debug)]
 pub(crate) struct DownloadOptions {
@@ -33,7 +33,7 @@ pub(crate) fn download_prices(options: DownloadOptions) {
 /**
 Fetches the securities that match the given filters
 */
-fn get_securities() -> Vec<String> {
+fn get_securities() -> Vec<Security> {
     // todo: pass the filter
     
     let sec_repo = SecurityRepository {};
