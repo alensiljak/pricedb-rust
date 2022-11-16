@@ -3,7 +3,7 @@
  */
 
 use confy::ConfyError;
-use sqlite::{State};
+use sqlite::{State, Connection};
 use tracing::{debug, error};
 
 use crate::config::PriceDbConfig;
@@ -33,6 +33,30 @@ pub(crate) fn test_db() {
     }
 }
 
+/// Securities Repository
+/// Table: security
+pub(crate) struct SecurityRepository {}
+
+impl SecurityRepository {
+    /// Query the database.
+    pub(crate) fn all(&self) {
+        let connection = open_connection();
+        let query = format!("select * from {}", "security");
+        let cursor = connection.prepare(query).unwrap().into_iter();
+
+        for row in cursor {
+            let values = row.unwrap();
+            let id = values.read::<i64, _>("id");
+
+            println!("security id: {}", id);
+        }
+    }
+
+    pub(crate) fn get(&self, id: i32) {
+        // load from db
+    }
+}
+
 /// Load connection string from the configuration.
 fn load_connection_string() -> String {
     let config_result: Result<PriceDbConfig, ConfyError> = confy::load("pricedb", "config");
@@ -53,28 +77,8 @@ fn load_connection_string() -> String {
     return db_path;
 }
 
-/// Securities Repository
-/// Table: security
-pub(crate) struct SecurityRepository {}
-
-impl SecurityRepository {
-    /// Query the database.
-    pub(crate) fn all(&self) {
-        let con_str = load_connection_string();
-
-        // query database
-        let connection = sqlite::open(con_str).unwrap();
-        let query: &str = "select * from security";
-        let cursor = connection.prepare(query).unwrap().into_iter();
-        for row in cursor {
-            let values = row.unwrap();
-            let id = values.read::<i64, _>("id");
-
-            println!("security id: {}", id);
-        }
-    }
-
-    pub(crate) fn get(&self, id: i32) {
-        // load from db
-    }
+fn open_connection() -> Connection {
+    let con_str = load_connection_string();
+    let connection = sqlite::open(con_str).unwrap();
+    return connection;
 }
