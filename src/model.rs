@@ -27,3 +27,10 @@ impl Security {
         }
     }
 }
+
+#[derive(Debug)]
+#[allow(unused)]
+pub struct SecuritySymbol {
+    pub namespace: String,
+    pub mnemonic: String
+}

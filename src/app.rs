@@ -14,14 +14,14 @@ pub(crate) struct DownloadOptions {
 pub(crate) fn download_prices(options: DownloadOptions) {
     debug!("download options: {:?}", options);
     
-    let currency = options.currency.to_uppercase().as_str();
+    let currency = options.currency.to_uppercase();
     // todo: agent
     // todo: symbol
     // todo: exchange
 
     // securities = self.__get_securities(currency, agent, mnemonic, exchange)
     //let securities: Vec<String> = vec![];
-    let securities = get_securities();
+    let securities = get_securities(currency, agent, mnemonic, exchange);
 
     debug!("securities: {:?}", securities);
 
@@ -33,11 +33,12 @@ pub(crate) fn download_prices(options: DownloadOptions) {
 /**
 Fetches the securities that match the given filters
 */
-fn get_securities() -> Vec<Security> {
+fn get_securities(currency: Option<String>, agent: Option<String>, 
+    mnemonic: Option<String>, exchange: Option<String>) -> Vec<Security> {
     // todo: pass the filter
     
     let sec_repo = SecurityRepository {};
-    let result = sec_repo.all();
+    let result = sec_repo.q;
 
     return result;
 }

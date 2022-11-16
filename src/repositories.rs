@@ -39,12 +39,41 @@ pub(crate) struct SecurityRepository {}
 
 impl SecurityRepository {
     /// Query the database.
-    pub fn query() {
-        todo!("query the database");
-    }
+    pub fn query(
+        &self,
+        currency_param: Option<String>,
+        agent: Option<String>,
+        mnemonic: Option<String>,
+        exchange: Option<String>,
+    ) -> Vec<Security> {
+        if !(currency_param.is_some()
+            && agent.is_some()
+            && mnemonic.is_some()
+            && exchange.is_some())
+        {
+            return self.all();
+        }
 
-    /// Get all the records.
-    pub(crate) fn all(&self) -> Vec<Security> {
+        let mut query: String = "select * from security where ".to_string();
+
+        let currency: &str;
+        match currency_param {
+            Some(value) => {
+                currency = value.as_str();
+                query += "currency = :currency";
+            }
+            None => currency = "",
+        }
+
+        let connection = open_connection();
+        let result = connection
+            .prepare(query)
+            .unwrap()
+            .bind((":currency", currency))
+            .iter();
+
+        // full
+
         let connection = open_connection();
         let query = format!("select * from {}", "security");
 
@@ -62,6 +91,9 @@ impl SecurityRepository {
         return result;
     }
 
+    /// Get all the records.
+    pub(crate) fn all(&self) -> Vec<Security> {}
+
     // pub(crate) fn get(&self, id: i32) {
     //     // load from db
     // }
@@ -72,32 +104,32 @@ fn read_security(row: Row) -> Security {
 
     match row.try_read::<i64, _>("id") {
         Ok(id) => security.id = id,
-        Err(e) => warn!("Could not read id field. {}", e)
+        Err(e) => warn!("Could not read id field. {}", e),
     }
 
     match row.try_read::<&str, _>("namespace") {
         Ok(value) => security.namespace = value.to_string(),
-        Err(e) => warn!("Could not read namespace field. {}", e)
+        Err(e) => warn!("Could not read namespace field. {}", e),
     }
 
     match row.try_read::<&str, _>("symbol") {
         Ok(value) => security.symbol = value.to_string(),
-        Err(e) => warn!("Could not read symbol field. {}", e)
+        Err(e) => warn!("Could not read symbol field. {}", e),
     }
 
     match row.try_read::<&str, _>("currency") {
         Ok(value) => security.currency = value.to_string(),
-        Err(e) => warn!("Could not read currency field. {}", e)
+        Err(e) => warn!("Could not read currency field. {}", e),
     }
 
     match row.try_read::<&str, _>("updater") {
         Ok(value) => security.updater = value.to_string(),
-        Err(e) => warn!("Could not read updater field. {}", e)
+        Err(e) => warn!("Could not read updater field. {}", e),
     }
 
     match row.try_read::<&str, _>("ledger_symbol") {
         Ok(value) => security.ledger_symbol = value.to_string(),
-        Err(e) => warn!("Could not read ledger_symbol field. {}", e)
+        Err(e) => warn!("Could not read ledger_symbol field. {}", e),
     }
 
     return security;
