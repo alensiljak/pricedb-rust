@@ -1,5 +1,11 @@
 /*
  * DAL with sqlite
+ * 
+ * Pros:
+ *   - does not use libsqlite3-sys (build issues on NTFS)
+ * 
+ * Cons:
+ *   - Enforces i64 for Integers
  */
 
 use sqlite::{Connection, Row, Error};

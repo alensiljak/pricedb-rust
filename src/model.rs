@@ -2,12 +2,14 @@
  * Model structs
  */
 
+use diesel::prelude::*;
 use serde_derive::{Serialize, Deserialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Queryable)]
 #[allow(unused)]
  pub struct Security {
-    pub id: i64,
+    pub id: i32,
     pub symbol: String,
     pub namespace: String,
     pub updater: String,

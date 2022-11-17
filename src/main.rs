@@ -1,5 +1,6 @@
 mod app;
 mod config;
+mod dal_diesel;
 mod database;
 mod interface;
 mod model;
