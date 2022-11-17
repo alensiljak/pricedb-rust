@@ -1,7 +1,10 @@
 [package]
 name = "pricedb"
 version = "0.1.0"
+authors = ["Alen Šiljak <dev@alensiljak.eu.org>"]
 edition = "2021"
+description = "Commodity price retrieval and storage. Helper for Plain-Text Accounting apps."
+repository = "github.com/alensiljak/pricedb-rust"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
