@@ -2,6 +2,7 @@ mod app;
 mod config;
 mod interface;
 mod model;
+mod rbatis_repos;
 mod repositories;
 
 use clap::Parser;

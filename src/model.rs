@@ -1,15 +1,18 @@
 /*
  * Model structs
  */
-#[derive(Debug)]
+
+use serde::{Serialize, Deserialize};
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[allow(unused)]
- pub(crate) struct Security {
-    pub(crate) id: i64,
-    pub(crate) symbol: String,
-    pub(crate) namespace: String,
-    pub(crate) updater: String,
-    pub(crate) currency: String,
-    pub(crate) ledger_symbol: String
+ pub struct Security {
+    pub id: i64,
+    pub symbol: String,
+    pub namespace: String,
+    pub updater: String,
+    pub currency: String,
+    pub ledger_symbol: Option<String>
     // prices
 }
 
@@ -23,7 +26,7 @@ impl Security {
             symbol: "".to_string(),
             currency: "".to_string(),
             updater: "".to_string(),
-            ledger_symbol: "".to_string()
+            ledger_symbol: Some("".to_string())
         }
     }
 }

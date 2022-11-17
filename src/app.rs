@@ -4,7 +4,7 @@
 
 use tracing::{debug, error};
 
-use crate::{repositories::{SecurityRepository}, model::Security};
+use crate::{model::Security};
 
 #[derive(Debug)]
 pub(crate) struct DownloadOptions {
@@ -17,11 +17,6 @@ pub(crate) struct DownloadOptions {
 pub(crate) fn download_prices(options: DownloadOptions) {
     debug!("download options: {:?}", options);
     
-    //let currency = options.currency.to_uppercase();
-    //let agent: options.agent;
-    // todo: symbol
-    // todo: exchange
-
     // securities = self.__get_securities(currency, agent, mnemonic, exchange)
     //let securities: Vec<String> = vec![];
     let securities = get_securities(options.currency, options.agent, 
@@ -41,15 +36,17 @@ fn get_securities(currency: Option<String>, agent: Option<String>,
     mnemonic: Option<String>, exchange: Option<String>) -> Vec<Security> {
     // todo: pass the filter
     
-    let sec_repo = SecurityRepository {};
-    let result = sec_repo.query(currency, agent, 
-        mnemonic, exchange);
+    //let sec_repo = SecurityRepository {};
+    // let result = sec_repo.query(currency, agent, 
+    //     mnemonic, exchange);
+    //todo: Security::select_all(rb)
+    todo!("get securities");
 
-    match result {
-        Ok(value) => return value,
-        Err(e) => {
-            error!("Error fetching securities: {:?}", e);
-            return vec![];
-        }
-    }
+    // match result {
+    //     Ok(value) => return value,
+    //     Err(e) => {
+    //         error!("Error fetching securities: {:?}", e);
+    //         return vec![];
+    //     }
+    // }
 }

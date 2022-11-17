@@ -3,15 +3,21 @@
  */
 
 use confy::ConfyError;
-use sqlite::{Connection, Row, Error};
+// use sqlite::{Connection, Row, Error};
 //use rusqlite::{Connection, Result};
+use rbatis::Rbatis;
+use rbdc_sqlite::driver::SqliteDriver;
 use tracing::{debug, error, warn};
+
 use crate::{config::PriceDbConfig, model::Security};
 
+/*
 /// Securities Repository
 /// Table: security
 pub(crate) struct SecurityRepository {}
+*/
 
+/*
 impl SecurityRepository {
     /// Query the database.
     pub fn query(
@@ -73,7 +79,10 @@ impl SecurityRepository {
     //     // load from db
     // }
 }
+*/
 
+/*
+/// Read Security record from sqlite row
 fn read_security(row: Row) -> Security {
     let mut security = Security::new();
 
@@ -109,37 +118,32 @@ fn read_security(row: Row) -> Security {
 
     return security;
 }
+*/
 
-/// Loads database path from the configuration.
-fn load_db_path() -> String {
-    let config_result: Result<PriceDbConfig, ConfyError> = confy::load("pricedb", "config");
-    let db_path: String;
-
-    debug!("configuration: {:?}", config_result);
-
-    match config_result {
-        Ok(config) => db_path = config.price_database_path,
-        Err(e) => {
-            error!("Error: {:?}", e);
-            panic!("{}", e);
-        }
-    }
-
-    debug!("Db path: {:?}", db_path);
-
-    return db_path;
-}
-
+/*
 /// sqlite connection
 fn open_connection() -> Connection {
     let con_str = load_db_path();
     let connection = sqlite::open(con_str).unwrap();
     return connection;
 }
+*/
 
-// rusqlite connection
-// fn open_connection() -> Result<Connection> {
-//     let con_str = load_db_path();
-//     let connection = Connection::open(con_str)?;
-//     return Ok(connection);
-// }
+/*
+/// rusqlite connection
+fn open_connection() -> Result<Connection> {
+    let con_str = load_db_path();
+    let connection = Connection::open(con_str)?;
+    return Ok(connection);
+}
+*/
+
+/// Initialize database with Rbatis.
+pub fn initialize_database(db_path: String) -> Rbatis {
+    let rb = Rbatis::new();
+
+    let conn_str = format!("sqlite://{}", db_path);
+    rb.init(SqliteDriver {}, &conn_str).unwrap();
+
+    return rb;
+}
