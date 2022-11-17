@@ -39,8 +39,10 @@ fn get_securities(currency: Option<String>, agent: Option<String>,
     //let sec_repo = SecurityRepository {};
     // let result = sec_repo.query(currency, agent, 
     //     mnemonic, exchange);
-    //todo: Security::select_all(rb)
-    todo!("get securities");
+
+    // let db = Database::new();
+    // let data = Security::select_all(&mut db.rb).await.unwrap();
+    todo!("load securities");
 
     // match result {
     //     Ok(value) => return value,

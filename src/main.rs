@@ -1,9 +1,8 @@
 mod app;
 mod config;
+mod database;
 mod interface;
 mod model;
-mod rbatis_repos;
-mod repositories;
 
 use clap::Parser;
 use interface::{Cli, Commands};

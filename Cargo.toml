@@ -11,9 +11,10 @@ repository = "github.com/alensiljak/pricedb-rust"
 [dependencies]
 clap = { version = "4.0.26", features = ["derive"] }
 confy = "0.5.1"
-rbatis = "4.0.42"
-rbdc-sqlite = "0.1.14"
-rbs = "0.1.13"
+diesel = { version = "2.0.2", features = ["sqlite"] }
+#rbatis = "4.0.42"
+#rbdc-sqlite = "0.1.14"
+#rbs = "0.1.13"
 serde = "1.0.147"
 serde_derive = "1.0.147"
 #sqlite = "0.30.1"

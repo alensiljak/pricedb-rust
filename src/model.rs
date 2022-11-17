@@ -2,7 +2,7 @@
  * Model structs
  */
 
-use serde::{Serialize, Deserialize};
+use serde_derive::{Serialize, Deserialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[allow(unused)]

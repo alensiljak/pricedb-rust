@@ -2,17 +2,10 @@
  * trying to encapsulate database-specific code
  */
 
-pub struct Database {
-    db: Rbatis
-}
+use confy::ConfyError;
+use tracing::{debug, error};
 
-impl Database {
-    pub fn initialize(&self) {
-        let db_path: String = load_db_path();
-
-        let db = repositories::initialize_database(db_path);
-    }
-}
+use crate::{config::PriceDbConfig};
 
 /// Loads database path from the configuration.
 pub fn load_db_path() -> String {
