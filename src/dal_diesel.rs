@@ -10,6 +10,9 @@
  * 
  * Run: 
  * `diesel --database-url=sqlite://path-to/prices.db`
+ * 
+ * Examples
+ * - https://stackoverflow.com/questions/65039754/rust-diesel-conditionally-filter-a-query
  */
 
 use diesel::{sqlite::SqliteConnection, Connection};

@@ -34,28 +34,34 @@ pub(crate) fn download_prices(options: DownloadOptions) {
 /**
 Fetches the securities that match the given filters
 */
-fn get_securities(currency: Option<String>, agent: Option<String>, 
-    mnemonic: Option<String>, exchange: Option<String>) -> Vec<Security> {
+fn get_securities(currency_filter: Option<String>, agent_filter: Option<String>, 
+    mnemonic_filter: Option<String>, exchange_filter: Option<String>) -> Vec<Security> {
+
     // todo: pass the filter
 
     use crate::schema::security::dsl::*;
 
-    let conn = &mut establish_connection();
-    let data = security.load::<Security>(conn);
+    let mut query = security.into_boxed();
+    if let Some(mut currency_val) = currency_filter {
+        currency_val = currency_val.to_uppercase();
+        query = query.filter(currency.eq(currency_val));
+    }
+    if let Some(agent_val) = agent_filter {
+        query = query.filter(currency.eq(agent_val));
+    }
+    if let Some(mnemonic_val) = mnemonic_filter {
+        query = query.filter(currency.eq(mnemonic_val));
+    }
+    if let Some(exchange_val) = exchange_filter {
+        query = query.filter(currency.eq(exchange_val));
+    }
 
-    let result = security
-        //.select(selection)
-        .filter(symbol.eq("BRD"))
+    let conn = &mut establish_connection();
+    let result = query
         .load::<Security>(conn)
         .expect("Error loading securities");
 
-    todo!("load securities");
+    // debug!("securities: {:?}", result);
 
-    // match result {
-    //     Ok(value) => return value,
-    //     Err(e) => {
-    //         error!("Error fetching securities: {:?}", e);
-    //         return vec![];
-    //     }
-    // }
+    return result;
 }
