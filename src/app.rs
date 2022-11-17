@@ -4,7 +4,7 @@
 
 use diesel::prelude::*;
 use diesel::{QueryDsl, RunQueryDsl};
-use tracing::{debug, error};
+use tracing::{debug};
 
 use crate::{model::Security, dal_diesel::establish_connection};
 
