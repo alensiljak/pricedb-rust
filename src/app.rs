@@ -2,9 +2,11 @@
  * Application
  */
 
+use diesel::prelude::*;
+use diesel::{QueryDsl, RunQueryDsl};
 use tracing::{debug, error};
 
-use crate::{model::Security};
+use crate::{model::Security, dal_diesel::establish_connection};
 
 #[derive(Debug)]
 pub(crate) struct DownloadOptions {
@@ -35,13 +37,15 @@ Fetches the securities that match the given filters
 fn get_securities(currency: Option<String>, agent: Option<String>, 
     mnemonic: Option<String>, exchange: Option<String>) -> Vec<Security> {
     // todo: pass the filter
-    
-    //let sec_repo = SecurityRepository {};
-    // let result = sec_repo.query(currency, agent, 
-    //     mnemonic, exchange);
 
-    // let db = Database::new();
-    // let data = Security::select_all(&mut db.rb).await.unwrap();
+    use crate::schema::security::dsl::*;
+
+    let conn = &mut establish_connection();
+    let result = security
+        .filter(symbol.eq("BRD"))
+        .load::<Security>(conn)
+        .expect("Error loading securities");
+
     todo!("load securities");
 
     // match result {

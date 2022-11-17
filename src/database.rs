@@ -26,3 +26,7 @@ pub fn load_db_path() -> String {
 
     return db_path;
 }
+
+trait Dal {
+    fn get_securities();
+}

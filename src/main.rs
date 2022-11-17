@@ -4,6 +4,7 @@ mod dal_diesel;
 mod database;
 mod interface;
 mod model;
+mod schema;
 
 use clap::Parser;
 use interface::{Cli, Commands};
