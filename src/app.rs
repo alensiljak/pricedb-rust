@@ -41,7 +41,10 @@ fn get_securities(currency: Option<String>, agent: Option<String>,
     use crate::schema::security::dsl::*;
 
     let conn = &mut establish_connection();
+    let data = security.load::<Security>(conn);
+
     let result = security
+        //.select(selection)
         .filter(symbol.eq("BRD"))
         .load::<Security>(conn)
         .expect("Error loading securities");

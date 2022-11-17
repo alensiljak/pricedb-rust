@@ -3,18 +3,17 @@
  */
 
 use diesel::prelude::*;
-use serde_derive::{Serialize, Deserialize};
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[derive(Queryable)]
+#[derive(Debug, Queryable, PartialEq)]
 #[allow(unused)]
  pub struct Security {
     pub id: i32,
+    pub namespace: Option<String>,
     pub symbol: String,
-    pub namespace: String,
-    pub updater: String,
-    pub currency: String,
-    pub ledger_symbol: Option<String>
+    pub updater: Option<String>,
+    pub currency: Option<String>,
+    pub ledger_symbol: Option<String>,
+    pub notes: Option<String>,
     // prices
 }
 
@@ -24,11 +23,12 @@ impl Security {
     pub fn new() -> Security {
         Security {
             id: 0,
-            namespace: "".to_string(),
+            namespace: Some("".to_string()),
             symbol: "".to_string(),
-            currency: "".to_string(),
-            updater: "".to_string(),
-            ledger_symbol: Some("".to_string())
+            currency: Some("".to_string()),
+            updater: Some("".to_string()),
+            ledger_symbol: Some("".to_string()),
+            notes: Some("".to_string())
         }
     }
 }
