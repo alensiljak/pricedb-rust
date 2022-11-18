@@ -12,6 +12,8 @@ repository = "github.com/alensiljak/pricedb-rust"
 clap = { version = "4.0.26", features = ["derive"] }
 confy = "0.5.1"
 diesel = { version = "2.0.2", features = ["sqlite"] }
+fast_log = "1.5.46"
+log = "0.4.17"
 #rbatis = "4.0.42"
 #rbdc-sqlite = "0.1.14"
 #rbs = "0.1.13"
@@ -22,5 +24,5 @@ serde_derive = "1.0.147"
 #rusqlite = { version = "0.28.0", features = ["bundled"] }
 #rusqlite = "0.28.0"
 #sqlx = { version = "0.6.2", features = ["sqlite", "runtime-tokio-rustls"] }
-tracing = "0.1.37"
-tracing-subscriber = "0.3.16"
+#tracing = "0.1.37"
+#tracing-subscriber = "0.3.16"

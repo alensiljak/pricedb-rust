@@ -3,7 +3,8 @@
  */
 
 use confy::ConfyError;
-use tracing::{debug, error};
+use log::{debug, error};
+// use tracing::{debug, error};
 
 use crate::{config::PriceDbConfig};
 
