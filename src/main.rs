@@ -1,17 +1,17 @@
+/*
+ * Price Database
+ * The main file contains only the CLI definition.
+ */
 mod app;
 mod config;
-mod dal_diesel;
 mod database;
 mod interface;
 mod model;
-mod schema;
 
 use clap::Parser;
 use fast_log::Config;
 use interface::{Cli, Commands};
 use log::{debug, trace};
-// use tracing::{debug, trace};
-// use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 fn main() {
     initialize_logging();
@@ -51,10 +51,5 @@ fn prune(symbol: &Option<String>) {
 }
 
 fn initialize_logging() {
-    // tracing_subscriber::registry()
-    //     .with(tracing_subscriber::fmt::layer())
-    //     .init();
-
     fast_log::init(Config::new().console()).unwrap();
-    // log::info!("Logging initialized");
 }

@@ -2,9 +2,9 @@
  * Model structs
  */
 
-use diesel::prelude::*;
+// use diesel::prelude::*;
 
-#[derive(Debug, Queryable, PartialEq)]
+#[derive(Debug, PartialEq)]
 #[allow(unused)]
  pub struct Security {
     pub id: i32,

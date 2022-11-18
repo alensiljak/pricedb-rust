@@ -1,12 +1,13 @@
 /*
  * trying to encapsulate database-specific code
  */
+// mod dal_diesel;
+// mod schema;
 
 use confy::ConfyError;
 use log::{debug, error};
-// use tracing::{debug, error};
 
-use crate::{config::PriceDbConfig};
+use crate::{config::PriceDbConfig, model::Security};
 
 /// Loads database path from the configuration.
 pub fn load_db_path() -> String {
@@ -29,5 +30,15 @@ pub fn load_db_path() -> String {
 }
 
 trait Dal {
-    fn get_securities();
+    fn get_securities(currency: Option<String>, agent: Option<String>, 
+        mnemonic: Option<String>, exchange: Option<String>) -> Vec<Security>;
+}
+
+pub fn get_securities(
+    currency: Option<String>,
+    agent: Option<String>,
+    mnemonic: Option<String>,
+    exchange: Option<String>,
+) -> Vec<Security> {
+    todo!("proxy to the current dal")
 }
