@@ -3,6 +3,7 @@
  */
 // mod dal_diesel;
 // mod schema;
+mod dal_sqlx;
 
 use confy::ConfyError;
 use log::{debug, error};

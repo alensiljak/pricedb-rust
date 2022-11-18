@@ -13,6 +13,7 @@ use fast_log::Config;
 use interface::{Cli, Commands};
 use log::{debug, trace};
 
+//#[async_std::main]
 fn main() {
     initialize_logging();
 
