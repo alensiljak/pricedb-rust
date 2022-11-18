@@ -4,10 +4,10 @@
 
 use super::Dal;
 
-struct Sqlx_Dal {}
+pub struct SqlxDal {}
 
-impl Dal for Sqlx_Dal {
-    fn get_securities(currency: Option<String>, agent: Option<String>, 
+impl Dal for SqlxDal {
+    fn get_securities(&self, currency: Option<String>, agent: Option<String>, 
         mnemonic: Option<String>, exchange: Option<String>) -> Vec<crate::model::Security> {
         todo!("implement");
     }

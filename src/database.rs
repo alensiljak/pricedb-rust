@@ -10,6 +10,14 @@ use log::{debug, error};
 
 use crate::{config::PriceDbConfig, model::Security};
 
+use self::dal_sqlx::SqlxDal;
+
+/// Initialize database connection.
+pub fn init_db() -> impl Dal {
+    let dal = SqlxDal{};
+    return dal;
+}
+
 /// Loads database path from the configuration.
 pub fn load_db_path() -> String {
     let config_result: Result<PriceDbConfig, ConfyError> = confy::load("pricedb", "config");
@@ -30,16 +38,7 @@ pub fn load_db_path() -> String {
     return db_path;
 }
 
-trait Dal {
-    fn get_securities(currency: Option<String>, agent: Option<String>, 
+pub trait Dal {
+    fn get_securities(&self, currency: Option<String>, agent: Option<String>, 
         mnemonic: Option<String>, exchange: Option<String>) -> Vec<Security>;
-}
-
-pub fn get_securities(
-    currency: Option<String>,
-    agent: Option<String>,
-    mnemonic: Option<String>,
-    exchange: Option<String>,
-) -> Vec<Security> {
-    todo!("proxy to the current dal")
 }

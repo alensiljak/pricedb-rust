@@ -16,12 +16,14 @@ pub(crate) enum Commands {
 
     #[command(about="Download prices")]
     Dl {
-        //#[arg(short='x', long)]
-        // todo: exchange: Option<String>,
+        #[arg(short='x', long)]
+        exchange: Option<String>,
 
-        // todo: symbol
+        #[arg(short, long)]
+        symbol: Option<String>,
         
-        // todo: agent
+        #[arg(short, long)]
+        agent: Option<String>,
 
         #[arg(short, long)]
         currency: Option<String>,

@@ -13,6 +13,8 @@ use fast_log::Config;
 use interface::{Cli, Commands};
 use log::{debug, trace};
 
+use crate::app::App;
+
 //#[async_std::main]
 fn main() {
     initialize_logging();
@@ -21,30 +23,15 @@ fn main() {
 
     debug!("Command: {:?}", cli.command);
 
+    let app = App {};
+
     match &cli.command {
-        Some(Commands::Dl { currency }) => download(currency),
+        Some(Commands::Dl { currency,
+        agent, exchange, 
+        symbol }) => app.download_prices(exchange, symbol, currency, agent),
         Some(Commands::Prune { symbol }) => prune(symbol),
         _ => println!("No command issued"),
     }
-}
-
-fn download(currency_option: &Option<String>) {
-    //trace!("In download...");
-
-    let mut options = app::DownloadOptions {
-        exchange: None,
-        mnemonic: None,
-        currency: None,
-        agent: None,
-    };
-
-    match currency_option {
-        Some(currency) => options.currency = Some(currency.to_string()),
-        None => println!("no currency"),
-    }
-
-    // download prices
-    app::download_prices(options);
 }
 
 fn prune(symbol: &Option<String>) {
