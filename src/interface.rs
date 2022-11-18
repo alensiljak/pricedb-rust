@@ -39,7 +39,7 @@ pub(crate) enum Commands {
 
     #[command(about="Prune old prices, leaving just the latest")]
     Prune {
-        //all: Option<>,
+        #[arg(short, long)]
         symbol: Option<String>
     },
 

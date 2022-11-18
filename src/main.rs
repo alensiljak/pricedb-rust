@@ -9,35 +9,33 @@ mod interface;
 mod model;
 
 use clap::Parser;
-use fast_log::Config;
 use interface::{Cli, Commands};
-use log::{debug, trace};
 
 use crate::app::App;
 
 //#[async_std::main]
-fn main() {
-    initialize_logging();
+#[tokio::main]
+async fn main() {
+    // initialize logging
+    env_logger::init();
+    log::trace!("starting");
 
     let cli = Cli::parse();
 
-    debug!("Command: {:?}", cli.command);
+    log::debug!("Command: {:?}", cli.command);
 
-    let app = App {};
+    let app = App::new();
 
     match &cli.command {
-        Some(Commands::Dl { currency,
-        agent, exchange, 
-        symbol }) => app.download_prices(exchange, symbol, currency, agent),
-        Some(Commands::Prune { symbol }) => prune(symbol),
+        Some(Commands::Dl {
+            currency,
+            agent,
+            exchange,
+            symbol,
+        }) => app.download_prices(exchange, symbol, currency, agent),
+        
+        Some(Commands::Prune { symbol }) => app.prune(symbol),
+        
         _ => println!("No command issued"),
     }
-}
-
-fn prune(symbol: &Option<String>) {
-    trace!("In prune. Incomplete. symbol: {:?}", symbol);
-}
-
-fn initialize_logging() {
-    fast_log::init(Config::new().console()).unwrap();
 }
