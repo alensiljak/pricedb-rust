@@ -4,9 +4,17 @@
 
 // use diesel::prelude::*;
 
+pub struct Price {
+    security_id: i64,
+    symbol: String,
+    date: String,
+    value: i32,
+    currency: String
+}
+
 #[derive(Debug, PartialEq)]
 #[allow(unused)]
- pub struct Security {
+pub struct Security {
     pub id: i32,
     pub namespace: Option<String>,
     pub symbol: String,
@@ -28,14 +36,35 @@ impl Security {
             currency: Some("".to_string()),
             updater: Some("".to_string()),
             ledger_symbol: Some("".to_string()),
-            notes: Some("".to_string())
+            notes: Some("".to_string()),
         }
     }
 }
 
 #[derive(Debug)]
+// #[derive(sqlx::FromRow)]
 #[allow(unused)]
 pub struct SecuritySymbol {
     pub namespace: String,
-    pub mnemonic: String
+    pub mnemonic: String,
+}
+
+impl SecuritySymbol {
+    /// Parse symbol syntax "XETRA:EL4X"
+    pub fn parse(symbol: String) -> (String, String) {
+        let namespace = String::from("");
+        let mnemonic = symbol.clone();
+
+        let parts = symbol.split(":");
+
+        log::debug!("parts: {:?}", parts);
+
+        if parts.count() > 1 {
+            // let vec: Vec<&str> = parts.collect();
+            // namespace = vec.get(0).expect("namespace not provided");
+            // mnemonic = vec.get(1).unwrap();
+        }
+
+        return (namespace, mnemonic);
+    }
 }
