@@ -20,7 +20,10 @@ use self::dal_sqlx::SqlxDal;
 pub fn init_db() -> impl Dal {
     // "sqlite::memory:"
     let conn_str = load_db_path();
+
+    // choose the dal implementation here.
     let dal = SqlxDal { conn_str };
+
     return dal;
 }
 
@@ -46,7 +49,7 @@ fn load_db_path() -> String {
 
 #[async_trait]
 pub trait Dal {
-    fn get_securities(
+    async fn get_securities(
         &self,
         currency: Option<String>,
         agent: Option<String>,
@@ -54,11 +57,11 @@ pub trait Dal {
         exchange: Option<String>,
     ) -> Vec<Security>;
 
-    fn get_symbols(&self) -> Vec<SecuritySymbol>;
+    async fn get_security_by_symbol(&self, symbol: &String) -> Security;
 
-    fn get_prices_for_security(&self, security_id: i64) -> Vec<Price> {
-        todo!("get prices");
-    }
+    async fn get_symbols(&self) -> Vec<SecuritySymbol>;
+
+    async fn get_prices_for_security(&self, security_id: &i64) -> anyhow::Result<Vec<Price>>;
 
     /// Returns all the symbol ids that have prices in the database.
     /// Used for pruning.

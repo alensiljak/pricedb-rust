@@ -17,7 +17,7 @@ impl App {
         return result;
     }
 
-    pub(crate) fn download_prices(
+    pub(crate) async fn download_prices(
         &self,
         exchange: &Option<String>,
         mnemonic: &Option<String>,
@@ -37,7 +37,7 @@ impl App {
             agent.clone(),
             mnemonic.clone(),
             exchange.clone(),
-        );
+        ).await;
 
         debug!("securities: {:?}", securities);
 
@@ -49,34 +49,42 @@ impl App {
     /// If no symbol is given, it prunes all existing symbols.
     /// Returns the number of items removed.
     pub async fn prune(&self, symbol: &Option<String>) -> u16 {
-        log::trace!("In prune. Incomplete. symbol: {:?}", symbol);
-        let mut symbols = vec![];
+        log::trace!("Pruning symbol: {:?}", symbol);
+
+        let mut security_ids = vec![];
 
         if symbol.is_some() {
-            symbols.push(symbol);
+            // get id
+            let symb = symbol.as_ref().unwrap();
+            let security = self.dal.get_security_by_symbol(symb).await;
+            security_ids.push(security.id);
         } else {
             // load all symbols
-            let symbol_ids = self.dal.get_symbol_ids_with_prices().await;
-            debug!("symbol ids with prices: {:?}", symbol_ids);
+            security_ids = self.dal.get_symbol_ids_with_prices()
+                .await
+                .expect("Error fetching symbol ids.");
+            //debug!("symbol ids with prices: {:?}", symbol_ids);
         }
 
         let mut count = 0;
         // Send the symbols to the individual prune.
-        for symbol in symbols {
-            todo!("prune each symbol");
+        for security_id in security_ids {
+            self.prune_for_sec(security_id).await;
 
-            // count += 1;
+            count += 1;
         }
 
         return count;
     }
 
     /// Deletes price history for the given Security, leaving only the latest price.
-    fn prune_for_sec(&self, security_id: i32) -> u16 {
-        debug!("pruning prices for {:?}", security_id);
+    async fn prune_for_sec(&self, security_id: i64) -> u16 {
+        debug!("pruning prices for security id: {:?}", security_id);
 
         let count = 0;
         // todo: get prices for the given security
+        let prices = self.dal.get_prices_for_security(&security_id).await;
+        debug!("prices for {:?} - {:?}", security_id, prices);
         // todo: skip the first
         // todo: delete
 

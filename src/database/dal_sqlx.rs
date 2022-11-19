@@ -3,9 +3,9 @@
  */
 
 use async_trait::async_trait;
-use sqlx::{query_as, Connection, SqliteConnection};
+use sqlx::{Connection, SqliteConnection};
 
-use crate::model::SecuritySymbol;
+use crate::model::{Price, Security};
 
 use super::Dal;
 
@@ -15,7 +15,7 @@ pub struct SqlxDal {
 
 #[async_trait]
 impl Dal for SqlxDal {
-    fn get_securities(
+    async fn get_securities(
         &self,
         currency: Option<String>,
         agent: Option<String>,
@@ -25,7 +25,19 @@ impl Dal for SqlxDal {
         todo!("implement");
     }
 
-    fn get_symbols(&self) -> Vec<crate::model::SecuritySymbol> {
+    async fn get_security_by_symbol(&self, symbol: &String) -> Security {
+        let mut conn = self.get_connection().await.expect("Error opening database");
+
+        let result = sqlx::query_as!(Security, 
+            "select * from security where symbol=?", symbol)
+            .fetch_one(&mut conn)
+            .await
+            .expect("Error getting Security by symbol");
+
+        return result;
+    }
+
+    async fn get_symbols(&self) -> Vec<crate::model::SecuritySymbol> {
         // async {
         // let conn = self.get_connection().into();
         // let mut symbols = query_as!(SecuritySymbol,
@@ -36,22 +48,37 @@ impl Dal for SqlxDal {
         return vec![];
     }
 
+    async fn get_prices_for_security(&self, security_id: &i64) -> anyhow::Result<Vec<Price>> {
+        let mut conn = self.get_connection().await.expect("Error opening database");
+
+        let result = sqlx::query_as!(
+            Price,
+            "select * from price where security_id=?",
+            security_id
+        )
+        .fetch_all(&mut conn)
+        .await
+        .expect("Error fetching prices");
+
+        return Ok(result);
+    }
+
     async fn get_symbol_ids_with_prices(&self) -> anyhow::Result<Vec<i64>> {
         let mut result: Vec<i64> = vec![];
 
         let mut conn = self.get_connection().await.expect("Error opening database");
 
-            let rows = sqlx::query!(r#"select security_id from price"#)
-                .fetch_all(&mut conn)
-                .await
-                .expect("Error fetching prices");
-            //symbol_ids
-            for row in rows {
-                //let x = row.security_id;
-                result.push(row.security_id);
-            }
+        let rows = sqlx::query!(r#"select security_id from price"#)
+            .fetch_all(&mut conn)
+            .await
+            .expect("Error fetching prices");
+        //symbol_ids
+        for row in rows {
+            //let x = row.security_id;
+            result.push(row.security_id);
+        }
 
-            return Ok(result);
+        return Ok(result);
     }
 }
 

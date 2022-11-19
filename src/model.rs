@@ -2,20 +2,22 @@
  * Model structs
  */
 
-// use diesel::prelude::*;
-
+#[derive(Debug)]
+#[allow(unused)]
 pub struct Price {
-    security_id: i64,
-    symbol: String,
-    date: String,
-    value: i32,
-    currency: String
+    pub id: i64,
+    pub security_id: i64,
+    pub date: String,
+    pub time: Option<String>,
+    pub value: i64,
+    pub denom: i64,
+    pub currency: String
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 #[allow(unused)]
 pub struct Security {
-    pub id: i32,
+    pub id: i64,
     pub namespace: Option<String>,
     pub symbol: String,
     pub updater: Option<String>,
@@ -42,7 +44,6 @@ impl Security {
 }
 
 #[derive(Debug)]
-// #[derive(sqlx::FromRow)]
 #[allow(unused)]
 pub struct SecuritySymbol {
     pub namespace: String,

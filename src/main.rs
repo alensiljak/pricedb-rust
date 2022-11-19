@@ -36,7 +36,7 @@ async fn main() {
         exchange,
         symbol,
     }) = &cli.command {
-        app.download_prices(exchange, symbol, currency, agent);
+        app.download_prices(exchange, symbol, currency, agent).await;
     }
     // match &cli.command {
     //     Some(Commands::Dl {
