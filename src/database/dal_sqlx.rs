@@ -3,7 +3,7 @@
  */
 
 use async_trait::async_trait;
-use sqlx::{Connection, SqliteConnection};
+use sqlx::{sqlite::SqliteRow, Connection, Row, SqliteConnection};
 
 use crate::model::{Price, Security};
 
@@ -28,8 +28,7 @@ impl Dal for SqlxDal {
     async fn get_security_by_symbol(&self, symbol: &String) -> Security {
         let mut conn = self.get_connection().await.expect("Error opening database");
 
-        let result = sqlx::query_as!(Security, 
-            "select * from security where symbol=?", symbol)
+        let result = sqlx::query_as!(Security, "select * from security where symbol=?", symbol)
             .fetch_one(&mut conn)
             .await
             .expect("Error getting Security by symbol");
@@ -48,18 +47,32 @@ impl Dal for SqlxDal {
         return vec![];
     }
 
-    async fn get_prices_for_security(&self, security_id: &i64) -> anyhow::Result<Vec<Price>> {
+    async fn get_prices_for_security(&self, security_id: i64) -> anyhow::Result<Vec<Price>> {
         let mut conn = self.get_connection().await.expect("Error opening database");
 
-        let result = sqlx::query_as!(
-            Price,
-            "select * from price where security_id=?",
-            security_id
-        )
-        .fetch_all(&mut conn)
-        .await
-        .expect("Error fetching prices");
+        // let result = sqlx::query_as!(
+        //     Price,
+        //     "select * from price where security_id=? order by date desc, time desc;",
+        //     security_id
+        // )
+        // .fetch_all(&mut conn)
+        // .await
+        // .expect("Error fetching prices");
 
+        // let stream =
+        //     sqlx::query("select * from price where security_id=? order by date desc, time desc;")
+        //         .bind(security_id)
+        //         // .map(|row: SqliteRow| {
+        //         //     log::debug!("row: {:?}", row.column(0));
+        //         // })
+        //         .fetch(&mut conn);
+
+        // let recs = sqlx::query!(
+        //     r#"select * from price where security_id=? order by date desc, time desc;"#,
+        // );
+        // log::debug!("stream: {:?}", stream);
+
+        let result = vec![];
         return Ok(result);
     }
 

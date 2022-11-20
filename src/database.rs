@@ -61,7 +61,7 @@ pub trait Dal {
 
     async fn get_symbols(&self) -> Vec<SecuritySymbol>;
 
-    async fn get_prices_for_security(&self, security_id: &i64) -> anyhow::Result<Vec<Price>>;
+    async fn get_prices_for_security(&self, security_id: i64) -> anyhow::Result<Vec<Price>>;
 
     /// Returns all the symbol ids that have prices in the database.
     /// Used for pruning.
