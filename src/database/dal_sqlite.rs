@@ -1,19 +1,93 @@
 /*
  * DAL with sqlite
- * 
+ *
  * Pros:
  *   - does not use libsqlite3-sys (build issues on NTFS)
- * 
- * Cons:
- *   - Enforces i64 for Integers
+ *
  */
 
-use sqlite::{Connection, Row, Error};
+use sqlite::{Connection, Error, Row, State};
+
+use crate::model::{Security, Price};
+
+use super::Dal;
+
+pub struct SqliteDal {
+    pub(crate) conn_str: String,
+}
+
+impl Dal for SqliteDal {
+    fn get_securities(
+        &self,
+        currency: Option<String>,
+        agent: Option<String>,
+        mnemonic: Option<String>,
+        exchange: Option<String>,
+    ) -> Vec<Security> {
+        todo!()
+    }
+
+    fn get_security_by_symbol(&self, symbol: &String) -> Security {
+        log::trace!("getting security from symbol {:?}", symbol);
+        
+        let mut result: Security = Security::new();
+
+        let conn = open_connection(&self.conn_str);
+        let rows = conn
+            .prepare("select * from security where symbol=?").unwrap()
+            .into_iter()
+            .bind((1, symbol.as_str())).unwrap()
+            .map(|row| row.unwrap());
+        for row in rows {
+            log::debug!("row: {:?}", row);
+            result = read_security(row);
+        }
+        return result;
+    }
+
+    fn get_symbols(&self) -> Vec<crate::model::SecuritySymbol> {
+        todo!()
+    }
+
+    fn get_prices_for_security(
+        &self,
+        security_id: i64,
+    ) -> anyhow::Result<Vec<Price>> {
+        let mut result: Vec<Price> = vec![];
+        let conn = open_connection(&self.conn_str);
+        let sql = "select * from price where security_id=? order by date desc, time desc;";
+
+        let cursor = conn.prepare(sql).unwrap()
+            .into_iter()
+            .bind((1, security_id)).unwrap()
+            .map(|row| row.unwrap());
+
+        for row in cursor {
+            let record = map_price(&row);
+            result.push(record);
+        }
+        return Ok(result);
+    }
+
+    fn get_symbol_ids_with_prices(&self) -> anyhow::Result<Vec<i64>> {
+        let mut result: Vec<i64> = vec![];
+        let conn = open_connection(&self.conn_str);
+        let rows = conn
+            .prepare("select security_id from price").unwrap()
+            .into_iter()
+            .map(|row| row.unwrap());
+        for row in rows {
+            // log::debug!("row: {:?}", row);
+            let id = row.read(0);
+            result.push(id);
+        }
+        return Ok(result);
+    }
+}
 
 /// sqlite connection
-fn open_connection() -> Connection {
-    let con_str = load_db_path();
-    let connection = sqlite::open(con_str).unwrap();
+fn open_connection(conn_str: &String) -> Connection {
+    let connection = sqlite::open(conn_str).unwrap();
     return connection;
 }
 
@@ -23,35 +97,43 @@ fn read_security(row: Row) -> Security {
 
     match row.try_read::<i64, _>("id") {
         Ok(id) => security.id = id,
-        Err(e) => warn!("Could not read id field. {}", e),
+        Err(e) => log::warn!("Could not read id field. {}", e),
     }
 
     match row.try_read::<&str, _>("namespace") {
-        Ok(value) => security.namespace = value.to_string(),
-        Err(e) => warn!("Could not read namespace field. {}", e),
+        Ok(value) => security.namespace = Some(value.to_string()),
+        Err(e) => log::warn!("Could not read namespace field. {}", e),
     }
 
     match row.try_read::<&str, _>("symbol") {
         Ok(value) => security.symbol = value.to_string(),
-        Err(e) => warn!("Could not read symbol field. {}", e),
+        Err(e) => log::warn!("Could not read symbol field. {}", e),
     }
 
     match row.try_read::<&str, _>("currency") {
-        Ok(value) => security.currency = value.to_string(),
-        Err(e) => warn!("Could not read currency field. {}", e),
+        Ok(value) => security.currency = Some(value.to_string()),
+        Err(e) => log::warn!("Could not read currency field. {}", e),
     }
 
     match row.try_read::<&str, _>("updater") {
-        Ok(value) => security.updater = value.to_string(),
-        Err(e) => warn!("Could not read updater field. {}", e),
+        Ok(value) => security.updater = Some(value.to_string()),
+        Err(e) => log::warn!("Could not read updater field. {}", e),
     }
 
     match row.try_read::<&str, _>("ledger_symbol") {
-        Ok(value) => security.ledger_symbol = value.to_string(),
-        Err(e) => warn!("Could not read ledger_symbol field. {}", e),
+        Ok(value) => security.ledger_symbol = Some(value.to_string()),
+        Err(e) => log::warn!("Could not read ledger_symbol field. {}", e),
     }
 
     return security;
+}
+
+fn map_price(row: &Row) -> Price {
+    let mut price = Price::new();
+
+    price.id = row.read(0);
+
+    return price;
 }
 
 /// Securities Repository
@@ -83,7 +165,7 @@ impl SecurityRepository {
             None => currency = "",
         }
 
-        let connection = open_connection();
+        // let connection = open_connection();
         // let result = connection
         //     .prepare(query)
         //     .unwrap()
@@ -92,12 +174,12 @@ impl SecurityRepository {
 
         // full
 
-        let conn = open_connection();
+        let conn = open_connection(&"".to_string());
         let query = "select * from security";
 
         // todo: implement the filter
 
-        let cursor = connection.prepare(query).unwrap().into_iter();
+        let cursor = conn.prepare(query).unwrap().into_iter();
         conn.prepare(query)?;
         let mut result: Vec<Security> = vec![];
 
@@ -114,8 +196,4 @@ impl SecurityRepository {
     pub(crate) fn all(&self) -> Result<Vec<Security>, Error> {
         return self.query(None, None, None, None);
     }
-
-    // pub(crate) fn get(&self, id: i32) {
-    //     // load from db
-    // }
 }

@@ -14,8 +14,8 @@ use interface::{Cli, Commands};
 use crate::app::App;
 
 //#[async_std::main]
-#[tokio::main]
-async fn main() {
+// #[tokio::main]
+fn main() {
     // initialize logging
     env_logger::init();
     log::trace!("starting");
@@ -36,7 +36,7 @@ async fn main() {
         exchange,
         symbol,
     }) = &cli.command {
-        app.download_prices(exchange, symbol, currency, agent).await;
+        app.download_prices(exchange, symbol, currency, agent);
     }
     // match &cli.command {
     //     Some(Commands::Dl {
@@ -52,6 +52,6 @@ async fn main() {
     // }
 
     if let Some(Commands::Prune { symbol }) = &cli.command {
-        app.prune(symbol).await;
+        app.prune(symbol);
     }
 }

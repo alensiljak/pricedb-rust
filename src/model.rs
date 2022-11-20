@@ -11,7 +11,22 @@ pub struct Price {
     pub time: Option<String>,
     pub value: i64,
     pub denom: i64,
-    pub currency: String
+    pub currency: String,
+}
+
+impl Price {
+    pub fn new() -> Price {
+        let result = Price {
+            id: 0,
+            security_id: 0,
+            date: "".to_string(),
+            time: None,
+            value: 0,
+            denom: 0,
+            currency: "".to_string(),
+        };
+        return result;
+    }
 }
 
 #[derive(Debug)]

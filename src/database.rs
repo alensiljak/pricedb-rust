@@ -3,9 +3,9 @@
  */
 // mod dal_diesel;
 // mod schema;
-mod dal_sqlx;
+// mod dal_sqlx;
+mod dal_sqlite;
 
-use async_trait::async_trait;
 use confy::ConfyError;
 use log::{debug, error};
 
@@ -14,15 +14,14 @@ use crate::{
     model::{Price, Security, SecuritySymbol},
 };
 
-use self::dal_sqlx::SqlxDal;
-
 /// Initialize database connection.
 pub fn init_db() -> impl Dal {
     // "sqlite::memory:"
     let conn_str = load_db_path();
 
     // choose the dal implementation here.
-    let dal = SqlxDal { conn_str };
+    //let dal = SqlxDal { conn_str };
+    let dal = dal_sqlite::SqliteDal {conn_str};
 
     return dal;
 }
@@ -47,9 +46,8 @@ fn load_db_path() -> String {
     return db_path;
 }
 
-#[async_trait]
 pub trait Dal {
-    async fn get_securities(
+    fn get_securities(
         &self,
         currency: Option<String>,
         agent: Option<String>,
@@ -57,13 +55,13 @@ pub trait Dal {
         exchange: Option<String>,
     ) -> Vec<Security>;
 
-    async fn get_security_by_symbol(&self, symbol: &String) -> Security;
+    fn get_security_by_symbol(&self, symbol: &String) -> Security;
 
-    async fn get_symbols(&self) -> Vec<SecuritySymbol>;
+    fn get_symbols(&self) -> Vec<SecuritySymbol>;
 
-    async fn get_prices_for_security(&self, security_id: i64) -> anyhow::Result<Vec<Price>>;
+    fn get_prices_for_security(&self, security_id: i64) -> anyhow::Result<Vec<Price>>;
 
     /// Returns all the symbol ids that have prices in the database.
     /// Used for pruning.
-    async fn get_symbol_ids_with_prices(&self) -> anyhow::Result<Vec<i64>>;
+    fn get_symbol_ids_with_prices(&self) -> anyhow::Result<Vec<i64>>;
 }
