@@ -47,6 +47,8 @@ fn load_db_path() -> String {
 }
 
 pub trait Dal {
+    fn delete_price(&self, id: i64) -> anyhow::Result<()>;
+
     fn get_securities(
         &self,
         currency: Option<String>,

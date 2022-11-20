@@ -4,6 +4,8 @@
 
 use std::vec;
 
+use anyhow::Error;
+
 use crate::database::{self, Dal};
 
 pub struct App {
@@ -77,30 +79,33 @@ impl App {
     }
 
     /// Deletes price history for the given Security, leaving only the latest price.
-    fn prune_for_sec(&self, security_id: i64) -> u16 {
+    fn prune_for_sec(&self, security_id: i64) -> anyhow::Result<u16, Error> {
         log::trace!("pruning prices for security id: {:?}", security_id);
 
-        let count = 0;
-        // todo: get prices for the given security
+        let mut count = 0;
+        // get prices for the given security
         let prices = self.dal.get_prices_for_security(security_id)
             .expect("Error fetching prices for security");
-        // debug!("prices for {:?} - {:?}", security_id, prices);
+        // log::debug!("prices for {:?} - {:?}", security_id, prices);
 
         let size = prices.len();
         if size <= 1 {
             // nothing to delete
             log::debug!("Nothing to prune for {:?}", security_id);
-            return 0;
+            return Ok(0);
         }
         
-        // todo: skip the first
+        // skip the first
         let to_prune = &prices[1..];
 
-        // todo: delete
+        // delete
         for price in to_prune {
-            log::debug!("should delete: {:?}", price);
+            log::debug!("deleting price: {:?}", price);
+
+            self.dal.delete_price(price.id)?;
+            count += 1;
         }
 
-        return count;
+        return Ok(count);
     }
 }

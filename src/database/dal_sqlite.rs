@@ -6,7 +6,7 @@
  *
  */
 
-use sqlite::{Connection, Error, Row, State};
+use sqlite::{Connection, Error, Row};
 
 use crate::model::{Security, Price};
 
@@ -83,6 +83,13 @@ impl Dal for SqliteDal {
         }
         return Ok(result);
     }
+
+    fn delete_price(&self, id: i64) -> Result<(), anyhow::Error> {
+        let conn = open_connection(&self.conn_str);
+        let sql = format!("delete from price where id={}", id);
+        let result = conn.execute(sql).unwrap();
+        return Ok(result);
+    }
 }
 
 /// sqlite connection
@@ -129,9 +136,15 @@ fn read_security(row: Row) -> Security {
 }
 
 fn map_price(row: &Row) -> Price {
-    let mut price = Price::new();
-
-    price.id = row.read(0);
+    let price = Price {
+        id: row.read(0),
+        security_id: row.read(1),
+        date: String::from(row.read::<&str, _>(2)),
+        time: Some(String::from(row.try_read::<&str, _>(3).unwrap_or_default())),
+        value: row.read::<i64, _>(4),
+        denom: row.read::<i64, _>(4),
+        currency: String::from(row.read::<&str, _>(6)),
+    };
 
     return price;
 }
