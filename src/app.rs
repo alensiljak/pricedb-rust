@@ -19,7 +19,7 @@ impl App {
         return result;
     }
 
-    pub(crate) async fn download_prices(
+    pub(crate) fn download_prices(
         &self,
         exchange: &Option<String>,
         mnemonic: &Option<String>,
@@ -38,10 +38,10 @@ impl App {
         //let securities: Vec<String> = vec![];
 
         let securities = self.dal.get_securities(
-            currency.clone(),
-            agent.clone(),
-            mnemonic.clone(),
-            exchange.clone(),
+            currency,
+            agent,
+            mnemonic,
+            exchange,
         );
 
         log::debug!("securities: {:?}", securities);

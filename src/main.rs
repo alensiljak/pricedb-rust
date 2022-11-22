@@ -27,9 +27,11 @@ fn main() {
     let app = App::new();
 
     if cli.command.is_none() {
-        println!("No command issued");        
+        println!("No command issued");
+        return;
     }
 
+    // download
     if let Some(Commands::Dl {
         currency,
         agent,
@@ -38,19 +40,8 @@ fn main() {
     }) = &cli.command {
         app.download_prices(exchange, symbol, currency, agent);
     }
-    // match &cli.command {
-    //     Some(Commands::Dl {
-    //         currency,
-    //         agent,
-    //         exchange,
-    //         symbol,
-    //     }) => app.download_prices(exchange, symbol, currency, agent),
 
-    //     Some(Commands::Prune { symbol }) => app.prune(symbol),
-
-    //     _ => println!("No command issued"),
-    // }
-
+    // prune
     if let Some(Commands::Prune { symbol }) = &cli.command {
         app.prune(symbol);
     }

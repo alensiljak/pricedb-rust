@@ -51,10 +51,10 @@ pub trait Dal {
 
     fn get_securities(
         &self,
-        currency: Option<String>,
-        agent: Option<String>,
-        mnemonic: Option<String>,
-        exchange: Option<String>,
+        currency: &Option<String>,
+        agent: &Option<String>,
+        mnemonic: &Option<String>,
+        exchange: &Option<String>,
     ) -> Vec<Security>;
 
     fn get_security_by_symbol(&self, symbol: &str) -> Security;

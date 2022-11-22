@@ -6,9 +6,9 @@
  *
  */
 
-use sqlite::{Connection, Error, Row};
+use sqlite::{Connection, Error, Row, Statement};
 
-use crate::model::{Security, Price};
+use crate::model::{Price, Security};
 
 use super::Dal;
 
@@ -19,24 +19,44 @@ pub struct SqliteDal {
 impl Dal for SqliteDal {
     fn get_securities(
         &self,
-        currency: Option<String>,
-        agent: Option<String>,
-        mnemonic: Option<String>,
-        exchange: Option<String>,
+        currency: &Option<String>,
+        agent: &Option<String>,
+        mnemonic: &Option<String>,
+        exchange: &Option<String>,
     ) -> Vec<Security> {
-        todo!()
+        let result: Vec<Security> = vec![];
+
+        // assemble the sql statement
+        let columns = get_query_parameters(currency, agent, mnemonic, exchange);
+        let sql = assemble_select_query(columns);
+        log::debug!("select statement = {:?}", sql);
+
+        // todo: implement filtering
+        let conn = open_connection(&self.conn_str);
+        let statement = conn.prepare(sql).unwrap();
+        // append parameters
+        let statement = append_param_values(statement);
+        let cursor = statement.into_iter().map(|row| row.unwrap());
+
+        for row in cursor {
+            log::debug!("row: {:?}", row);
+        }
+
+        return result;
     }
 
     fn get_security_by_symbol(&self, symbol: &str) -> Security {
         log::trace!("getting security from symbol {:?}", symbol);
-        
+
         let mut result: Security = Security::new();
 
         let conn = open_connection(&self.conn_str);
         let rows = conn
-            .prepare("select * from security where symbol=?").unwrap()
+            .prepare("select * from security where symbol=?")
+            .unwrap()
             .into_iter()
-            .bind((1, symbol)).unwrap()
+            .bind((1, symbol))
+            .unwrap()
             .map(|row| row.unwrap());
         for row in rows {
             log::debug!("row: {:?}", row);
@@ -49,17 +69,17 @@ impl Dal for SqliteDal {
         todo!()
     }
 
-    fn get_prices_for_security(
-        &self,
-        security_id: i64,
-    ) -> anyhow::Result<Vec<Price>> {
+    fn get_prices_for_security(&self, security_id: i64) -> anyhow::Result<Vec<Price>> {
         let mut result: Vec<Price> = vec![];
         let conn = open_connection(&self.conn_str);
         let sql = "select * from price where security_id=? order by date desc, time desc;";
 
-        let cursor = conn.prepare(sql).unwrap()
+        let cursor = conn
+            .prepare(sql)
+            .unwrap()
             .into_iter()
-            .bind((1, security_id)).unwrap()
+            .bind((1, security_id))
+            .unwrap()
             .map(|row| row.unwrap());
 
         for row in cursor {
@@ -73,7 +93,8 @@ impl Dal for SqliteDal {
         let mut result: Vec<(i64, String)> = vec![];
         let conn = open_connection(&self.conn_str);
         let rows = conn
-            .prepare("select security_id, symbol from price").unwrap()
+            .prepare("select security_id, symbol from price")
+            .unwrap()
             .into_iter()
             .map(|row| row.unwrap());
         for row in rows {
@@ -148,6 +169,57 @@ fn map_price(row: &Row) -> Price {
     };
 
     return price;
+}
+
+fn assemble_select_query(columns: Vec<String>) -> String {
+    let mut sql = "select * from security".to_string();
+
+    if columns.len() > 0 {
+        sql += " where ";
+    } else {
+        return sql;
+    }
+    for (i, column) in columns.iter().enumerate() {
+        if i > 0 {
+            sql += " and ";
+        }
+
+        sql += &format!("{} = ?", column);
+    }
+
+    return sql.to_string();
+}
+
+fn get_query_parameters(
+    currency: &Option<String>,
+    agent: &Option<String>,
+    mnemonic: &Option<String>,
+    exchange: &Option<String>,
+) -> Vec<String> {
+    let mut columns: Vec<String> = vec![];
+    if let Some(_currency_val) = currency.as_ref() {
+        // log::debug!("fetching for currency: {:?}", currency_val);
+        columns.push("currency".to_string());
+    }
+    if let Some(_agent_val) = agent.as_ref() {
+        // log::debug!("fetching for agent: {:?}", agent_val);
+        columns.push("updater".to_string());
+    }
+    if let Some(_exchange_val) = exchange.as_ref() {
+        // log::debug!("fetching for exchange: {:?}", exchange_val);
+        columns.push("namespace".to_string());
+    }
+    if let Some(_mnemonic_val) = mnemonic.as_ref() {
+        // log::debug!("fetching for mnemonic: {:?}", mnemonic_val);
+        columns.push("symbol".to_string());
+    }
+    return columns;
+}
+
+fn append_param_values(mut statement: Statement) -> Statement {
+    statement.bind((1, 0)).unwrap();
+
+    return statement;
 }
 
 /// Securities Repository
