@@ -35,12 +35,11 @@ impl Dal for SqliteDal {
         let conn = open_connection(&self.conn_str);
         let statement = conn.prepare(sql).unwrap();
         // append parameters
-        let statement = append_param_values(statement);
-        let cursor = statement.into_iter().map(|row| row.unwrap());
-
-        for row in cursor {
-            log::debug!("row: {:?}", row);
-        }
+        let statement = append_param_values(&statement, currency, agent, mnemonic, exchange);
+        //let cursor = statement.into_iter().map(|row| row.unwrap());
+        // for row in cursor {
+        //     log::debug!("row: {:?}", row);
+        // }
 
         return result;
     }
@@ -216,8 +215,19 @@ fn get_query_parameters(
     return columns;
 }
 
-fn append_param_values(mut statement: Statement) -> Statement {
-    statement.bind((1, 0)).unwrap();
+fn append_param_values<'a>(
+    mut statement: &'a Statement<'a>,
+    currency: &'a Option<String>,
+    agent: &'a Option<String>,
+    mnemonic: &'a Option<String>,
+    exchange: &'a Option<String>,
+) -> &'a Statement<'a> {
+    // if let Some(_currency_val) = currency.as_ref() {
+    //     // log::debug!("fetching for currency: {:?}", currency_val);
+    //     //statement.bind());
+    // }
+
+    //statement.bind((1, 0)).unwrap();
 
     return statement;
 }
