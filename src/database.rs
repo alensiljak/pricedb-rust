@@ -57,7 +57,7 @@ pub trait Dal {
         exchange: Option<String>,
     ) -> Vec<Security>;
 
-    fn get_security_by_symbol(&self, symbol: &String) -> Security;
+    fn get_security_by_symbol(&self, symbol: &str) -> Security;
 
     fn get_symbols(&self) -> Vec<SecuritySymbol>;
 
@@ -65,5 +65,5 @@ pub trait Dal {
 
     /// Returns all the symbol ids that have prices in the database.
     /// Used for pruning.
-    fn get_symbol_ids_with_prices(&self) -> anyhow::Result<Vec<i64>>;
+    fn get_symbol_ids_with_prices(&self) -> anyhow::Result<Vec<(i64, String)>>;
 }

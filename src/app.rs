@@ -28,7 +28,10 @@ impl App {
     ) {
         log::debug!(
             "download options: {:?} {:?} {:?} {:?}",
-            exchange, mnemonic, currency, agent
+            exchange,
+            mnemonic,
+            currency,
+            agent
         );
 
         // securities = self.__get_securities(currency, agent, mnemonic, exchange)
@@ -57,12 +60,14 @@ impl App {
 
         if symbol.is_some() {
             // get id
-            let symb = symbol.as_ref().unwrap();
+            let symb = symbol.as_ref().unwrap().as_str();
             let security = self.dal.get_security_by_symbol(symb);
-            security_ids.push(security.id);
+            security_ids.push((security.id, security.symbol));
         } else {
             // load all symbols
-            security_ids = self.dal.get_symbol_ids_with_prices()
+            security_ids = self
+                .dal
+                .get_symbol_ids_with_prices()
                 .expect("Error fetching symbol ids.");
             // log::debug!("symbol ids with prices: {:?}", security_ids);
         }
@@ -70,7 +75,15 @@ impl App {
         let mut count = 0;
         // Send the symbols to the individual prune.
         for security_id in security_ids {
-            self.prune_for_sec(security_id);
+            if let Result::Ok(i) = self.prune_for_sec(security_id.0) {
+                // success. Log only if something was deleted.
+                if i > 0 {
+                    log::debug!("deleted {:?} records for {:?}", i, security_id.1);
+                }
+            } else {
+                // error?
+                log::warn!("Error pruning for {:?}", security_id);
+            }
 
             count += 1;
         }
@@ -80,21 +93,23 @@ impl App {
 
     /// Deletes price history for the given Security, leaving only the latest price.
     fn prune_for_sec(&self, security_id: i64) -> anyhow::Result<u16, Error> {
-        log::trace!("pruning prices for security id: {:?}", security_id);
+        // log::trace!("pruning prices for security id: {:?}", security_id);
 
         let mut count = 0;
         // get prices for the given security
-        let prices = self.dal.get_prices_for_security(security_id)
+        let prices = self
+            .dal
+            .get_prices_for_security(security_id)
             .expect("Error fetching prices for security");
         // log::debug!("prices for {:?} - {:?}", security_id, prices);
 
         let size = prices.len();
         if size <= 1 {
             // nothing to delete
-            log::debug!("Nothing to prune for {:?}", security_id);
+            // log::debug!("Nothing to prune for {:?}", security_id);
             return Ok(0);
         }
-        
+
         // skip the first
         let to_prune = &prices[1..];
 

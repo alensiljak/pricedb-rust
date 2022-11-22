@@ -27,7 +27,7 @@ impl Dal for SqliteDal {
         todo!()
     }
 
-    fn get_security_by_symbol(&self, symbol: &String) -> Security {
+    fn get_security_by_symbol(&self, symbol: &str) -> Security {
         log::trace!("getting security from symbol {:?}", symbol);
         
         let mut result: Security = Security::new();
@@ -36,7 +36,7 @@ impl Dal for SqliteDal {
         let rows = conn
             .prepare("select * from security where symbol=?").unwrap()
             .into_iter()
-            .bind((1, symbol.as_str())).unwrap()
+            .bind((1, symbol)).unwrap()
             .map(|row| row.unwrap());
         for row in rows {
             log::debug!("row: {:?}", row);
@@ -69,17 +69,18 @@ impl Dal for SqliteDal {
         return Ok(result);
     }
 
-    fn get_symbol_ids_with_prices(&self) -> anyhow::Result<Vec<i64>> {
-        let mut result: Vec<i64> = vec![];
+    fn get_symbol_ids_with_prices(&self) -> anyhow::Result<Vec<(i64, String)>> {
+        let mut result: Vec<(i64, String)> = vec![];
         let conn = open_connection(&self.conn_str);
         let rows = conn
-            .prepare("select security_id from price").unwrap()
+            .prepare("select security_id, symbol from price").unwrap()
             .into_iter()
             .map(|row| row.unwrap());
         for row in rows {
             // log::debug!("row: {:?}", row);
-            let id = row.read(0);
-            result.push(id);
+            let id = row.read::<i64, _>(0);
+            let symbol = row.read::<&str, _>(1);
+            result.push((id, symbol.to_string()));
         }
         return Ok(result);
     }
