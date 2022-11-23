@@ -4,7 +4,8 @@
 // mod dal_diesel;
 // mod schema;
 // mod dal_sqlx;
-mod dal_sqlite;
+// mod dal_sqlite;
+mod dal_rusqlite;
 
 use confy::ConfyError;
 use log::{debug, error};
@@ -21,7 +22,8 @@ pub fn init_db() -> impl Dal {
 
     // choose the dal implementation here.
     //let dal = SqlxDal { conn_str };
-    let dal = dal_sqlite::SqliteDal {conn_str};
+    //let dal = dal_sqlite::SqliteDal {conn_str};
+    let dal = dal_rusqlite::RuSqliteDal {conn_str};
 
     return dal;
 }
@@ -65,5 +67,5 @@ pub trait Dal {
 
     /// Returns all the symbol ids that have prices in the database.
     /// Used for pruning.
-    fn get_symbol_ids_with_prices(&self) -> anyhow::Result<Vec<(i64, String)>>;
+    fn get_symbol_ids_with_prices(&self) -> anyhow::Result<Vec<i64>>;
 }

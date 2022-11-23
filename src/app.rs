@@ -62,11 +62,10 @@ impl App {
             // get id
             let symb = symbol.as_ref().unwrap().as_str();
             let security = self.dal.get_security_by_symbol(symb);
-            security_ids.push((security.id, security.symbol));
+            security_ids.push(security.id);
         } else {
             // load all symbols
-            security_ids = self
-                .dal
+            security_ids = self.dal
                 .get_symbol_ids_with_prices()
                 .expect("Error fetching symbol ids.");
             // log::debug!("symbol ids with prices: {:?}", security_ids);
@@ -75,10 +74,10 @@ impl App {
         let mut count = 0;
         // Send the symbols to the individual prune.
         for security_id in security_ids {
-            if let Result::Ok(i) = self.prune_for_sec(security_id.0) {
+            if let Result::Ok(i) = self.prune_for_sec(security_id) {
                 // success. Log only if something was deleted.
                 if i > 0 {
-                    log::debug!("deleted {:?} records for {:?}", i, security_id.1);
+                    log::debug!("deleted {:?} records for {:?}", i, security_id);
                 }
             } else {
                 // error?
