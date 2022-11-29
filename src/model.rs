@@ -5,12 +5,12 @@
 #[derive(Debug)]
 #[allow(unused)]
 pub struct Price {
-    pub id: i64,
-    pub security_id: i64,
+    pub id: i32,
+    pub security_id: i32,
     pub date: String,
     pub time: Option<String>,
-    pub value: i64,
-    pub denom: i64,
+    pub value: i32,
+    pub denom: i32,
     pub currency: String,
 }
 

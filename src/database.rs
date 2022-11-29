@@ -50,7 +50,7 @@ fn load_db_path() -> String {
 }
 
 pub trait Dal {
-    fn delete_price(&self, id: i64) -> anyhow::Result<()>;
+    fn delete_price(&self, id: i32) -> anyhow::Result<usize>;
 
     fn get_securities(&self, filter: SecurityFilter) -> Vec<Security>;
 

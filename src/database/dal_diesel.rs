@@ -19,6 +19,7 @@ use diesel::prelude::*;
 use diesel::{sqlite::SqliteConnection, Connection};
 use diesel::{QueryDsl, RunQueryDsl};
 
+use crate::database::schema::price::id;
 use crate::model::{Security, SecurityFilter};
 
 use super::Dal;
@@ -67,8 +68,15 @@ impl Dal for DieselDal {
         return result;
     }
 
-    fn delete_price(&self, id: i64) -> anyhow::Result<()> {
-        todo!()
+    fn delete_price(&self, id_to_delete: i32) -> Result<usize, anyhow::Error> {
+        use crate::database::schema::price::dsl::*;
+        // use crate::database::schema::security::dsl::*;
+        
+        let conn = &mut establish_connection(&self.conn_str);
+        // let sql = format!("delete from price where id={}", id_to_delete);
+        let result = diesel::delete(price.filter(id.eq(id_to_delete)))
+            .execute(conn)?;
+        return Ok(result);
     }
 
     fn get_security_by_symbol(&self, symbol: &str) -> Security {
