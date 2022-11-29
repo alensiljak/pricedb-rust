@@ -6,6 +6,7 @@
  */
 
 #[derive(Debug)]
+#[derive(Clone)]
 #[allow(unused)]
 #[derive(diesel::Queryable)]
 pub struct Price {
@@ -63,6 +64,7 @@ impl Security {
     }
 }
 
+#[derive(Debug)]
 pub struct SecurityFilter {
     pub currency: Option<String>,
     pub agent: Option<String>,

@@ -37,24 +37,21 @@ impl Dal for DieselDal {
     Fetches the securities that match the given filters
     */
     fn get_securities(&self, filter: SecurityFilter) -> Vec<Security> {
-        // todo: pass the filter
+        use crate::database::schema::security::dsl::*;
 
-        // use crate::database::schema::security::dsl::*;
-        use crate::database::schema::security;
-
-        let mut query = security::table.into_boxed();
+        let mut query = security.into_boxed();
         if let Some(mut currency_val) = filter.currency {
             currency_val = currency_val.to_uppercase();
-            query = query.filter(security::dsl::currency.eq(currency_val));
+            query = query.filter(currency.eq(currency_val));
         }
         if let Some(agent_val) = filter.agent {
-            query = query.filter(security::dsl::updater.eq(agent_val));
+            query = query.filter(updater.eq(agent_val));
         }
         if let Some(mnemonic_val) = filter.symbol {
-            query = query.filter(security::dsl::symbol.eq(mnemonic_val));
+            query = query.filter(symbol.eq(mnemonic_val));
         }
         if let Some(exchange_val) = filter.exchange {
-            query = query.filter(security::dsl::namespace.eq(exchange_val));
+            query = query.filter(namespace.eq(exchange_val));
         }
 
         let conn = &mut establish_connection(&self.conn_str);

@@ -7,6 +7,7 @@ mod config;
 mod database;
 mod interface;
 mod model;
+mod quote;
 
 use clap::Parser;
 use interface::{Cli, Commands};

@@ -8,7 +8,8 @@ use anyhow::Error;
 
 use crate::{
     database::{self, Dal},
-    model::SecurityFilter,
+    model::{SecurityFilter, SecuritySymbol, Price},
+    quote::Quote,
 };
 
 pub struct App {
@@ -23,23 +24,57 @@ impl App {
     }
 
     pub(crate) fn download_prices(&self, filter: SecurityFilter) {
-        log::debug!(
-            "download options: {:?} {:?} {:?} {:?}",
-            filter.exchange,
-            filter.symbol,
-            filter.currency,
-            filter.agent
-        );
+        log::debug!("download options: {:?}", filter);
 
         // securities = self.__get_securities(currency, agent, mnemonic, exchange)
         //let securities: Vec<String> = vec![];
 
         let securities = self.dal.get_securities(filter);
 
-        log::debug!("securities: {:?}", securities);
+        // log::debug!("securities to fetch the prices for: {:?}", securities);
 
-        // if len(securities) == 0:
-        // print('No Securities found for the given parameters.')
+        if securities.len() == 0 {
+            print!("No Securities found for the given parameters.");
+            return;
+        }
+
+        for sec in securities {
+            let symbol = SecuritySymbol {
+                namespace: sec.namespace.unwrap(),
+                mnemonic: sec.symbol.to_string(),
+            };
+            // currency
+            // agent
+
+            let price = self.download_price(
+                symbol,
+                sec.currency.unwrap().as_str(),
+                sec.updater.unwrap().as_str(),
+            );
+
+            log::debug!("the fetched price for {:?} is {:?}", sec.symbol, price);
+
+            // add_price(price)
+            // save()
+        }
+    }
+
+    fn download_price(&self, symbol: SecuritySymbol, currency: &str, agent: &str) -> Option<Price> {
+        // there must be a symbol
+        let mut dl = Quote::new();
+
+        dl.set_source(agent);
+        dl.set_currency(currency);
+
+        let prices = dl.fetch(&symbol.namespace, vec![symbol.mnemonic]);
+
+        if prices.len() == 0 {
+            println!("Did not receive any prices");
+            return None;
+        }
+
+        let price = prices[0].to_owned();
+        Some(price)
     }
 
     /// Prune historical prices for the given symbol, leaving only the latest.
