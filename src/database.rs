@@ -58,9 +58,9 @@ pub trait Dal {
 
     fn get_symbols(&self) -> Vec<SecuritySymbol>;
 
-    fn get_prices_for_security(&self, security_id: i64) -> anyhow::Result<Vec<Price>>;
+    fn get_prices_for_security(&self, security_id: i32) -> anyhow::Result<Vec<Price>>;
 
     /// Returns all the symbol ids that have prices in the database.
     /// Used for pruning.
-    fn get_symbol_ids_with_prices(&self) -> anyhow::Result<Vec<i64>>;
+    fn get_symbol_ids_with_prices(&self) -> anyhow::Result<Vec<i32>>;
 }

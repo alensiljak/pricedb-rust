@@ -8,8 +8,6 @@ mod database;
 mod interface;
 mod model;
 
-use std::{ops::Deref, panic::UnwindSafe};
-
 use clap::Parser;
 use interface::{Cli, Commands};
 
@@ -41,10 +39,10 @@ fn main() {
         symbol,
     }) = &cli.command {
         let filter = SecurityFilter {
-            currency: currency.expect("yo!"),
-            agent: agent.unwrap(),
-            exchange: exchange.unwrap(),
-            symbol: symbol.unwrap(),
+            currency: currency.clone(),
+            agent: agent.clone(),
+            exchange: exchange.clone(),
+            symbol: symbol.clone(),
         };
         app.download_prices(filter);
     }

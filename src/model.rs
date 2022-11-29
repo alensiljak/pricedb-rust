@@ -33,7 +33,8 @@ impl Price {
 #[derive(diesel::Queryable)]
 #[allow(unused)]
 pub struct Security {
-    pub id: i64,
+    // Diesel uses i32, others i64
+    pub id: i32,
     pub namespace: Option<String>,
     pub symbol: String,
     pub updater: Option<String>,
@@ -60,10 +61,10 @@ impl Security {
 }
 
 pub struct SecurityFilter {
-    pub currency: String,
-    pub agent: String,
-    pub exchange: String,
-    pub symbol: String,
+    pub currency: Option<String>,
+    pub agent: Option<String>,
+    pub exchange: Option<String>,
+    pub symbol: Option<String>,
 }
 
 #[derive(Debug)]
