@@ -8,10 +8,12 @@ mod database;
 mod interface;
 mod model;
 
+use std::{ops::Deref, panic::UnwindSafe};
+
 use clap::Parser;
 use interface::{Cli, Commands};
 
-use crate::app::App;
+use crate::{app::App, model::SecurityFilter};
 
 //#[async_std::main]
 // #[tokio::main]
@@ -38,7 +40,13 @@ fn main() {
         exchange,
         symbol,
     }) = &cli.command {
-        app.download_prices(exchange, symbol, currency, agent);
+        let filter = SecurityFilter {
+            currency: currency.expect("yo!"),
+            agent: agent.unwrap(),
+            exchange: exchange.unwrap(),
+            symbol: symbol.unwrap(),
+        };
+        app.download_prices(filter);
     }
 
     // prune

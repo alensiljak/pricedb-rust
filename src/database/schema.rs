@@ -2,7 +2,7 @@
 
 diesel::table! {
     price (id) {
-        id -> Nullable<Integer>,
+        id -> Integer,
         security_id -> Integer,
         date -> Text,
         time -> Nullable<Text>,

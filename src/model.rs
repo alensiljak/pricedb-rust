@@ -30,6 +30,7 @@ impl Price {
 }
 
 #[derive(Debug)]
+#[derive(diesel::Queryable)]
 #[allow(unused)]
 pub struct Security {
     pub id: i64,
@@ -56,6 +57,13 @@ impl Security {
             notes: Some("".to_string()),
         }
     }
+}
+
+pub struct SecurityFilter {
+    pub currency: String,
+    pub agent: String,
+    pub exchange: String,
+    pub symbol: String,
 }
 
 #[derive(Debug)]

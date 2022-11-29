@@ -1,18 +1,18 @@
 /*
  * trying to encapsulate database-specific code
  */
-// mod dal_diesel;
-// mod schema;
+mod dal_diesel;
+mod schema;
 // mod dal_sqlx;
 // mod dal_sqlite;
-mod dal_rusqlite;
+// mod dal_rusqlite;
 
 use confy::ConfyError;
 use log::{debug, error};
 
 use crate::{
     config::PriceDbConfig,
-    model::{Price, Security, SecuritySymbol},
+    model::{Price, Security, SecurityFilter, SecuritySymbol},
 };
 
 /// Initialize database connection.
@@ -21,9 +21,10 @@ pub fn init_db() -> impl Dal {
     let conn_str = load_db_path();
 
     // choose the dal implementation here.
+    let dal = dal_diesel::DieselDal { conn_str };
     //let dal = SqlxDal { conn_str };
     //let dal = dal_sqlite::SqliteDal {conn_str};
-    let dal = dal_rusqlite::RuSqliteDal {conn_str};
+    //let dal = dal_rusqlite::RuSqliteDal {conn_str};
 
     return dal;
 }
@@ -51,13 +52,7 @@ fn load_db_path() -> String {
 pub trait Dal {
     fn delete_price(&self, id: i64) -> anyhow::Result<()>;
 
-    fn get_securities(
-        &self,
-        currency: &Option<String>,
-        agent: &Option<String>,
-        mnemonic: &Option<String>,
-        exchange: &Option<String>,
-    ) -> Vec<Security>;
+    fn get_securities(&self, filter: SecurityFilter) -> Vec<Security>;
 
     fn get_security_by_symbol(&self, symbol: &str) -> Security;
 

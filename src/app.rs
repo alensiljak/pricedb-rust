@@ -6,7 +6,10 @@ use std::vec;
 
 use anyhow::Error;
 
-use crate::database::{self, Dal};
+use crate::{
+    database::{self, Dal},
+    model::SecurityFilter,
+};
 
 pub struct App {
     dal: Box<dyn Dal>,
@@ -19,25 +22,19 @@ impl App {
         return result;
     }
 
-    pub(crate) fn download_prices(
-        &self,
-        exchange: &Option<String>,
-        mnemonic: &Option<String>,
-        currency: &Option<String>,
-        agent: &Option<String>,
-    ) {
+    pub(crate) fn download_prices(&self, filter: SecurityFilter) {
         log::debug!(
             "download options: {:?} {:?} {:?} {:?}",
-            exchange,
-            mnemonic,
-            currency,
-            agent
+            filter.exchange,
+            filter.symbol,
+            filter.currency,
+            filter.agent
         );
 
         // securities = self.__get_securities(currency, agent, mnemonic, exchange)
         //let securities: Vec<String> = vec![];
 
-        let securities = self.dal.get_securities(currency, agent, mnemonic, exchange);
+        let securities = self.dal.get_securities(filter);
 
         log::debug!("securities: {:?}", securities);
 
