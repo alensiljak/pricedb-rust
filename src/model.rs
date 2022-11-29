@@ -1,9 +1,13 @@
 /*
  * Model structs
+ * 
+ * Diesel uses i32, others i64
+ * 
  */
 
 #[derive(Debug)]
 #[allow(unused)]
+#[derive(diesel::Queryable)]
 pub struct Price {
     pub id: i32,
     pub security_id: i32,
@@ -33,7 +37,6 @@ impl Price {
 #[derive(diesel::Queryable)]
 #[allow(unused)]
 pub struct Security {
-    // Diesel uses i32, others i64
     pub id: i32,
     pub namespace: Option<String>,
     pub symbol: String,
