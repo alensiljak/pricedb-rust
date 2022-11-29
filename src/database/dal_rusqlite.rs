@@ -1,6 +1,6 @@
-use rusqlite::{Connection, Result};
+use rusqlite::{Connection, Result, Row};
 
-use crate::model::{Security, SecuritySymbol, Price};
+use crate::model::{Price, Security, SecuritySymbol};
 
 use super::Dal;
 
@@ -31,15 +31,17 @@ impl Dal for RuSqliteDal {
         let mut stmt = conn.prepare(sql).expect("Error");
         let params = (1, symbol);
         //let result = stmt.execute(params);
-        let security = stmt.query_row(params, |r| {
-            let result = Security::new();
+        let security = stmt
+            .query_row(params, |r| {
+                let result = Security::new();
 
-            let x: i64 = r.get(0).expect("error");
-            log::debug!("row fetched: {:?}", x);
-            
-            return Ok(result);
-        }).expect("Error fetching security");
-        
+                let x: i64 = r.get(0).expect("error");
+                log::debug!("row fetched: {:?}", x);
+
+                return Ok(result);
+            })
+            .expect("Error fetching security");
+
         log::debug!("query result: {:?}", security);
 
         return security;
@@ -49,23 +51,45 @@ impl Dal for RuSqliteDal {
         todo!()
     }
 
-    fn get_prices_for_security(
-        &self,
-        security_id: i64,
-    ) -> anyhow::Result<Vec<Price>> {
-        todo!()
+    fn get_prices_for_security(&self, security_id: i64) -> anyhow::Result<Vec<Price>> {
+        let mut result: Vec<Price> = vec![];
+        let conn = open_connection(&self.conn_str).expect("Error opening database.");
+        let sql = "select * from price where security_id=? order by date desc, time desc;";
+        let mut stmt = conn.prepare(sql).expect("Error");
+
+        let rows = stmt
+            .query_map([security_id], |row| {
+                let price = map_price(row);
+                // log::debug!("price read {:?}", price);
+
+                return Ok(price);
+            })
+            .expect("Error");
+
+        // let cursor: Vec<Result<Price, rusqlite::Error>> = rows.collect();
+        // log::debug!("cursor: {:?}", cursor);
+
+        for row in rows {
+            //let record = map_price(&row);
+            let record = row.expect("error extracting price");
+            result.push(record);
+            // log::debug!("row: {:?}", row);
+        }
+        return Ok(result);
     }
 
     fn get_symbol_ids_with_prices(&self) -> anyhow::Result<Vec<i64>> {
         let conn = open_connection(&self.conn_str).expect("Error opening database.");
         let sql = "select security_id from price";
         let mut stmt = conn.prepare(sql).expect("Error");
-        let rows = stmt.query_map([], |row| {
-            let id = row.get::<usize, i64>(0).expect("error");
-            //log::debug!("row: {:?}", id);
-            return Ok(id);
-        }).expect("Error");
-        
+        let rows = stmt
+            .query_map([], |row| {
+                let id = row.get::<usize, i64>(0).expect("error");
+                //log::debug!("row: {:?}", id);
+                return Ok(id);
+            })
+            .expect("Error");
+
         // let count = rows.count();
         // log::debug!("fetched {:?} rows", count);
 
@@ -76,9 +100,22 @@ impl Dal for RuSqliteDal {
             // log::debug!("id: {:?}", id);
             result.push(id);
         }
-        
+
         return Ok(result);
     }
+}
+
+fn map_price(row: &Row) -> Price {
+    let price = Price {
+        id: row.get(0).expect("error reading field"),
+        security_id: row.get(1).expect("error"),
+        date: row.get(2).expect("error"),
+        time: row.get(3).expect("error"),
+        value: row.get(4).expect("error"),
+        denom: row.get(5).expect("error"),
+        currency: row.get(6).expect("error"),
+    };
+    price
 }
 
 /// rusqlite connection

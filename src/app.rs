@@ -100,12 +100,14 @@ impl App {
             .dal
             .get_prices_for_security(security_id)
             .expect("Error fetching prices for security");
-        // log::debug!("prices for {:?} - {:?}", security_id, prices);
+        
+            // log::debug!("prices for {:?} - {:?}", security_id, prices);
+        //log::debug!("received {} prices", prices.len());
 
         let size = prices.len();
         if size <= 1 {
             // nothing to delete
-            // log::debug!("Nothing to prune for {:?}", security_id);
+            log::debug!("Nothing to prune for {:?}", security_id);
             return Ok(0);
         }
 
