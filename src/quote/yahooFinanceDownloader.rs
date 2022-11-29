@@ -33,7 +33,7 @@ impl YahooFinanceDownloader {
     }
 
     fn assemble_url(&self, symbol: SecuritySymbol) -> &String {
-        if self.namespaces.keys().any(|key| key == &symbol.namespace.as_str()) {
+        if self.namespaces.contains_key(&symbol.namespace.as_str()) {
             log::debug!("found!");
         }
         todo!("assemble the url");
