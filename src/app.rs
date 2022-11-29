@@ -37,12 +37,7 @@ impl App {
         // securities = self.__get_securities(currency, agent, mnemonic, exchange)
         //let securities: Vec<String> = vec![];
 
-        let securities = self.dal.get_securities(
-            currency,
-            agent,
-            mnemonic,
-            exchange,
-        );
+        let securities = self.dal.get_securities(currency, agent, mnemonic, exchange);
 
         log::debug!("securities: {:?}", securities);
 
@@ -65,7 +60,8 @@ impl App {
             security_ids.push(security.id);
         } else {
             // load all symbols
-            security_ids = self.dal
+            security_ids = self
+                .dal
                 .get_symbol_ids_with_prices()
                 .expect("Error fetching symbol ids.");
             // log::debug!("symbol ids with prices: {:?}", security_ids);
@@ -100,8 +96,8 @@ impl App {
             .dal
             .get_prices_for_security(security_id)
             .expect("Error fetching prices for security");
-        
-            // log::debug!("prices for {:?} - {:?}", security_id, prices);
+
+        // log::debug!("prices for {:?} - {:?}", security_id, prices);
         //log::debug!("received {} prices", prices.len());
 
         let size = prices.len();

@@ -13,6 +13,7 @@ impl Dal for RuSqliteDal {
         todo!()
     }
 
+    /// Search for the securities with the given filter.
     fn get_securities(
         &self,
         currency: &Option<String>,
@@ -20,7 +21,25 @@ impl Dal for RuSqliteDal {
         mnemonic: &Option<String>,
         exchange: &Option<String>,
     ) -> Vec<Security> {
-        todo!()
+        let result: Vec<Security> = vec![];
+
+        // assemble the sql statement
+        // let columns = get_query_parameters(currency, agent, mnemonic, exchange);
+        // let sql = assemble_select_query(columns);
+        let sql = "select * from security";
+        log::debug!("select statement = {:?}", sql);
+
+        // todo: implement filtering
+        let conn = open_connection(&self.conn_str).expect("Error opening database.");
+        let statement = conn.prepare(sql).unwrap();
+        // append parameters
+        // let statement = append_param_values(&statement, currency, agent, mnemonic, exchange);
+        //let cursor = statement.into_iter().map(|row| row.unwrap());
+        // for row in cursor {
+        //     log::debug!("row: {:?}", row);
+        // }
+
+        return result;
     }
 
     fn get_security_by_symbol(&self, symbol: &str) -> Security {
