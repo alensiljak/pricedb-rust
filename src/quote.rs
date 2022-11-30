@@ -3,13 +3,15 @@
  * Fetching prices
  */
 
+mod fixerio;
 mod yahoo_finance_downloader;
 
+use anyhow::Result;
 use async_trait::async_trait;
 
 use crate::{
     model::{Price, SecuritySymbol},
-    quote::yahoo_finance_downloader::YahooFinanceDownloader,
+    quote::{fixerio::Fixerio, yahoo_finance_downloader::YahooFinanceDownloader},
 };
 
 #[derive(Debug)]
@@ -66,16 +68,16 @@ impl Quote {
             }
             "fixerio" => {
                 println!("use fixerio");
-                //actor = Box::new("a");
-                actor = Box::new(YahooFinanceDownloader::new());
+                actor = Box::new(Fixerio::new());
             }
             _ => {
                 panic!("yo!");
             }
         }
 
-        let price = actor.download(sec_symbol, self.currency.as_ref().unwrap().as_str())
-            .await?;
+        let price = actor
+            .download(sec_symbol, self.currency.as_ref().unwrap().as_str())
+            .await.expect("Huston?");
 
         Some(price)
     }
@@ -93,9 +95,5 @@ impl Quote {
 
 #[async_trait]
 trait Downloader {
-    async fn download(
-        &self,
-        security_symbol: SecuritySymbol,
-        currency: &str,
-    ) -> Option<Price>;
+    async fn download(&self, security_symbol: SecuritySymbol, currency: &str) -> Result<Price>;
 }

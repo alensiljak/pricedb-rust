@@ -1,8 +1,10 @@
-use std::{collections::HashMap, error::Error};
+use std::collections::HashMap;
 
 use async_trait::async_trait;
 
 use crate::model::{Price, SecuritySymbol};
+
+use anyhow::{Ok, Result};
 
 use super::Downloader;
 
@@ -54,26 +56,27 @@ impl YahooFinanceDownloader {
 
 #[async_trait]
 impl Downloader for YahooFinanceDownloader {
-    async fn download(
-        &self,
-        security_symbol: SecuritySymbol,
-        currency: &str,
-    ) -> Option<Price> {
+    async fn download(&self, security_symbol: SecuritySymbol, currency: &str) -> Result<Price> {
         let url = self.assemble_url(&security_symbol);
 
-        let body = reqwest::get(url).await.expect("Huston")
-            .text().await.expect("Huston?");
+        let body = reqwest::get(url)
+            .await?
+            //.expect("Huston")
+            .text()
+            // .json()
+            .await?;
+            //.expect("Huston?");
 
-        log::debug!("something downloaded: {:?}", body);
+        let something: serde_json::Value = serde_json::from_str(body.as_str()).unwrap();
 
-        todo!("download price here");
+        log::debug!("something downloaded: {:?}", something);
 
         // todo!("parse the price");
 
         // todo!("replace")
         let result = Price::new();
 
-        Some(result)
+        Ok(result)
     }
 }
 
@@ -81,7 +84,6 @@ impl Downloader for YahooFinanceDownloader {
 #[cfg(test)]
 mod tests {
     use crate::quote::Downloader;
-    //#[warn(unused_imports)]
     #[allow(unused_imports)]
     use crate::{model::SecuritySymbol, quote::yahoo_finance_downloader::YahooFinanceDownloader};
 
@@ -115,7 +117,10 @@ mod tests {
         );
     }
 
-    #[tokio::test]
+    #[test_log::test(tokio::test)]
+    //#[test(tokio::test)]
+    //#[test_log::test]
+    //#[tokio::test]
     async fn test_download() {
         let o = YahooFinanceDownloader::new();
         let symbol = SecuritySymbol {
@@ -124,8 +129,9 @@ mod tests {
         };
         let currency = "EUR";
 
-        let result = o.download(symbol, currency).await
-            .expect("Huston?");
+        let result = o.download(symbol, currency).await.expect("Huston?");
+
+        log::debug!("downloaded {:?}", result);
 
         assert_eq!(result.currency, "EUR");
     }
