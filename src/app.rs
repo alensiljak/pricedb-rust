@@ -5,10 +5,12 @@
 use std::vec;
 
 use anyhow::Error;
+use diesel::{Insertable, RunQueryDsl};
+use rust_decimal::{prelude::FromPrimitive, Decimal};
 
 use crate::{
     database::{self, Dal},
-    model::{SecurityFilter, SecuritySymbol, Price},
+    model::{Price, PriceFilter, SecurityFilter, SecuritySymbol},
     quote::Quote,
 };
 
@@ -23,15 +25,77 @@ impl App {
         return result;
     }
 
-    pub(crate) async fn download_prices(&self, filter: SecurityFilter) {
-        log::debug!("download options: {:?}", filter);
+    pub(crate) fn add_price(&self, new_price: Price) {
+        log::debug!("Adding price {:?}", new_price);
 
-        // securities = self.__get_securities(currency, agent, mnemonic, exchange)
-        //let securities: Vec<String> = vec![];
+        // todo!("Is there a price already?");
+
+        let filter = PriceFilter {
+            security_id: Some(new_price.security_id),
+            date: Some(new_price.date.to_owned()),
+            time: new_price.time.to_owned(),
+        };
+        // security_id, date, time
+        let prices = self.dal.get_prices(filter);
+
+        // insert or update
+        if prices.len() == 0 {
+            // insert
+            log::debug!("Inserting");
+            self.dal.add_price(new_price);
+        } else {
+            // update
+            log::debug!("Updating");
+            // get an existing record
+            let existing = prices.first().expect("error fetching security");
+
+            log::info!("Existing price found: {:?}", existing);
+
+            if new_price.currency != existing.currency {
+                log::error!(
+                    "The currencies are different {:?} vs {:?}",
+                    new_price.currency,
+                    existing.currency
+                );
+                panic!("The currencies differ!");
+            }
+
+            // let cur_val = Decimal::from_i32(price.value).unwrap();
+            // let cur_denom = Decimal::from_i32(price.denom).unwrap();
+            // let new_value = cur_val / cur_denom;
+            use crate::database::schema::price::dsl::*;
+            use diesel::QueryDsl;
+            use diesel::ExpressionMethods;
+
+            let mut updated = existing.clone();
+
+            if existing.value != new_price.value {
+                log::info!(
+                    "Updating value from {:?} to {}",
+                    existing.value,
+                    new_price.value
+                );
+                updated.value = new_price.value;
+            }
+            if existing.denom != new_price.denom {
+                log::info!("Updating denom {} to {}", existing.denom, new_price.denom);
+                updated.denom = new_price.denom;
+            }
+
+            // todo: self.dal.up
+
+            // diesel::update(price.filter(id.eq(existing.id)))
+            //     .set((value.eq(new_price.value), (denom.eq(new_price.denom))))
+            //     .execute(conn);
+        }
+    }
+
+    pub(crate) async fn download_prices(&self, filter: SecurityFilter) {
+        log::debug!("download filter: {:?}", filter);
 
         let securities = self.dal.get_securities(filter);
 
-        // log::debug!("securities to fetch the prices for: {:?}", securities);
+        log::debug!("Securities to fetch the prices for: {:?}", securities);
 
         if securities.len() == 0 {
             print!("No Securities found for the given parameters.");
@@ -40,34 +104,42 @@ impl App {
 
         for sec in securities {
             let symbol = SecuritySymbol {
-                namespace: sec.namespace.unwrap(),
-                mnemonic: sec.symbol.to_string(),
+                namespace: sec.namespace.unwrap().to_owned(),
+                mnemonic: sec.symbol.to_owned(),
             };
-            // currency
-            // agent
 
-            let price = self.download_price(
-                symbol,
-                sec.currency.unwrap().as_str(),
-                sec.updater.unwrap().as_str(),
-            ).await;
+            let mut price = self
+                .download_price(
+                    symbol,
+                    sec.currency.unwrap().as_str(),
+                    sec.updater.unwrap().as_str(),
+                )
+                .await
+                .expect("Error fetching price");
+
+            price.security_id = sec.id;
 
             log::debug!("the fetched price for {:?} is {:?}", sec.symbol, price);
 
-            // add_price(price)
-            // save()
+            self.add_price(price);
+
+            todo!("save");
         }
     }
 
-    async fn download_price(&self, symbol: SecuritySymbol, currency: &str, agent: &str) -> Option<Price> {
-        // there must be a symbol
+    async fn download_price(
+        &self,
+        symbol: SecuritySymbol,
+        currency: &str,
+        agent: &str,
+    ) -> Option<Price> {
+        // todo: there must be a symbol
         let mut dl = Quote::new();
 
         dl.set_source(agent);
         dl.set_currency(currency);
 
-        let prices = dl.fetch(&symbol.namespace, vec![symbol.mnemonic])
-            .await;
+        let prices = dl.fetch(&symbol.namespace, vec![symbol.mnemonic]).await;
 
         if prices.len() == 0 {
             println!("Did not receive any prices");

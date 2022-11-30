@@ -33,6 +33,29 @@ pub fn establish_connection(db_path: &str) -> SqliteConnection {
 }
 
 impl Dal for DieselDal {
+
+    fn get_prices(&self, filter: crate::model::PriceFilter) -> Vec<Price> {
+        use crate::database::schema::price::dsl::*;
+        let mut query = price.into_boxed();
+        
+        if let Some(security_id_val) = filter.security_id {
+            query = query.filter(security_id.eq(security_id_val));
+        }
+        if let Some(date_val) = filter.date {
+            query = query.filter(date.eq(date_val));
+        }
+
+        let conn = &mut establish_connection(&self.conn_str);
+        let result = query
+            .load::<Price>(conn)
+            .expect("Error loading prices");
+
+        // log::debug!("prices: {:?}", result);
+
+        return result;
+
+    }
+
     /**
     Fetches the securities that match the given filters
     */
@@ -45,12 +68,15 @@ impl Dal for DieselDal {
             query = query.filter(currency.eq(currency_val));
         }
         if let Some(agent_val) = filter.agent {
+            //agent_val = agent_val.to_uppercase();
             query = query.filter(updater.eq(agent_val));
         }
-        if let Some(mnemonic_val) = filter.symbol {
+        if let Some(mut mnemonic_val) = filter.symbol {
+            mnemonic_val = mnemonic_val.to_uppercase();
             query = query.filter(symbol.eq(mnemonic_val));
         }
-        if let Some(exchange_val) = filter.exchange {
+        if let Some(mut exchange_val) = filter.exchange {
+            exchange_val = exchange_val.to_uppercase();
             query = query.filter(namespace.eq(exchange_val));
         }
 
@@ -59,7 +85,7 @@ impl Dal for DieselDal {
             .load::<Security>(conn)
             .expect("Error loading securities");
 
-        // debug!("securities: {:?}", result);
+        // log::debug!("securities: {:?}", result);
 
         return result;
     }
@@ -108,5 +134,18 @@ impl Dal for DieselDal {
         let ids = price.select(id).load(conn)?;
         
         Ok(ids)
+    }
+
+    fn add_price(&self, new_price: Price) {
+        use crate::database::schema::price::dsl::*;
+
+        log::debug!("inserting {:?}", new_price);
+
+        let conn = &mut establish_connection(&self.conn_str);
+
+        diesel::insert_into(price)
+            .values(&new_price)
+            .execute(conn)
+            .expect("yo?");
     }
 }

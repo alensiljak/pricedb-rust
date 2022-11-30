@@ -72,6 +72,7 @@ impl YahooFinanceDownloader {
         let mut result = Price::new();
 
         let meta = &body["chart"]["result"][0]["meta"];
+        assert_ne!(*meta, Value::Null);
         // Parse
         // log::debug!("meta: {:?}", meta);
 
@@ -112,6 +113,8 @@ impl YahooFinanceDownloader {
 impl Downloader for YahooFinanceDownloader {
     async fn download(&self, security_symbol: SecuritySymbol, _currency: &str) -> Result<Price> {
         let url = self.assemble_url(&security_symbol);
+
+        log::debug!("fetching from {:?}", url);
 
         let body = reqwest::get(url)
             .await?

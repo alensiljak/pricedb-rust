@@ -2,7 +2,7 @@
  * trying to encapsulate database-specific code
  */
 mod dal_diesel;
-mod schema;
+pub(crate) mod schema;
 // mod dal_sqlx;
 // mod dal_sqlite;
 // mod dal_rusqlite;
@@ -12,11 +12,11 @@ use log::{debug, error};
 
 use crate::{
     config::PriceDbConfig,
-    model::{Price, Security, SecurityFilter, SecuritySymbol},
+    model::{Price, Security, SecurityFilter, SecuritySymbol, PriceFilter},
 };
 
 /// Initialize database connection.
-pub fn init_db() -> impl Dal {
+pub(crate) fn init_db() -> impl Dal {
     // "sqlite::memory:"
     let conn_str = load_db_path();
 
@@ -49,8 +49,14 @@ fn load_db_path() -> String {
     return db_path;
 }
 
-pub trait Dal {
+pub(crate) trait Dal {
+    /// Inserts a new price record.
+    fn add_price(&self, price: Price);
+
+    /// Deletes a price record.
     fn delete_price(&self, id: i32) -> anyhow::Result<usize>;
+
+    fn get_prices(&self, filter: PriceFilter) -> Vec<Price>;
 
     fn get_securities(&self, filter: SecurityFilter) -> Vec<Security>;
 

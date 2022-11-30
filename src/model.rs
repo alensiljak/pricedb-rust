@@ -1,14 +1,16 @@
 /*
  * Model structs
- * 
+ *
  * Diesel uses i32, others i64
- * 
+ *
  */
 
-#[derive(Debug)]
-#[derive(Clone)]
+use crate::database::schema::price;
+
+#[derive(Debug, Clone)]
 #[allow(unused)]
-#[derive(diesel::Queryable)]
+#[derive(diesel::Queryable, diesel::Insertable, diesel::Identifiable)]
+#[diesel(table_name = price)]
 pub struct Price {
     pub id: i32,
     pub security_id: i32,
@@ -36,8 +38,13 @@ impl Price {
     }
 }
 
-#[derive(Debug)]
-#[derive(diesel::Queryable)]
+pub(crate) struct PriceFilter {
+    pub security_id: Option<i32>,
+    pub date: Option<String>,
+    pub time: Option<String>,
+}
+
+#[derive(Debug, diesel::Queryable)]
 #[allow(unused)]
 pub struct Security {
     pub id: i32,

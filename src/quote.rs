@@ -1,8 +1,7 @@
-/*
+/**
  * Quote
  * Fetching prices
  */
-
 mod fixerio;
 mod yahoo_finance_downloader;
 
@@ -33,10 +32,14 @@ impl Quote {
     }
 
     pub async fn fetch(&self, exchange: &str, symbols: Vec<String>) -> Vec<Price> {
-        let result = vec![];
+        let mut result = vec![];
 
         for symbol in symbols {
-            self.download(exchange, &symbol).await;
+            let price = self
+                .download(exchange, &symbol)
+                .await
+                .expect("Did not receive price");
+            result.push(price);
         }
 
         result
@@ -77,7 +80,8 @@ impl Quote {
 
         let price = actor
             .download(sec_symbol, self.currency.as_ref().unwrap().as_str())
-            .await.expect("Huston?");
+            .await
+            .expect("Huston?");
 
         Some(price)
     }
