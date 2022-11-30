@@ -1,6 +1,12 @@
 use std::collections::HashMap;
 
 use async_trait::async_trait;
+use chrono::NaiveDateTime;
+use rust_decimal::{
+    prelude::{FromPrimitive, ToPrimitive},
+    Decimal,
+};
+use serde_json::Value;
 
 use crate::model::{Price, SecuritySymbol};
 
@@ -52,29 +58,70 @@ impl YahooFinanceDownloader {
 
         url
     }
+
+    /// Extract the Price from JSON.
+    ///
+    fn get_price_from_json(&self, body: &Value) -> Result<Price> {
+        let chart = &body["chart"];
+        let error = &chart["error"];
+
+        // todo: ensure that there is no error!
+        //log::debug!("error? {:?}", error);
+        assert_eq!(*error, Value::Null);
+
+        let mut result = Price::new();
+
+        let meta = &body["chart"]["result"][0]["meta"];
+        // Parse
+        // log::debug!("meta: {:?}", meta);
+
+        // Price
+
+        let market_price = meta["regularMarketPrice"].as_f64().unwrap();
+        // log::debug!("market price {:?}", market_price);
+        // Parse using Decimal.
+        let d = Decimal::from_f64(market_price).unwrap();
+        // log::debug!("Decimal -> {:?} {:?}", d.mantissa(), d.scale());
+        result.value = d.mantissa().to_i32().unwrap();
+        result.denom = d.scale() as i32;
+
+        // Currency
+
+        result.currency = meta["currency"].as_str().unwrap().to_string();
+
+        // Date / time
+
+        let seconds = meta["regularMarketTime"].as_i64().unwrap();
+        // log::debug!("seconds {:?}", seconds);
+        // let time = chrono::offset::Utc::now();
+        //let timestamp = NaiveDateTime::from_timestamp_millis(seconds).unwrap();
+        let timestamp = NaiveDateTime::from_timestamp_opt(seconds, 0).unwrap();
+        // log::debug!("time {:?}", timestamp);
+        let date_str = timestamp.date().to_string();
+        // log::debug!("Parsed date is {:?}", date_str);
+        result.date = date_str;
+        let time_str = timestamp.time().to_string();
+        // log::debug!("Parsed time is {:?}", time_str);
+        result.time = Some(time_str);
+
+        Ok(result)
+    }
 }
 
 #[async_trait]
 impl Downloader for YahooFinanceDownloader {
-    async fn download(&self, security_symbol: SecuritySymbol, currency: &str) -> Result<Price> {
+    async fn download(&self, security_symbol: SecuritySymbol, _currency: &str) -> Result<Price> {
         let url = self.assemble_url(&security_symbol);
 
         let body = reqwest::get(url)
             .await?
-            //.expect("Huston")
-            .text()
-            // .json()
+            //.text()
+            .json::<Value>()
             .await?;
-            //.expect("Huston?");
 
-        let something: serde_json::Value = serde_json::from_str(body.as_str()).unwrap();
+        // log::debug!("something downloaded: {:?}", body);
 
-        log::debug!("something downloaded: {:?}", something);
-
-        // todo!("parse the price");
-
-        // todo!("replace")
-        let result = Price::new();
+        let result = self.get_price_from_json(&body)?;
 
         Ok(result)
     }
@@ -118,9 +165,6 @@ mod tests {
     }
 
     #[test_log::test(tokio::test)]
-    //#[test(tokio::test)]
-    //#[test_log::test]
-    //#[tokio::test]
     async fn test_download() {
         let o = YahooFinanceDownloader::new();
         let symbol = SecuritySymbol {
@@ -128,6 +172,23 @@ mod tests {
             mnemonic: "EL4X".to_string(),
         };
         let currency = "EUR";
+
+        let result = o.download(symbol, currency).await.expect("Huston?");
+
+        log::debug!("downloaded {:?}", result);
+
+        assert_eq!(result.currency, "EUR");
+    }
+
+    /// Download and parse the result for VHYL
+    #[test_log::test(tokio::test)]
+    async fn test_download_and_parsing() {
+        let o = YahooFinanceDownloader::new();
+        let symbol = SecuritySymbol {
+            namespace: "".to_string(),
+            mnemonic: "VHYL".to_string(),
+        };
+        let currency = "USD";
 
         let result = o.download(symbol, currency).await.expect("Huston?");
 

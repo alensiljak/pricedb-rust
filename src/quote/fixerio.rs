@@ -16,7 +16,8 @@ impl Fixerio {
 
 #[async_trait]
 impl Downloader for Fixerio {
+    #[allow(unused_variables)]
     async fn download(&self, security_symbol: SecuritySymbol, currency: &str) -> Result<Price> {
-        todo!()
+        todo!("implement")
     }
 }

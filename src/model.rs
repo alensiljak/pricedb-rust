@@ -16,6 +16,7 @@ pub struct Price {
     pub time: Option<String>,
     pub value: i32,
     pub denom: i32,
+    // pub value_dec: Decimal,
     pub currency: String,
 }
 
@@ -29,6 +30,7 @@ impl Price {
             value: 0,
             denom: 0,
             currency: "".to_string(),
+            // value_dec: dec!(0),
         };
         return result;
     }
@@ -80,21 +82,37 @@ pub struct SecuritySymbol {
 }
 
 impl SecuritySymbol {
-    /// Parse symbol syntax "XETRA:EL4X"
-    pub fn parse(symbol: String) -> (String, String) {
-        let namespace = String::from("");
-        let mnemonic = symbol.clone();
+    //// Parse symbol syntax "XETRA:EL4X"
+    // #[allow(dead_code)]
+    // pub fn parse(symbol: String) -> (String, String) {
+    //     let mut namespace = String::from("");
+    //     let mnemonic = symbol.clone();
 
-        let parts = symbol.split(":");
+    //     let parts = symbol.split(":");
 
-        log::debug!("parts: {:?}", parts);
+    //     log::debug!("parts: {:?}", parts);
 
-        if parts.count() > 1 {
-            // let vec: Vec<&str> = parts.collect();
-            // namespace = vec.get(0).expect("namespace not provided");
-            // mnemonic = vec.get(1).unwrap();
-        }
+    //     if parts.count() > 1 {
+    //         // let vec: Vec<&str> = parts.collect();
+    //         // namespace = vec.get(0).expect("namespace not provided");
+    //         // mnemonic = vec.get(1).unwrap();
+    //     }
 
-        return (namespace, mnemonic);
-    }
+    //     todo!("complete");
+
+    //     return (namespace, mnemonic);
+    // }
+}
+
+#[cfg(test)]
+mod tests {
+    // use super::SecuritySymbol;
+
+    // #[test]
+    // fn test_parse() {
+    //     let s = SecuritySymbol::parse("XETRA:EL4X".to_string());
+
+    //     assert_eq!(s.0, "XETRA");
+    //     assert_eq!(s.1, "EL4X");
+    // }
 }
