@@ -154,12 +154,12 @@ mod tests {
         let x = YahooFinanceDownloader::new();
         let s = SecuritySymbol {
             namespace: "".to_string(),
-            mnemonic: "VHYL".to_string(),
+            mnemonic: "BND".to_string(),
         };
 
         let first = x.assemble_url(&s);
         assert_eq!(
-            "https://query1.finance.yahoo.com/v8/finance/chart/VHYL",
+            "https://query1.finance.yahoo.com/v8/finance/chart/BND",
             first
         );
     }
@@ -186,7 +186,7 @@ mod tests {
         let o = YahooFinanceDownloader::new();
         let symbol = SecuritySymbol {
             namespace: "".to_string(),
-            mnemonic: "VHYL".to_string(),
+            mnemonic: "BND".to_string(),
         };
         let currency = "USD";
 
@@ -194,6 +194,6 @@ mod tests {
 
         log::debug!("downloaded {:?}", result);
 
-        assert_eq!(result.currency, "EUR");
+        assert_eq!(result.currency, "USD");
     }
 }
