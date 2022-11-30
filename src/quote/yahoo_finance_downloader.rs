@@ -182,7 +182,7 @@ mod tests {
 
     /// Download and parse the result for VHYL
     #[test_log::test(tokio::test)]
-    async fn test_download_and_parsing() {
+    async fn test_download_and_parsing_wo_namespace() {
         let o = YahooFinanceDownloader::new();
         let symbol = SecuritySymbol {
             namespace: "".to_string(),
