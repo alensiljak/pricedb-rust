@@ -74,8 +74,9 @@ impl Dal for DieselDal {
         Ok(result)
     }
 
+    #[allow(unused_variables)]
     fn get_security_by_symbol(&self, symbol: &str) -> Security {
-        todo!()
+        todo!("implement")
     }
 
     fn get_symbols(&self) -> Vec<crate::model::SecuritySymbol> {

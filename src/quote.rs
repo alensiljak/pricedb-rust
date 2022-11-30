@@ -3,11 +3,13 @@
  * Fetching prices
  */
 
-mod yahooFinanceDownloader;
+mod yahoo_finance_downloader;
+
+use async_trait::async_trait;
 
 use crate::{
     model::{Price, SecuritySymbol},
-    quote::yahooFinanceDownloader::YahooFinanceDownloader,
+    quote::yahoo_finance_downloader::YahooFinanceDownloader,
 };
 
 #[derive(Debug)]
@@ -28,17 +30,17 @@ impl Quote {
         }
     }
 
-    pub fn fetch(&self, exchange: &str, symbols: Vec<String>) -> Vec<Price> {
+    pub async fn fetch(&self, exchange: &str, symbols: Vec<String>) -> Vec<Price> {
         let result = vec![];
 
         for symbol in symbols {
-            self.download(exchange, &symbol);
+            self.download(exchange, &symbol).await;
         }
 
         result
     }
 
-    fn download(&self, exchange: &str, symbol: &str) -> Option<Price> {
+    async fn download(&self, exchange: &str, symbol: &str) -> Option<Price> {
         if exchange != exchange.to_uppercase() {
             panic!("handle this case!");
         }
@@ -61,24 +63,24 @@ impl Quote {
             "yahoo_finance" => {
                 println!("should use yahoo");
                 actor = Box::new(YahooFinanceDownloader::new());
-            },
+            }
             "fixerio" => {
                 println!("use fixerio");
                 //actor = Box::new("a");
                 actor = Box::new(YahooFinanceDownloader::new());
-            },
+            }
             _ => {
                 panic!("yo!");
             }
         }
 
-        let price = actor.download(sec_symbol, 
-            self.currency.as_ref().unwrap().as_str());
+        let price = actor.download(sec_symbol, self.currency.as_ref().unwrap().as_str())
+            .await?;
 
         Some(price)
     }
 
-    fn currency() {}
+    // fn currency() {}
 
     pub fn set_currency(&mut self, currency: &str) {
         self.currency = Some(currency.to_string().to_uppercase());
@@ -89,6 +91,11 @@ impl Quote {
     }
 }
 
+#[async_trait]
 trait Downloader {
-    fn download(&self, security_symbol: SecuritySymbol, currency: &str) -> Price;
+    async fn download(
+        &self,
+        security_symbol: SecuritySymbol,
+        currency: &str,
+    ) -> Option<Price>;
 }

@@ -1,4 +1,6 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, error::Error};
+
+use async_trait::async_trait;
 
 use crate::model::{Price, SecuritySymbol};
 
@@ -50,13 +52,19 @@ impl YahooFinanceDownloader {
     }
 }
 
+#[async_trait]
 impl Downloader for YahooFinanceDownloader {
-    fn download(
+    async fn download(
         &self,
-        security_symbol: crate::model::SecuritySymbol,
+        security_symbol: SecuritySymbol,
         currency: &str,
-    ) -> crate::model::Price {
+    ) -> Option<Price> {
         let url = self.assemble_url(&security_symbol);
+
+        let body = reqwest::get(url).await.expect("Huston")
+            .text().await.expect("Huston?");
+
+        log::debug!("something downloaded: {:?}", body);
 
         todo!("download price here");
 
@@ -65,16 +73,17 @@ impl Downloader for YahooFinanceDownloader {
         // todo!("replace")
         let result = Price::new();
 
-        result
+        Some(result)
     }
 }
 
 /// # Tests
 #[cfg(test)]
 mod tests {
+    use crate::quote::Downloader;
     //#[warn(unused_imports)]
     #[allow(unused_imports)]
-    use crate::{quote::yahooFinanceDownloader::YahooFinanceDownloader, model::SecuritySymbol};
+    use crate::{model::SecuritySymbol, quote::yahoo_finance_downloader::YahooFinanceDownloader};
 
     #[test]
     fn test_assemble_url_xetra() {
@@ -106,4 +115,18 @@ mod tests {
         );
     }
 
+    #[tokio::test]
+    async fn test_download() {
+        let o = YahooFinanceDownloader::new();
+        let symbol = SecuritySymbol {
+            namespace: "XETRA".to_string(),
+            mnemonic: "EL4X".to_string(),
+        };
+        let currency = "EUR";
+
+        let result = o.download(symbol, currency).await
+            .expect("Huston?");
+
+        assert_eq!(result.currency, "EUR");
+    }
 }

@@ -15,8 +15,8 @@ use interface::{Cli, Commands};
 use crate::{app::App, model::SecurityFilter};
 
 //#[async_std::main]
-// #[tokio::main]
-fn main() {
+#[tokio::main]
+async fn main() {
     // initialize logging
     env_logger::init();
     log::trace!("starting");
@@ -45,7 +45,7 @@ fn main() {
             exchange: exchange.clone(),
             symbol: symbol.clone(),
         };
-        app.download_prices(filter);
+        app.download_prices(filter).await;
     }
 
     // prune

@@ -23,7 +23,7 @@ impl App {
         return result;
     }
 
-    pub(crate) fn download_prices(&self, filter: SecurityFilter) {
+    pub(crate) async fn download_prices(&self, filter: SecurityFilter) {
         log::debug!("download options: {:?}", filter);
 
         // securities = self.__get_securities(currency, agent, mnemonic, exchange)
@@ -50,7 +50,7 @@ impl App {
                 symbol,
                 sec.currency.unwrap().as_str(),
                 sec.updater.unwrap().as_str(),
-            );
+            ).await;
 
             log::debug!("the fetched price for {:?} is {:?}", sec.symbol, price);
 
@@ -59,14 +59,15 @@ impl App {
         }
     }
 
-    fn download_price(&self, symbol: SecuritySymbol, currency: &str, agent: &str) -> Option<Price> {
+    async fn download_price(&self, symbol: SecuritySymbol, currency: &str, agent: &str) -> Option<Price> {
         // there must be a symbol
         let mut dl = Quote::new();
 
         dl.set_source(agent);
         dl.set_currency(currency);
 
-        let prices = dl.fetch(&symbol.namespace, vec![symbol.mnemonic]);
+        let prices = dl.fetch(&symbol.namespace, vec![symbol.mnemonic])
+            .await;
 
         if prices.len() == 0 {
             println!("Did not receive any prices");
