@@ -117,6 +117,7 @@ impl App {
             return;
         }
 
+        let mut counter = 0;
         for sec in securities {
             let symbol = SecuritySymbol {
                 namespace: sec.namespace.unwrap().to_owned(),
@@ -137,7 +138,11 @@ impl App {
             log::debug!("the fetched price for {:?} is {:?}", sec.symbol, price);
 
             self.add_price(price);
+
+            counter += 1;
         }
+
+        log::debug!("Downloaded {} prices", counter);
     }
 
     async fn download_price(

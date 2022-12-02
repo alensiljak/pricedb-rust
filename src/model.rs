@@ -115,26 +115,26 @@ pub struct SecuritySymbol {
 }
 
 impl SecuritySymbol {
-    /// Parse symbol syntax "XETRA:EL4X"
-    #[allow(dead_code)]
-    pub fn parse(symbol: String) -> (String, String) {
-        let mut namespace = String::from("");
-        let mnemonic = symbol.clone();
+    // /// Parse symbol syntax "XETRA:EL4X"
+    // #[allow(dead_code)]
+    // pub fn parse(symbol: String) -> (String, String) {
+    //     let mut namespace = String::from("");
+    //     let mnemonic = symbol.clone();
 
-        let parts = symbol.split(":");
+    //     let parts = symbol.split(":");
 
-        log::debug!("parts: {:?}", parts);
+    //     log::debug!("parts: {:?}", parts);
 
-        if parts.count() > 1 {
-            // let vec: Vec<&str> = parts.collect();
-            // namespace = vec.get(0).expect("namespace not provided");
-            // mnemonic = vec.get(1).unwrap();
-        }
+    //     if parts.count() > 1 {
+    //         // let vec: Vec<&str> = parts.collect();
+    //         // namespace = vec.get(0).expect("namespace not provided");
+    //         // mnemonic = vec.get(1).unwrap();
+    //     }
 
-        todo!("complete");
+    //     todo!("complete");
 
-        return (namespace, mnemonic);
-    }
+    //     return (namespace, mnemonic);
+    // }
 }
 
 impl Display for SecuritySymbol {

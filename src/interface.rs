@@ -30,6 +30,8 @@ pub(crate) enum Commands {
     },
 
     // todo: export
+    #[command(about="Export prices in ledger format")]
+    Export {},
 
     // todo: import
 
