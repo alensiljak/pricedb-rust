@@ -173,12 +173,14 @@ impl App {
         }
 
         let mut count = 0;
+        let mut count_deleted = 0;
         // Send the symbols to the individual prune.
         for security_id in security_ids {
             if let Result::Ok(i) = self.prune_for_sec(security_id) {
                 // success. Log only if something was deleted.
                 if i > 0 {
                     log::debug!("deleted {:?} records for {:?}", i, security_id);
+                    count_deleted += 1;
                 }
             } else {
                 // error?
@@ -187,6 +189,8 @@ impl App {
 
             count += 1;
         }
+
+        println!("Processed {} records, deleted {}.", count, count_deleted);
 
         return count;
     }

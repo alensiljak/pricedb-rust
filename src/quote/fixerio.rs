@@ -2,7 +2,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 
 /// Fixerio downloader
-use crate::model::{SecuritySymbol, Price, NewPrice};
+use crate::model::{SecuritySymbol, NewPrice};
 
 use super::Downloader;
 

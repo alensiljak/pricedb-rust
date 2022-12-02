@@ -43,6 +43,9 @@ impl Dal for DieselDal {
         if let Some(date_val) = filter.date {
             query = query.filter(date.eq(date_val));
         }
+        if let Some(time_val) = filter.time {
+            query = query.filter(time.eq(time_val));
+        }
 
         let conn = &mut establish_connection(&self.conn_str);
         let result = query.load::<Price>(conn).expect("Error loading prices");
@@ -135,7 +138,7 @@ impl Dal for DieselDal {
     /**
      * Inserts a new Price record.
      */
-    fn add_price(&self, mut new_price: &NewPrice) {
+    fn add_price(&self, new_price: &NewPrice) {
         use crate::database::schema::price::dsl::*;
 
         log::debug!("inserting {:?}", new_price);

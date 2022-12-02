@@ -9,7 +9,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 
 use crate::{
-    model::{Price, SecuritySymbol, NewPrice},
+    model::{SecuritySymbol, NewPrice},
     quote::{fixerio::Fixerio, yahoo_finance_downloader::YahooFinanceDownloader},
 };
 
