@@ -8,7 +8,7 @@ use anyhow::Error;
 
 use crate::{
     database::{self, Dal},
-    model::{PriceFilter, SecurityFilter, SecuritySymbol, NewPrice},
+    model::{NewPrice, PriceFilter, SecurityFilter, SecuritySymbol},
     quote::Quote,
 };
 
@@ -83,7 +83,7 @@ impl App {
             match update_result {
                 Ok(_) => {
                     // everything ok
-                },
+                }
                 Err(e) => {
                     log::error!("{}", e);
                     panic!("{}", e);
@@ -97,7 +97,20 @@ impl App {
 
         let securities = self.dal.get_securities(filter);
 
-        log::debug!("Securities to fetch the prices for: {:?}", securities);
+        // Debug
+        {
+            let symbols: Vec<String> = securities
+                .iter()
+                .map(|sec| {
+                    format!(
+                        "{}:{}",
+                        sec.namespace.as_ref().unwrap().as_str(),
+                        sec.symbol.as_str()
+                    ) as String
+                })
+                .collect();
+            log::debug!("Securities to fetch the prices for: {:?}", symbols);
+        }
 
         if securities.len() == 0 {
             print!("No Securities found for the given parameters.");

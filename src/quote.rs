@@ -3,14 +3,15 @@
  * Fetching prices
  */
 mod fixerio;
+mod vanguard_au;
 mod yahoo_finance_downloader;
 
 use anyhow::Result;
 use async_trait::async_trait;
 
 use crate::{
-    model::{SecuritySymbol, NewPrice},
-    quote::{fixerio::Fixerio, yahoo_finance_downloader::YahooFinanceDownloader},
+    model::{NewPrice, SecuritySymbol},
+    quote::{fixerio::Fixerio, yahoo_finance_downloader::YahooFinanceDownloader, vanguard_au::VanguardAuDownloader},
 };
 
 #[derive(Debug)]
@@ -63,20 +64,7 @@ impl Quote {
         };
         // todo: parse symbol
 
-        let actor: Box<dyn Downloader>;
-        match self.source.as_ref().unwrap().as_str() {
-            "yahoo_finance" => {
-                println!("should use yahoo");
-                actor = Box::new(YahooFinanceDownloader::new());
-            }
-            "fixerio" => {
-                println!("use fixerio");
-                actor = Box::new(Fixerio::new());
-            }
-            _ => {
-                panic!("yo!");
-            }
-        }
+        let actor = self.get_downloader();
 
         let price = actor
             .download(sec_symbol, self.currency.as_ref().unwrap().as_str())
@@ -84,6 +72,27 @@ impl Quote {
             .expect("Huston?");
 
         Some(price)
+    }
+
+    fn get_downloader(&self) -> Box<dyn Downloader> {
+        //let actor: Box<dyn Downloader>;
+        match self.source.as_ref().unwrap().as_str() {
+            "yahoo_finance" => {
+                println!("should use yahoo");
+                return Box::new(YahooFinanceDownloader::new());
+            }
+            "fixerio" => {
+                println!("use fixerio");
+                return Box::new(Fixerio::new());
+            }
+            "vanguard_au" => {
+                log::debug!("Using Vanguard downloader");
+                return Box::new(VanguardAuDownloader::new());
+            }
+            _ => {
+                panic!("unknown downloader: {}", self.source.as_ref().unwrap());
+            }
+        }
     }
 
     // fn currency() {}
