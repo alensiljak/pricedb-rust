@@ -10,7 +10,7 @@ use rust_decimal::{prelude::FromPrimitive, Decimal};
 
 use crate::{
     database::{self, Dal},
-    model::{Price, PriceFilter, SecurityFilter, SecuritySymbol},
+    model::{Price, PriceFilter, SecurityFilter, SecuritySymbol, NewPrice},
     quote::Quote,
 };
 
@@ -25,10 +25,10 @@ impl App {
         return result;
     }
 
-    pub(crate) fn add_price(&self, new_price: Price) {
+    pub(crate) fn add_price(&self, new_price: NewPrice) {
         log::debug!("Adding price {:?}", new_price);
 
-        // todo!("Is there a price already?");
+        // Is there a price already?
 
         let filter = PriceFilter {
             security_id: Some(new_price.security_id),
@@ -42,7 +42,7 @@ impl App {
         if prices.len() == 0 {
             // insert
             log::debug!("Inserting");
-            self.dal.add_price(new_price);
+            self.dal.add_price(&new_price);
         } else {
             // update
             log::debug!("Updating");
@@ -63,11 +63,10 @@ impl App {
             // let cur_val = Decimal::from_i32(price.value).unwrap();
             // let cur_denom = Decimal::from_i32(price.denom).unwrap();
             // let new_value = cur_val / cur_denom;
-            use crate::database::schema::price::dsl::*;
-            use diesel::QueryDsl;
-            use diesel::ExpressionMethods;
 
             let mut updated = existing.clone();
+
+            log::debug!("clone of the price to update: {:?}", updated);
 
             if existing.value != new_price.value {
                 log::info!(
@@ -82,11 +81,16 @@ impl App {
                 updated.denom = new_price.denom;
             }
 
-            // todo: self.dal.up
-
-            // diesel::update(price.filter(id.eq(existing.id)))
-            //     .set((value.eq(new_price.value), (denom.eq(new_price.denom))))
-            //     .execute(conn);
+            let update_result = self.dal.update_price(existing.id, &updated);
+            match update_result {
+                Ok(_) => {
+                    // everything ok
+                },
+                Err(e) => {
+                    log::error!("{}", e);
+                    panic!("{}", e);
+                }
+            }
         }
     }
 
@@ -122,8 +126,6 @@ impl App {
             log::debug!("the fetched price for {:?} is {:?}", sec.symbol, price);
 
             self.add_price(price);
-
-            todo!("save");
         }
     }
 
@@ -132,7 +134,7 @@ impl App {
         symbol: SecuritySymbol,
         currency: &str,
         agent: &str,
-    ) -> Option<Price> {
+    ) -> Option<NewPrice> {
         // todo: there must be a symbol
         let mut dl = Quote::new();
 

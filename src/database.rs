@@ -12,7 +12,7 @@ use log::{debug, error};
 
 use crate::{
     config::PriceDbConfig,
-    model::{Price, Security, SecurityFilter, SecuritySymbol, PriceFilter},
+    model::{Price, Security, SecurityFilter, SecuritySymbol, PriceFilter, NewPrice},
 };
 
 /// Initialize database connection.
@@ -51,7 +51,7 @@ fn load_db_path() -> String {
 
 pub(crate) trait Dal {
     /// Inserts a new price record.
-    fn add_price(&self, price: Price);
+    fn add_price(&self, new_price: &NewPrice);
 
     /// Deletes a price record.
     fn delete_price(&self, id: i32) -> anyhow::Result<usize>;
@@ -69,4 +69,6 @@ pub(crate) trait Dal {
     /// Returns all the symbol ids that have prices in the database.
     /// Used for pruning.
     fn get_symbol_ids_with_prices(&self) -> anyhow::Result<Vec<i32>>;
+
+    fn update_price(&self, id: i32, price: &Price) -> anyhow::Result<usize>;
 }

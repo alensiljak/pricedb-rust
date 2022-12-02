@@ -9,10 +9,23 @@ use crate::database::schema::price;
 
 #[derive(Debug, Clone)]
 #[allow(unused)]
-#[derive(diesel::Queryable, diesel::Insertable, diesel::Identifiable)]
+#[derive(diesel::Queryable, diesel::Identifiable)]
 #[diesel(table_name = price)]
 pub struct Price {
     pub id: i32,
+    pub security_id: i32,
+    pub date: String,
+    pub time: Option<String>,
+    pub value: i32,
+    pub denom: i32,
+    // pub value_dec: Decimal,
+    pub currency: String,
+}
+
+#[derive(Debug, Clone)]
+#[derive(diesel::Insertable)]
+#[diesel(table_name = price)]
+pub struct NewPrice {
     pub security_id: i32,
     pub date: String,
     pub time: Option<String>,
@@ -35,6 +48,17 @@ impl Price {
             // value_dec: dec!(0),
         };
         return result;
+    }
+
+    pub fn for_insert() -> NewPrice {
+        NewPrice {
+            security_id: 0,
+            date: String::default(),
+            time: None,
+            value: 0,
+            denom: 0,
+            currency: String::default(),
+        }
     }
 }
 

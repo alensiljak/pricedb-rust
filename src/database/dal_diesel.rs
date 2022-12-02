@@ -19,7 +19,7 @@ use diesel::prelude::*;
 use diesel::{sqlite::SqliteConnection, Connection};
 use diesel::{QueryDsl, RunQueryDsl};
 
-use crate::model::{Security, SecurityFilter, Price};
+use crate::model::{Price, Security, SecurityFilter, NewPrice};
 
 use super::Dal;
 
@@ -33,11 +33,10 @@ pub fn establish_connection(db_path: &str) -> SqliteConnection {
 }
 
 impl Dal for DieselDal {
-
     fn get_prices(&self, filter: crate::model::PriceFilter) -> Vec<Price> {
         use crate::database::schema::price::dsl::*;
         let mut query = price.into_boxed();
-        
+
         if let Some(security_id_val) = filter.security_id {
             query = query.filter(security_id.eq(security_id_val));
         }
@@ -46,14 +45,11 @@ impl Dal for DieselDal {
         }
 
         let conn = &mut establish_connection(&self.conn_str);
-        let result = query
-            .load::<Price>(conn)
-            .expect("Error loading prices");
+        let result = query.load::<Price>(conn).expect("Error loading prices");
 
         // log::debug!("prices: {:?}", result);
 
         return result;
-
     }
 
     /**
@@ -116,13 +112,13 @@ impl Dal for DieselDal {
         use crate::database::schema::price::dsl::*;
 
         let conn = &mut establish_connection(&self.conn_str);
-        
+
         let prices = price
             .filter(security_id.eq(security_id_param))
             .order_by(date.desc())
             .then_order_by(time.desc())
             .load::<Price>(conn)?;
-        
+
         Ok(prices)
     }
 
@@ -132,11 +128,14 @@ impl Dal for DieselDal {
         let conn = &mut establish_connection(&self.conn_str);
 
         let ids = price.select(id).load(conn)?;
-        
+
         Ok(ids)
     }
 
-    fn add_price(&self, new_price: Price) {
+    /**
+     * Inserts a new Price record.
+     */
+    fn add_price(&self, mut new_price: &NewPrice) {
         use crate::database::schema::price::dsl::*;
 
         log::debug!("inserting {:?}", new_price);
@@ -144,8 +143,24 @@ impl Dal for DieselDal {
         let conn = &mut establish_connection(&self.conn_str);
 
         diesel::insert_into(price)
-            .values(&new_price)
+            .values(new_price)
             .execute(conn)
             .expect("yo?");
+    }
+
+    /**
+     * Update an existing price record.
+     */
+    fn update_price(&self, existing_id: i32, price_values: &Price) -> anyhow::Result<usize> {
+        use crate::database::schema::price::dsl::*;
+
+        let conn = &mut establish_connection(&self.conn_str);
+
+        // Update an existing price
+        let update_result = diesel::update(price.filter(id.eq(existing_id)))
+            .set((value.eq(price_values.value), (denom.eq(price_values.denom))))
+            .execute(conn)?;
+
+        Ok(update_result)
     }
 }

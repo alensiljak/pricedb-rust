@@ -8,7 +8,7 @@ use rust_decimal::{
 };
 use serde_json::Value;
 
-use crate::model::{Price, SecuritySymbol};
+use crate::model::{Price, SecuritySymbol, NewPrice};
 
 use anyhow::{Ok, Result};
 
@@ -61,7 +61,7 @@ impl YahooFinanceDownloader {
 
     /// Extract the Price from JSON.
     ///
-    fn get_price_from_json(&self, body: &Value) -> Result<Price> {
+    fn get_price_from_json(&self, body: &Value) -> Result<NewPrice> {
         let chart = &body["chart"];
         let error = &chart["error"];
 
@@ -69,7 +69,7 @@ impl YahooFinanceDownloader {
         //log::debug!("error? {:?}", error);
         assert_eq!(*error, Value::Null);
 
-        let mut result = Price::new();
+        let mut result = Price::for_insert();
 
         let meta = &body["chart"]["result"][0]["meta"];
         assert_ne!(*meta, Value::Null);
@@ -111,7 +111,7 @@ impl YahooFinanceDownloader {
 
 #[async_trait]
 impl Downloader for YahooFinanceDownloader {
-    async fn download(&self, security_symbol: SecuritySymbol, _currency: &str) -> Result<Price> {
+    async fn download(&self, security_symbol: SecuritySymbol, _currency: &str) -> Result<NewPrice> {
         let url = self.assemble_url(&security_symbol);
 
         log::debug!("fetching from {:?}", url);
