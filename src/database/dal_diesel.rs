@@ -19,7 +19,7 @@ use diesel::prelude::*;
 use diesel::{sqlite::SqliteConnection, Connection};
 use diesel::{QueryDsl, RunQueryDsl};
 
-use crate::model::{Price, Security, SecurityFilter, NewPrice};
+use crate::model::{NewPrice, Price, Security, SecurityFilter};
 
 use super::Dal;
 
@@ -127,7 +127,7 @@ impl Dal for DieselDal {
 
         let conn = &mut establish_connection(&self.conn_str);
 
-        let ids = price.select(id).load(conn)?;
+        let ids = price.select(security_id).distinct().load(conn)?;
 
         Ok(ids)
     }

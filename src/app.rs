@@ -5,12 +5,10 @@
 use std::vec;
 
 use anyhow::Error;
-use diesel::{Insertable, RunQueryDsl};
-use rust_decimal::{prelude::FromPrimitive, Decimal};
 
 use crate::{
     database::{self, Dal},
-    model::{Price, PriceFilter, SecurityFilter, SecuritySymbol, NewPrice},
+    model::{PriceFilter, SecurityFilter, SecuritySymbol, NewPrice},
     quote::Quote,
 };
 
@@ -195,7 +193,7 @@ impl App {
 
     /// Deletes price history for the given Security, leaving only the latest price.
     fn prune_for_sec(&self, security_id: i32) -> anyhow::Result<u16, Error> {
-        // log::trace!("pruning prices for security id: {:?}", security_id);
+        log::trace!("pruning prices for security id: {:?}", security_id);
 
         let mut count = 0;
         // get prices for the given security
