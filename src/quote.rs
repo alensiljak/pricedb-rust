@@ -32,10 +32,13 @@ impl Quote {
         }
     }
 
+    /// Fetch prices for the given symbols.
     pub async fn fetch(&self, exchange: &str, symbols: Vec<String>) -> Vec<NewPrice> {
         let mut result = vec![];
 
         for symbol in symbols {
+            // log::debug!("Downloading price for {:?}", symbol);
+
             let price = self
                 .download(exchange, &symbol)
                 .await
@@ -65,9 +68,12 @@ impl Quote {
         // todo: parse symbol
 
         let actor = self.get_downloader();
+        let currency = self.currency.as_ref().unwrap().as_str();
+
+        log::debug!("Calling download with symbol {} and currency {}", sec_symbol, currency);
 
         let price = actor
-            .download(sec_symbol, self.currency.as_ref().unwrap().as_str())
+            .download(sec_symbol, currency)
             .await
             .expect("Huston?");
 

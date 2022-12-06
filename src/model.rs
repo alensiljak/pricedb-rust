@@ -24,7 +24,7 @@ pub struct Price {
     pub currency: String,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[derive(diesel::Insertable)]
 #[diesel(table_name = price)]
 pub struct NewPrice {
