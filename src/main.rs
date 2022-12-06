@@ -2,17 +2,11 @@
  * Price Database
  * The main file contains only the CLI definition.
  */
-mod app;
-mod config;
-mod database;
 mod interface;
-mod model;
-mod quote;
 
 use clap::Parser;
 use interface::{Cli, Commands};
-
-use crate::{app::App, model::SecurityFilter};
+use pricedb::{app::App, model::SecurityFilter};
 
 //#[async_std::main]
 #[tokio::main]

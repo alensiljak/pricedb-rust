@@ -23,7 +23,7 @@ impl App {
         return result;
     }
 
-    pub(crate) fn add_price(&self, new_price: NewPrice) {
+    pub fn add_price(&self, new_price: NewPrice) {
         log::debug!("Adding price {:?}", new_price);
 
         // Is there a price already?
@@ -92,7 +92,7 @@ impl App {
         }
     }
 
-    pub(crate) async fn download_prices(&self, filter: SecurityFilter) {
+    pub async fn download_prices(&self, filter: SecurityFilter) {
         log::debug!("download filter: {:?}", filter);
 
         let securities = self.dal.get_securities(filter);
