@@ -108,33 +108,33 @@ pub struct SecurityFilter {
 }
 
 #[derive(Debug)]
-#[allow(unused)]
 pub struct SecuritySymbol {
     pub namespace: String,
     pub mnemonic: String,
 }
 
 impl SecuritySymbol {
-    // /// Parse symbol syntax "XETRA:EL4X"
-    // #[allow(dead_code)]
-    // pub fn parse(symbol: String) -> (String, String) {
-    //     let mut namespace = String::from("");
-    //     let mnemonic = symbol.clone();
+    /// Parse symbol syntax, i.e. "XETRA:EL4X"
+    pub fn parse(symbol: &str) -> SecuritySymbol {
+        let mut namespace = String::default();
+        let mut mnemonic = symbol.to_owned();
 
-    //     let parts = symbol.split(":");
+        let parts = symbol.split(":");
 
-    //     log::debug!("parts: {:?}", parts);
+        log::debug!("parts: {:?}", &parts);
 
-    //     if parts.count() > 1 {
-    //         // let vec: Vec<&str> = parts.collect();
-    //         // namespace = vec.get(0).expect("namespace not provided");
-    //         // mnemonic = vec.get(1).unwrap();
-    //     }
+        let vec: Vec<&str> = parts.collect();
+        log::debug!("parts vector = {:?}", vec);
+        if vec.len() > 1 {
+            namespace = vec[0].to_string();
+            mnemonic = vec[1].to_string();
+        }
 
-    //     todo!("complete");
-
-    //     return (namespace, mnemonic);
-    // }
+        return SecuritySymbol {
+            namespace,
+            mnemonic,
+        };
+    }
 }
 
 impl Display for SecuritySymbol {
@@ -146,13 +146,21 @@ impl Display for SecuritySymbol {
 
 #[cfg(test)]
 mod tests {
-    // use super::SecuritySymbol;
+    use super::SecuritySymbol;
 
-    // #[test]
-    // fn test_parse() {
-    //     let s = SecuritySymbol::parse("XETRA:EL4X".to_string());
+    #[test]
+    fn test_parse() {
+        let s = SecuritySymbol::parse("XETRA:EL4X");
 
-    //     assert_eq!(s.0, "XETRA");
-    //     assert_eq!(s.1, "EL4X");
-    // }
+        assert_eq!(s.namespace, "XETRA");
+        assert_eq!(s.mnemonic, "EL4X");
+    }
+
+    #[test]
+    fn test_parse_currency() {
+        let s = SecuritySymbol::parse("AUD");
+
+        assert_eq!(s.namespace, "");
+        assert_eq!(s.mnemonic, "AUD");
+    }
 }

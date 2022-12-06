@@ -3,7 +3,6 @@ use std::env::temp_dir;
 use anyhow::Result;
 use async_trait::async_trait;
 use confy::ConfyError;
-use tempfile::NamedTempFile;
 
 /// Fixerio downloader
 use crate::{model::{NewPrice, SecuritySymbol}, config::PriceDbConfig};
@@ -26,7 +25,8 @@ impl Fixerio {
     fn latest_rates_exist(&self) -> bool {
         let file_path = self.get_todays_file_path();
     
-        todo!("complete");
+        let exists = std::path::Path::new(&file_path).exists();
+        exists
     }
     
     fn get_todays_file_path(&self) -> String {
@@ -60,13 +60,14 @@ impl Downloader for Fixerio {
             panic!("Currency symbol should not contain namespace.");
         }
 
-        // if latest_rates_exist() {
+        if self.latest_rates_exist() {
+            log::debug!("Cached rates found");
+            todo!("Read rates from the cache file");
+        } else {
+            todo!("download rates");
+        }
 
-        // } else {
-
-        // }
-
-        todo!("complete the implementation")
+        todo!("map the rates");
     }    
 }
 
@@ -111,5 +112,12 @@ mod tests {
         assert_ne!(result, String::default());
         // on linux: /tmp/fixerio_2022-12-06.json
         assert_eq!(28, result.len());
+    }
+
+    #[test_log::test(tokio::test)]
+    async fn test_download() {
+        let f = Fixerio::new();
+        let symbol = SecuritySymbol::parse("AUD");
+        f.download(symbol, "EUR").await;
     }
 }
