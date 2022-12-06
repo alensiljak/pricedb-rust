@@ -7,12 +7,11 @@ pub(crate) mod schema;
 // mod dal_sqlite;
 // mod dal_rusqlite;
 
-use confy::ConfyError;
-use log::{debug, error};
+use log::debug;
 
 use crate::{
     config::PriceDbConfig,
-    model::{Price, Security, SecurityFilter, SecuritySymbol, PriceFilter, NewPrice},
+    model::{NewPrice, Price, PriceFilter, Security, SecurityFilter, SecuritySymbol},
 };
 
 /// Initialize database connection.
@@ -29,20 +28,19 @@ pub(crate) fn init_db() -> impl Dal {
     return dal;
 }
 
+fn load_config() -> Result<PriceDbConfig, anyhow::Error> {
+    let config: PriceDbConfig = confy::load("pricedb", "config")?;
+
+    Ok(config)
+}
+
 /// Loads database path from the configuration.
 fn load_db_path() -> String {
-    let config_result: Result<PriceDbConfig, ConfyError> = confy::load("pricedb", "config");
-    let db_path: String;
+    let config = load_config().expect("Error reading configuration");
 
-    debug!("configuration: {:?}", config_result);
+    debug!("configuration: {:?}", config);
 
-    match config_result {
-        Ok(config) => db_path = config.price_database_path,
-        Err(e) => {
-            error!("Error: {:?}", e);
-            panic!("{}", e);
-        }
-    }
+    let db_path = config.price_database_path;
 
     debug!("Db path: {:?}", db_path);
 

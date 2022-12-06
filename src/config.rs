@@ -4,7 +4,7 @@
 
 use serde_derive::{Deserialize, Serialize};
 
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, std::default::Default, Serialize, Deserialize)]
 pub(crate) struct PriceDbConfig {
     pub(crate) price_database_path: String,
     pub(crate) alphavantage_api_key: String,

@@ -26,7 +26,14 @@ async fn main() {
         return;
     }
 
+    // export
+
+    if let Some(Commands::Export {  }) = &cli.command {
+        todo!("Export");
+    }
+
     // download
+
     if let Some(Commands::Dl {
         currency,
         agent,
@@ -43,6 +50,7 @@ async fn main() {
     }
 
     // prune
+
     if let Some(Commands::Prune { symbol }) = &cli.command {
         app.prune(symbol);
     }

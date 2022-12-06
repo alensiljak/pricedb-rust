@@ -6,4 +6,3 @@ mod config;
 mod database;
 pub mod model;
 mod quote;
-
