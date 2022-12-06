@@ -8,8 +8,6 @@ mod database;
 mod interface;
 mod model;
 mod quote;
-#[cfg(test)]
-mod tests;
 
 use clap::Parser;
 use interface::{Cli, Commands};
