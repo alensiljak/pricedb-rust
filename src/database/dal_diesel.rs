@@ -19,7 +19,7 @@ use diesel::prelude::*;
 use diesel::{sqlite::SqliteConnection, Connection};
 use diesel::{QueryDsl, RunQueryDsl};
 
-use crate::model::{NewPrice, Price, Security, SecurityFilter};
+use crate::model::{NewPrice, Price, PriceFilter, Security, SecurityFilter};
 
 use super::Dal;
 
@@ -33,19 +33,30 @@ pub fn establish_connection(db_path: &str) -> SqliteConnection {
 }
 
 impl Dal for DieselDal {
-    fn get_prices(&self, filter: crate::model::PriceFilter) -> Vec<Price> {
-        use crate::database::schema::price::dsl::*;
-        let mut query = price.into_boxed();
+    fn get_prices(&self, filter_option: Option<PriceFilter>) -> Vec<Price> {
+        //use crate::database::schema::price::dsl::*;
+        use crate::database::schema::price;
+        //use crate::database::schema::security::dsl::*;
+        use crate::database::schema::security;
 
-        if let Some(security_id_val) = filter.security_id {
-            query = query.filter(security_id.eq(security_id_val));
+        let mut query = price::table.into_boxed();
+
+        if let Some(filter) = filter_option {
+            if let Some(security_id_val) = filter.security_id {
+                query = query.filter(price::security_id.eq(security_id_val));
+            }
+            if let Some(date_val) = filter.date {
+                query = query.filter(price::date.eq(date_val));
+            }
+            if let Some(time_val) = filter.time {
+                query = query.filter(price::time.eq(time_val));
+            }
         }
-        if let Some(date_val) = filter.date {
-            query = query.filter(date.eq(date_val));
-        }
-        if let Some(time_val) = filter.time {
-            query = query.filter(time.eq(time_val));
-        }
+
+        let query = query.left_join(security::table);
+
+        // order
+        let query = query.order_by((security::namespace, security::symbol));
 
         let conn = &mut establish_connection(&self.conn_str);
         let result = query.load::<Price>(conn).expect("Error loading prices");
@@ -125,7 +136,7 @@ impl Dal for DieselDal {
         Ok(prices)
     }
 
-    fn get_symbol_ids_with_prices(&self) -> anyhow::Result<Vec<i32>> {
+    fn get_ids_of_symbols_with_prices(&self) -> anyhow::Result<Vec<i32>> {
         use crate::database::schema::price::dsl::*;
 
         let conn = &mut establish_connection(&self.conn_str);

@@ -29,7 +29,7 @@ async fn main() {
     // export
 
     if let Some(Commands::Export {  }) = &cli.command {
-        todo!("Export");
+        pricedb::export();
     }
 
     // download

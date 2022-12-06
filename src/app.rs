@@ -18,7 +18,7 @@ pub struct App {
 
 impl App {
     pub fn new() -> App {
-        let dal = database::init_db();
+        let dal = database::init_dal();
         let result = App { dal: Box::new(dal) };
         return result;
     }
@@ -34,7 +34,7 @@ impl App {
             time: new_price.time.to_owned(),
         };
         // security_id, date, time
-        let prices = self.dal.get_prices(filter);
+        let prices = self.dal.get_prices(Some(filter));
 
         // insert or update
         if prices.len() == 0 {
@@ -185,7 +185,7 @@ impl App {
             // load all symbols
             security_ids = self
                 .dal
-                .get_symbol_ids_with_prices()
+                .get_ids_of_symbols_with_prices()
                 .expect("Error fetching symbol ids.");
             // log::debug!("symbol ids with prices: {:?}", security_ids);
         }

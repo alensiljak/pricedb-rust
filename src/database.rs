@@ -15,7 +15,7 @@ use crate::{
 };
 
 /// Initialize database connection.
-pub(crate) fn init_db() -> impl Dal {
+pub(crate) fn init_dal() -> impl Dal {
     // "sqlite::memory:"
     let conn_str = load_db_path();
 
@@ -54,7 +54,7 @@ pub(crate) trait Dal {
     /// Deletes a price record.
     fn delete_price(&self, id: i32) -> anyhow::Result<usize>;
 
-    fn get_prices(&self, filter: PriceFilter) -> Vec<Price>;
+    fn get_prices(&self, filter: Option<PriceFilter>) -> Vec<Price>;
 
     fn get_securities(&self, filter: SecurityFilter) -> Vec<Security>;
 
@@ -64,9 +64,9 @@ pub(crate) trait Dal {
 
     fn get_prices_for_security(&self, security_id: i32) -> anyhow::Result<Vec<Price>>;
 
-    /// Returns all the symbol ids that have prices in the database.
+    /// Returns all the ids of the symbols that have prices in the database.
     /// Used for pruning.
-    fn get_symbol_ids_with_prices(&self) -> anyhow::Result<Vec<i32>>;
+    fn get_ids_of_symbols_with_prices(&self) -> anyhow::Result<Vec<i32>>;
 
     fn update_price(&self, id: i32, price: &Price) -> anyhow::Result<usize>;
 }

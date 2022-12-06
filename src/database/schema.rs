@@ -28,3 +28,5 @@ diesel::allow_tables_to_appear_in_same_query!(
     price,
     security,
 );
+
+diesel::joinable!(price -> security (security_id));
