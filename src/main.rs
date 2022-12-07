@@ -24,10 +24,12 @@ async fn main() {
         return;
     }
 
+    let app = pricedb::App::new();
+
     // export
 
     if let Some(Commands::Export {}) = &cli.command {
-        pricedb::export();
+        app.export();
     }
 
     // download
@@ -45,12 +47,12 @@ async fn main() {
             exchange: exchange.clone(),
             symbol: symbol.clone(),
         };
-        pricedb::download_prices(filter).await;
+        app.download_prices(filter).await;
     }
 
     // prune
 
     if let Some(Commands::Prune { symbol }) = &cli.command {
-        pricedb::prune(symbol);
+        app.prune(symbol);
     }
 }
