@@ -3,7 +3,7 @@ use std::{collections::HashMap, str::FromStr};
 use anyhow::Result;
 use async_trait::async_trait;
 use chrono::NaiveDate;
-use rust_decimal::{Decimal, prelude::ToPrimitive};
+use rust_decimal::{prelude::ToPrimitive, Decimal};
 use serde_json::Value;
 
 use crate::model::{NewPrice, Price, SecuritySymbol};

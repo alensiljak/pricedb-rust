@@ -7,7 +7,7 @@
 
 use std::fmt::Display;
 
-use sea_query::{enum_def, Iden};
+use sea_query::enum_def;
 // use crate::database::schema::price;
 
 #[derive(Debug, Clone, Eq, PartialEq, PartialOrd, Ord)]

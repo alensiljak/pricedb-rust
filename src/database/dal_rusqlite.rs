@@ -5,7 +5,9 @@
 * Example for a query: https://stackoverflow.com/questions/67089430/how-do-we-use-select-query-with-an-external-where-parameter-in-rusqlite
 */
 use rusqlite::{Connection, Row};
-use sea_query::{Expr, Query, SqliteQueryBuilder};
+use sea_query::{Expr, Query, SqliteQueryBuilder, Values};
+//use sea_query::{ColumnDef, Expr, Func, Iden, Order, Query, SqliteQueryBuilder, Table};
+use sea_query_rusqlite::{RusqliteBinder, RusqliteValues};
 
 use crate::model::{
     NewPrice, Price, PriceFilter, PriceIden, Security, SecurityFilter, SecurityIden, SecuritySymbol,
@@ -13,13 +15,36 @@ use crate::model::{
 
 use super::Dal;
 
+#[allow(unused)]
 pub struct RuSqliteDal {
     pub(crate) conn_str: String,
+    pub(crate) conn: Connection,
+}
+
+impl RuSqliteDal {
+    pub(crate) fn new(conn_str: String) -> RuSqliteDal {
+        RuSqliteDal {
+            conn_str: conn_str.clone(),
+            conn: open_connection(&conn_str),
+        }
+    }
 }
 
 impl Dal for RuSqliteDal {
-    fn add_price(&self, new_price: &NewPrice) {
-        todo!()
+    fn add_price(&self, new_price: &NewPrice) -> usize {
+        log::debug!("inserting {:?}", new_price);
+
+        let (sql, values) = generate_insert_sql_for_price(new_price);
+
+        log::debug!("inserting price: {:?}", sql);
+        log::debug!("values: {:?}", values);
+
+        let conn = open_connection(&self.conn_str);
+        let result = conn
+            .execute(sql.as_str(), &*values.as_params())
+            .expect("price inserted");
+
+        result
     }
 
     fn delete_price(&self, id: i32) -> anyhow::Result<usize> {
@@ -55,7 +80,7 @@ impl Dal for RuSqliteDal {
     fn get_prices(&self, filter: Option<PriceFilter>) -> Vec<Price> {
         let mut result: Vec<Price> = vec![];
 
-        let sql = match filter {
+        let (sql, values) = match filter {
             Some(_) => generate_price_query_with_filter(&filter.unwrap()),
             None => todo!("test this case!"), //"select * from price".to_owned()
         };
@@ -119,7 +144,7 @@ impl Dal for RuSqliteDal {
 
         // assemble the sql statement
         // let sql = "select * from security";
-        let sql = generate_security_query_with_filter(&filter);
+        let (sql, values) = generate_security_query_with_filter(&filter);
 
         log::debug!("securities sql: {:?}", sql);
 
@@ -154,17 +179,11 @@ impl Dal for RuSqliteDal {
         let sql = "select * from security where symbol=?";
         let mut stmt = conn.prepare(sql).expect("Statement");
         let params = (1, symbol);
-        //let result = stmt.execute(params);
         let security = stmt
             .query_row(params, |r| {
-                // let result = Security::new();
-
-                //let x: i64 = r.get(0).expect("error");
                 let result = map_row_to_security(r);
 
                 log::debug!("row fetched: {:?}", result);
-
-                todo!("complete");
 
                 return Ok(result);
             })
@@ -203,14 +222,14 @@ fn open_connection(conn_str: &String) -> Connection {
 }
 
 fn map_row_to_price(row: &Row) -> Price {
-    let result = Price { 
-        id: row.get(0).expect("value"), 
-        security_id: row.get(1).expect("value"), 
-        date: row.get(2).expect("value"), 
-        time: row.get(3).expect("value"), 
+    let result = Price {
+        id: row.get(0).expect("value"),
+        security_id: row.get(1).expect("value"),
+        date: row.get(2).expect("value"),
+        time: row.get(3).expect("value"),
         value: row.get(4).expect("value"),
         denom: row.get(5).expect("value"),
-        currency: row.get(6).expect("value")
+        currency: row.get(6).expect("value"),
     };
 
     result
@@ -230,8 +249,33 @@ fn map_row_to_security(row: &Row) -> Security {
     sec
 }
 
+fn generate_insert_sql_for_price(new_price: &NewPrice) -> (String, RusqliteValues) {
+    let result = Query::insert()
+        .into_table(PriceIden::Table)
+        .columns([
+            PriceIden::SecurityId,
+            PriceIden::Date,
+            PriceIden::Time,
+            PriceIden::Value,
+            PriceIden::Denom,
+            PriceIden::Currency,
+        ])
+        .values_panic([
+            new_price.security_id.into(),
+            new_price.date.to_owned().into(),
+            new_price.time.to_owned().into(),
+            new_price.value.into(),
+            new_price.denom.into(),
+            new_price.currency.to_owned().into(),
+        ])
+        .build_rusqlite(SqliteQueryBuilder);
+    // .build(SqliteQueryBuilder);
+    //.to_string(SqliteQueryBuilder);
+    result
+}
+
 /// Generates SELECT statement with the given parameters/filters.
-fn generate_security_query_with_filter(filter: &SecurityFilter) -> String {
+fn generate_security_query_with_filter(filter: &SecurityFilter) -> (String, RusqliteValues) {
     let query = Query::select()
         // Order of columns:
         .column(SecurityIden::Id)
@@ -275,7 +319,7 @@ fn generate_security_query_with_filter(filter: &SecurityFilter) -> String {
         .conditions(
             filter.symbol.is_some(),
             |q| {
-                if let Some(sym) = filter.currency.to_owned() {
+                if let Some(sym) = filter.symbol.to_owned() {
                     let uppercase_sym = sym.to_uppercase();
                     q.and_where(Expr::col(SecurityIden::Symbol).eq(uppercase_sym));
                 }
@@ -285,10 +329,12 @@ fn generate_security_query_with_filter(filter: &SecurityFilter) -> String {
         .to_owned();
 
     // query.build(SqliteQueryBuilder)
-    query.to_string(SqliteQueryBuilder)
+    //query.to_string(SqliteQueryBuilder)
+    query.build_rusqlite(SqliteQueryBuilder)
 }
 
-fn generate_price_query_with_filter(filter: &PriceFilter) -> String {
+#[allow(unused_variables)]
+fn generate_price_query_with_filter(filter: &PriceFilter) -> (String, Values) {
     let query = Query::select()
         // Order of columns:
         .column(PriceIden::Id)
@@ -329,17 +375,89 @@ fn generate_price_query_with_filter(filter: &PriceFilter) -> String {
         )
         .to_owned();
 
-    // query.build(SqliteQueryBuilder)
-    query.to_string(SqliteQueryBuilder)
+    query.build(SqliteQueryBuilder)
+    //query.to_string(SqliteQueryBuilder)
 }
 
 #[cfg(test)]
 mod tests {
-    use sea_query::{Cond, Condition, Expr, Query};
+    use sea_query::{ColumnDef, Table};
+    use sea_query_rusqlite::RusqliteValue;
 
-    use crate::model::{PriceIden, SecurityFilter};
+    use crate::{
+        get_prices,
+        model::{NewPrice, SecurityFilter},
+    };
 
-    use super::{generate_security_query_with_filter, open_connection};
+    use super::*;
+
+    /// Creates a dummy dal and prepares an in-memory test database.
+    fn get_test_dal() -> RuSqliteDal {
+        let dal = RuSqliteDal::new("sqlite::memory:".to_string());
+        prepare_test_db(&dal);
+        insert_dummy_prices(&dal);
+
+        dal
+    }
+
+    fn prepare_test_db(dal: &RuSqliteDal) {
+        // drop table, if exists
+        
+        let sql = Table::drop()
+            .table(PriceIden::Table)
+            .if_exists()
+            .build(SqliteQueryBuilder);
+        dal.conn.execute(&sql, []).expect("result");
+
+        // create table
+
+        let sql = Table::create()
+            .table(PriceIden::Table)
+            .if_not_exists()
+            .col(
+                ColumnDef::new(PriceIden::Id)
+                    .integer()
+                    .not_null()
+                    .auto_increment()
+                    .primary_key(),
+            )
+            .col(ColumnDef::new(PriceIden::SecurityId).integer())
+            .col(ColumnDef::new(PriceIden::Date).string())
+            .col(ColumnDef::new(PriceIden::Time).string().null())
+            .col(ColumnDef::new(PriceIden::Value).integer())
+            .col(ColumnDef::new(PriceIden::Denom).integer())
+            .col(ColumnDef::new(PriceIden::Currency).string())
+            .build(SqliteQueryBuilder);
+
+        // let conn_str = get_test_conn_str();
+        // let conn = open_connection(&conn_str);
+        let result = dal.conn.execute(&sql, []).expect("result");
+
+        assert_eq!(0, result);
+    }
+
+    fn create_dummy_price(security_id: i32, value: i32, denom_opt: Option<i32>) -> NewPrice {
+        let date: String = chrono::Local::now().date_naive().to_string();
+        NewPrice {
+            security_id,
+            date,
+            time: None,
+            value,
+            denom: match denom_opt {
+                Some(val) => val,
+                None => 100,
+            },
+            currency: "EUR".to_string(),
+        }
+    }
+
+    fn insert_dummy_prices(dal: &RuSqliteDal) {
+        dal.add_price(&create_dummy_price(100, 12345, None));
+        dal.add_price(&create_dummy_price(101, 10101, None));
+        dal.add_price(&create_dummy_price(102, 1234, None));
+        dal.add_price(&create_dummy_price(103, 123456789, Some(10000)));
+        dal.add_price(&create_dummy_price(104, 123456, Some(1000)));
+    }
 
     // #[test]
     // fn test_conditions() {
@@ -352,17 +470,35 @@ mod tests {
     // }
 
     #[test]
-    fn test_sec_query_no_params() {
+    fn test_sec_query_wo_params() {
         let filter = SecurityFilter {
             currency: None,
             agent: None,
             exchange: None,
             symbol: None,
         };
-        let sql = generate_security_query_with_filter(&filter);
+        let (sql, values) = generate_security_query_with_filter(&filter);
 
-        assert_eq!(sql, 
-            "SELECT \"id\", \"namespace\", \"symbol\", \"updater\", \"currency\", \"ledger_symbol\", \"notes\" FROM \"security\"");
+        let expected = "SELECT \"id\", \"namespace\", \"symbol\", \"updater\", \"currency\", \"ledger_symbol\", \"notes\" FROM \"security\"";
+        assert_eq!(expected, sql);
+    }
+
+    #[test]
+    fn test_sec_query_w_params() {
+        let filter = SecurityFilter {
+            currency: Some("AUD".to_owned()),
+            agent: None,
+            exchange: None,
+            symbol: None,
+        };
+        let (sql, values) = generate_security_query_with_filter(&filter);
+
+        print!("{:?}", values);
+
+        let expected = "SELECT \"id\", \"namespace\", \"symbol\", \"updater\", \"currency\", \"ledger_symbol\", \"notes\" FROM \"security\" WHERE \"currency\" = ?";
+        assert_eq!(expected, sql);
+        let exp_val = RusqliteValue(sea_query::Value::String(Some(Box::new("AUD".to_owned()))));
+        assert_eq!(exp_val, values.0[0]);
     }
 
     #[test]
@@ -372,5 +508,44 @@ mod tests {
         WHERE @parameter IS NULL OR NAME = @parameter;"#;
 
         //let conn = open_connection()
+    }
+
+    #[test]
+    fn test_price_insert_statement() {
+        let new_price = NewPrice {
+            security_id: 111,
+            date: "2022-12-01".to_string(),
+            time: None,
+            value: 100,
+            denom: 0,
+            currency: "AUD".to_string(),
+        };
+
+        // let sql = dal.add_price(&new_price);
+        let (sql, values) = generate_insert_sql_for_price(&new_price);
+
+        println!("sql: {:?}, values: {:?}", sql, values);
+
+        //let expected = "INSERT INTO \"price\" (\"security_id\", \"date\", \"time\", \"value\", \"denom\", \"currency\") VALUES (111, '2022-12-01', NULL, 100, 0, 'AUD')";
+        let expected = "INSERT INTO \"price\" (\"security_id\", \"date\", \"time\", \"value\", \"denom\", \"currency\") VALUES (?, ?, ?, ?, ?, ?)";
+        assert_eq!(expected, sql);
+    }
+
+    #[test]
+    ///
+    fn test_get_prices() {
+        let dal = get_test_dal();
+
+        let filter = PriceFilter {
+            security_id: None,
+            date: None,
+            time: None,
+        };
+        let actual = dal.get_prices(Some(filter));
+
+        println!("prices: {:?}", actual);
+
+        assert!(actual.len() > 0);
+        assert!(actual.len() == 5);
     }
 }

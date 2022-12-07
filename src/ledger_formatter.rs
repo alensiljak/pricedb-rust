@@ -2,7 +2,7 @@ use crate::model::Price;
 
 /**
  * Formats prices for Ledger
- * 
+ *
  */
 
 /// format a list of prices

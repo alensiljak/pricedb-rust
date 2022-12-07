@@ -11,7 +11,10 @@ use async_trait::async_trait;
 
 use crate::{
     model::{NewPrice, SecuritySymbol},
-    quote::{fixerio::Fixerio, yahoo_finance_downloader::YahooFinanceDownloader, vanguard_au::VanguardAuDownloader},
+    quote::{
+        fixerio::Fixerio, vanguard_au::VanguardAuDownloader,
+        yahoo_finance_downloader::YahooFinanceDownloader,
+    },
 };
 
 #[derive(Debug)]
@@ -70,12 +73,13 @@ impl Quote {
         let actor = self.get_downloader();
         let currency = self.currency.as_ref().unwrap().as_str();
 
-        log::debug!("Calling download with symbol {} and currency {}", sec_symbol, currency);
+        log::debug!(
+            "Calling download with symbol {} and currency {}",
+            sec_symbol,
+            currency
+        );
 
-        let price = actor
-            .download(sec_symbol, currency)
-            .await
-            .expect("Huston?");
+        let price = actor.download(sec_symbol, currency).await.expect("Huston?");
 
         Some(price)
     }

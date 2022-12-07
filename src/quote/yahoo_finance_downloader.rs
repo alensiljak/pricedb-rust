@@ -8,7 +8,7 @@ use rust_decimal::{
 };
 use serde_json::Value;
 
-use crate::model::{Price, SecuritySymbol, NewPrice};
+use crate::model::{NewPrice, Price, SecuritySymbol};
 
 use anyhow::{Ok, Result};
 

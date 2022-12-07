@@ -23,7 +23,7 @@ pub(crate) fn init_dal() -> impl Dal {
     // let dal = dal_diesel::DieselDal { conn_str };
     // let dal = dal_sqlx::SqlxDal { conn_str };
     //let dal = dal_sqlite::SqliteDal {conn_str};
-    let dal = dal_rusqlite::RuSqliteDal {conn_str};
+    let dal = dal_rusqlite::RuSqliteDal::new(conn_str);
 
     return dal;
 }
@@ -49,7 +49,7 @@ fn load_db_path() -> String {
 
 pub(crate) trait Dal {
     /// Inserts a new price record.
-    fn add_price(&self, new_price: &NewPrice);
+    fn add_price(&self, new_price: &NewPrice) -> usize;
 
     /// Deletes a price record.
     fn delete_price(&self, id: i32) -> anyhow::Result<usize>;

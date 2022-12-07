@@ -1,7 +1,7 @@
 use clap::{Parser, Subcommand};
 
 #[derive(Parser, Debug)]
-#[command(name="Price Database")]
+#[command(name = "Price Database")]
 #[command(author="Alen Šiljak", version, about, long_about = None)]
 pub(crate) struct Cli {
     #[command(subcommand)]
@@ -13,15 +13,14 @@ pub(crate) enum Commands {
     // Add
 
     // Cfg
-
-    #[command(about="Download prices")]
+    #[command(about = "Download prices")]
     Dl {
-        #[arg(short='x', long)]
+        #[arg(short = 'x', long)]
         exchange: Option<String>,
 
         #[arg(short, long)]
         symbol: Option<String>,
-        
+
         #[arg(short, long)]
         agent: Option<String>,
 
@@ -30,7 +29,7 @@ pub(crate) enum Commands {
     },
 
     // todo: export
-    #[command(about="Export prices in ledger format")]
+    #[command(about = "Export prices in ledger format")]
     Export {},
 
     // todo: import
@@ -38,12 +37,10 @@ pub(crate) enum Commands {
     // todo: last
 
     // todo: list
-
-    #[command(about="Prune old prices, leaving just the latest")]
+    #[command(about = "Prune old prices, leaving just the latest")]
     Prune {
         #[arg(short, long)]
-        symbol: Option<String>
+        symbol: Option<String>,
     },
-
     // securities
 }

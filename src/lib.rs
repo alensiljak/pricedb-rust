@@ -22,7 +22,6 @@ use std::vec;
 
 use anyhow::Error;
 
-
 pub async fn download_prices(filter: SecurityFilter) {
     log::debug!("download filter: {:?}", filter);
 
@@ -98,7 +97,6 @@ fn get_prices() -> Vec<Price> {
 
     prices
 }
-
 
 /// Prune historical prices for the given symbol, leaving only the latest.
 /// If no symbol is given, it prunes all existing symbols.
