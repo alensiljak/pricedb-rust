@@ -6,7 +6,7 @@ mod interface;
 
 use clap::Parser;
 use interface::{Cli, Commands};
-use pricedb::{app::App, model::SecurityFilter};
+use pricedb::model::SecurityFilter;
 
 //#[async_std::main]
 #[tokio::main]
@@ -19,8 +19,6 @@ async fn main() {
 
     log::debug!("Command: {:?}", cli.command);
 
-    let app = App::new();
-
     if cli.command.is_none() {
         println!("No command issued");
         return;
@@ -28,7 +26,7 @@ async fn main() {
 
     // export
 
-    if let Some(Commands::Export {  }) = &cli.command {
+    if let Some(Commands::Export {}) = &cli.command {
         pricedb::export();
     }
 
@@ -39,19 +37,20 @@ async fn main() {
         agent,
         exchange,
         symbol,
-    }) = &cli.command {
+    }) = &cli.command
+    {
         let filter = SecurityFilter {
             currency: currency.clone(),
             agent: agent.clone(),
             exchange: exchange.clone(),
             symbol: symbol.clone(),
         };
-        app.download_prices(filter).await;
+        pricedb::download_prices(filter).await;
     }
 
     // prune
 
     if let Some(Commands::Prune { symbol }) = &cli.command {
-        app.prune(symbol);
+        pricedb::prune(symbol);
     }
 }
