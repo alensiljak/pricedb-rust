@@ -111,6 +111,14 @@ pub struct SecurityFilter {
     pub symbol: Option<String>,
 }
 
+impl SecurityFilter {
+    pub fn new() -> SecurityFilter {
+        SecurityFilter { currency: None, agent: None, 
+            exchange: None, 
+            symbol: None }
+    }
+}
+
 #[derive(Debug)]
 pub struct SecuritySymbol {
     pub namespace: String,

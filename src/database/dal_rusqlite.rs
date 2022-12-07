@@ -37,7 +37,8 @@ impl Dal for RuSqliteDal {
         log::debug!("inserting price: {:?}", sql);
         log::debug!("values: {:?}", values);
 
-        let result = self.conn
+        let result = self
+            .conn
             .execute(sql.as_str(), &*values.as_params())
             .expect("price inserted");
 
@@ -145,7 +146,7 @@ impl Dal for RuSqliteDal {
         let mut statement = self.conn.prepare(&sql).unwrap();
 
         let sec_iter = statement
-            .query_map([], |row| {
+            .query_map(&*values.as_params(), |row| {
                 // map
                 let sec = map_row_to_security(row);
                 // log::debug!("parsed: {:?}", sec);
@@ -378,9 +379,7 @@ mod tests {
     use sea_query_rusqlite::RusqliteValue;
     use test_log::test;
 
-    use crate::{
-        model::{NewPrice, SecurityFilter},
-    };
+    use crate::model::{NewPrice, SecurityFilter};
 
     use super::*;
 
@@ -389,12 +388,43 @@ mod tests {
         let dal = RuSqliteDal::new(":memory:".to_string());
         prepare_test_db(&dal);
         insert_dummy_prices(&dal);
+        insert_dummy_securities(&dal);
 
         dal
     }
 
     fn prepare_test_db(dal: &RuSqliteDal) {
-        // drop table, if exists
+        // drop Security table, if exists
+
+        let sql = Table::drop()
+            .table(SecurityIden::Table)
+            .if_exists()
+            .build(SqliteQueryBuilder);
+        dal.conn.execute(&sql, []).expect("result");
+
+        // create Prices table
+
+        let sql = Table::create()
+            .table(SecurityIden::Table)
+            .if_not_exists()
+            .col(
+                ColumnDef::new(SecurityIden::Id)
+                    .integer()
+                    .not_null()
+                    .auto_increment()
+                    .primary_key(),
+            )
+            .col(ColumnDef::new(SecurityIden::Namespace).string().null())
+            .col(ColumnDef::new(SecurityIden::Symbol).string())
+            .col(ColumnDef::new(SecurityIden::Updater).string().null())
+            .col(ColumnDef::new(SecurityIden::Currency).string().null())
+            .col(ColumnDef::new(SecurityIden::LedgerSymbol).string().null())
+            .col(ColumnDef::new(SecurityIden::Notes).string().null())
+            .build(SqliteQueryBuilder);
+
+        dal.conn.execute(&sql, []).expect("result");
+
+        // drop Prices table, if exists
 
         let sql = Table::drop()
             .table(PriceIden::Table)
@@ -402,7 +432,7 @@ mod tests {
             .build(SqliteQueryBuilder);
         dal.conn.execute(&sql, []).expect("result");
 
-        // create table
+        // create Prices table
 
         let sql = Table::create()
             .table(PriceIden::Table)
@@ -443,11 +473,19 @@ mod tests {
     }
 
     fn insert_dummy_prices(dal: &RuSqliteDal) {
-        dal.add_price(&create_dummy_price(100, 12345, None));
-        dal.add_price(&create_dummy_price(101, 10101, None));
-        dal.add_price(&create_dummy_price(102, 1234, None));
-        dal.add_price(&create_dummy_price(103, 123456789, Some(10000)));
-        dal.add_price(&create_dummy_price(104, 123456, Some(1000)));
+        dal.add_price(&create_dummy_price(1, 12345, None));
+        dal.add_price(&create_dummy_price(1, 10101, None));
+        dal.add_price(&create_dummy_price(2, 1234, None));
+        dal.add_price(&create_dummy_price(3, 123456789, Some(10000)));
+        dal.add_price(&create_dummy_price(4, 123456, Some(1000)));
+    }
+
+    fn insert_dummy_securities(dal: &RuSqliteDal) {
+        let sql = "INSERT INTO Security (id, namespace, symbol, currency) VALUES (?1, ?2, ?3, ?4)";
+        dal.conn.execute(sql, (1, "NULL", "VTI", "USD")).expect("inserted record");
+        dal.conn.execute(sql, (2, "XETRA", "EL49", "EUR")).expect("inserted record");
+        dal.conn.execute(sql, (3, "ASX", "VAS", "AUD")).expect("inserted record");
+        dal.conn.execute(sql, (4, "LSE", "VHYL", "GBP")).expect("inserted record");
     }
 
     // #[test]
@@ -495,7 +533,6 @@ mod tests {
         let sql = r#"SELECT * 
         FROM MY_TABLE 
         WHERE @parameter IS NULL OR NAME = @parameter;"#;
-
     }
 
     #[test]
@@ -552,5 +589,17 @@ mod tests {
         println!("prices: {:?}", actual);
 
         assert!(actual.len() == 1);
+    }
+
+    #[test]
+    fn test_get_securities_wo_filter() {
+        let dal = get_test_dal();
+
+        let filter = SecurityFilter::new();
+
+        let securities = dal.get_securities(filter);
+
+        assert_ne!(securities.len(), 0);
+        assert_eq!(securities.len(), 4);
     }
 }
