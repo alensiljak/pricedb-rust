@@ -5,7 +5,7 @@
 * Example for a query: https://stackoverflow.com/questions/67089430/how-do-we-use-select-query-with-an-external-where-parameter-in-rusqlite
 */
 use rusqlite::{Connection, Row};
-use sea_query::{Expr, Query, QueryStatementWriter, SqliteQueryBuilder};
+use sea_query::{Expr, Query, SqliteQueryBuilder};
 
 use crate::model::{
     NewPrice, Price, PriceFilter, PriceIden, Security, SecurityFilter, SecurityIden, SecuritySymbol,
@@ -62,7 +62,28 @@ impl Dal for RuSqliteDal {
 
         log::debug!("get prices, sql: {:?}", sql);
 
-        todo!()
+        let conn = open_connection(&self.conn_str);
+        let mut statement = conn.prepare(&sql).unwrap();
+
+        let sec_iter = statement
+            .query_map([], |row| {
+                // map
+                let sec = map_row_to_price(row);
+                // log::debug!("parsed: {:?}", sec);
+                Ok(sec)
+            })
+            .expect("Filtered Securities");
+
+        for item in sec_iter {
+            match item {
+                Ok(sec) => result.push(sec),
+                Err(_) => todo!(),
+            }
+        }
+
+        log::debug!("found prices: {:?}", result);
+
+        result
     }
 
     fn get_prices_for_security(&self, security_id: i32) -> anyhow::Result<Vec<Price>> {
@@ -181,10 +202,21 @@ fn open_connection(conn_str: &String) -> Connection {
     Connection::open(conn_str).expect("open sqlite connection")
 }
 
-fn map_row_to_security(row: &Row) -> Security {
-    // let x: i32 = row.get(0).expect("field 0");
-    // log::debug!("mapping row {:?}", x);
+fn map_row_to_price(row: &Row) -> Price {
+    let result = Price { 
+        id: row.get(0).expect("value"), 
+        security_id: row.get(1).expect("value"), 
+        date: row.get(2).expect("value"), 
+        time: row.get(3).expect("value"), 
+        value: row.get(4).expect("value"),
+        denom: row.get(5).expect("value"),
+        currency: row.get(6).expect("value")
+    };
 
+    result
+}
+
+fn map_row_to_security(row: &Row) -> Security {
     let sec = Security {
         id: row.get(0).expect("id"),
         namespace: row.get(1).expect("namespace"),
@@ -307,7 +339,7 @@ mod tests {
 
     use crate::model::{PriceIden, SecurityFilter};
 
-    use super::generate_security_query_with_filter;
+    use super::{generate_security_query_with_filter, open_connection};
 
     // #[test]
     // fn test_conditions() {
@@ -331,5 +363,14 @@ mod tests {
 
         assert_eq!(sql, 
             "SELECT \"id\", \"namespace\", \"symbol\", \"updater\", \"currency\", \"ledger_symbol\", \"notes\" FROM \"security\"");
+    }
+
+    #[test]
+    fn test_null_param() {
+        let sql = r#"SELECT * 
+        FROM MY_TABLE 
+        WHERE @parameter IS NULL OR NAME = @parameter;"#;
+
+        //let conn = open_connection()
     }
 }
