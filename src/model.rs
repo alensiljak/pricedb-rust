@@ -7,12 +7,12 @@
 
 use std::fmt::Display;
 
-use crate::database::schema::price;
+// use crate::database::schema::price;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq, PartialOrd, Ord)]
 #[allow(unused)]
-#[derive(diesel::Queryable, diesel::Identifiable)]
-#[diesel(table_name = price)]
+// #[derive(diesel::Queryable, diesel::Identifiable)]
+// #[diesel(table_name = price)]
 pub struct Price {
     pub id: i32,
     pub security_id: i32,
@@ -25,8 +25,8 @@ pub struct Price {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[derive(diesel::Insertable)]
-#[diesel(table_name = price)]
+// #[derive(diesel::Insertable)]
+// #[diesel(table_name = price)]
 pub struct NewPrice {
     pub security_id: i32,
     pub date: String,
@@ -70,7 +70,8 @@ pub(crate) struct PriceFilter {
     pub time: Option<String>,
 }
 
-#[derive(Debug, diesel::Queryable)]
+#[derive(Debug)]
+// #[derive(diesel::Queryable)]
 #[allow(unused)]
 pub struct Security {
     pub id: i32,

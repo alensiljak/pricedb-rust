@@ -1,6 +1,6 @@
-use rusqlite::{Connection, Result, Row};
+use rusqlite::{Connection, Row};
 
-use crate::model::{Price, Security, SecuritySymbol};
+use crate::model::{Price, Security, SecuritySymbol, SecurityFilter};
 
 use super::Dal;
 
@@ -9,70 +9,47 @@ pub struct RuSqliteDal {
 }
 
 impl Dal for RuSqliteDal {
-    fn delete_price(&self, id: i64) -> anyhow::Result<()> {
+    fn add_price(&self, new_price: &crate::model::NewPrice) {
         todo!()
     }
 
-    /// Search for the securities with the given filter.
-    fn get_securities(
-        &self,
-        currency: &Option<String>,
-        agent: &Option<String>,
-        mnemonic: &Option<String>,
-        exchange: &Option<String>,
-    ) -> Vec<Security> {
-        let result: Vec<Security> = vec![];
-
-        // assemble the sql statement
-        // let columns = get_query_parameters(currency, agent, mnemonic, exchange);
-        // let sql = assemble_select_query(columns);
-        let sql = "select * from security";
-        log::debug!("select statement = {:?}", sql);
-
-        // todo: implement filtering
-        let conn = open_connection(&self.conn_str).expect("Error opening database.");
-        let statement = conn.prepare(sql).unwrap();
-        // append parameters
-        // let statement = append_param_values(&statement, currency, agent, mnemonic, exchange);
-        //let cursor = statement.into_iter().map(|row| row.unwrap());
-        // for row in cursor {
-        //     log::debug!("row: {:?}", row);
-        // }
-
-        return result;
+    fn delete_price(&self, id: i32) -> anyhow::Result<usize> {
+        todo!()
     }
 
-    fn get_security_by_symbol(&self, symbol: &str) -> Security {
-        log::trace!("fetching security by symbol {:?}", symbol);
-
-        let conn = open_connection(&self.conn_str).expect("Error opening database.");
-        let sql = "select * from security where symbol=?";
+    fn get_ids_of_symbols_with_prices(&self) -> anyhow::Result<Vec<i32>> {
+        let conn = open_connection(&self.conn_str);
+        let sql = "select security_id from price";
         let mut stmt = conn.prepare(sql).expect("Error");
-        let params = (1, symbol);
-        //let result = stmt.execute(params);
-        let security = stmt
-            .query_row(params, |r| {
-                let result = Security::new();
-
-                let x: i64 = r.get(0).expect("error");
-                log::debug!("row fetched: {:?}", x);
-
-                return Ok(result);
+        let rows = stmt
+            .query_map([], |row| {
+                let id = row.get::<usize, i32>(0).expect("error");
+                //log::debug!("row: {:?}", id);
+                return Ok(id);
             })
-            .expect("Error fetching security");
+            .expect("Error");
 
-        log::debug!("query result: {:?}", security);
+        // let count = rows.count();
+        // log::debug!("fetched {:?} rows", count);
 
-        return security;
+        let mut result: Vec<i32> = vec![];
+
+        for row in rows {
+            let id = row.expect("Error reading row");
+            // log::debug!("id: {:?}", id);
+            result.push(id);
+        }
+
+        return Ok(result);
     }
 
-    fn get_symbols(&self) -> Vec<SecuritySymbol> {
+    fn get_prices(&self, filter: Option<crate::model::PriceFilter>) -> Vec<Price> {
         todo!()
     }
 
-    fn get_prices_for_security(&self, security_id: i64) -> anyhow::Result<Vec<Price>> {
+    fn get_prices_for_security(&self, security_id: i32) -> anyhow::Result<Vec<Price>> {
         let mut result: Vec<Price> = vec![];
-        let conn = open_connection(&self.conn_str).expect("Error opening database.");
+        let conn = open_connection(&self.conn_str);
         let sql = "select * from price where security_id=? order by date desc, time desc;";
         let mut stmt = conn.prepare(sql).expect("Error");
 
@@ -97,30 +74,59 @@ impl Dal for RuSqliteDal {
         return Ok(result);
     }
 
-    fn get_symbol_ids_with_prices(&self) -> anyhow::Result<Vec<i64>> {
-        let conn = open_connection(&self.conn_str).expect("Error opening database.");
-        let sql = "select security_id from price";
+    /// Search for the securities with the given filter.
+    fn get_securities(&self, filter: SecurityFilter) -> Vec<Security> {
+        let result: Vec<Security> = vec![];
+
+        // assemble the sql statement
+        // let columns = get_query_parameters(currency, agent, mnemonic, exchange);
+        // let sql = assemble_select_query(columns);
+        let sql = "select * from security";
+        log::debug!("select statement = {:?}", sql);
+
+        // todo: implement filtering
+        let conn = open_connection(&self.conn_str);
+        let statement = conn.prepare(sql).unwrap();
+        // append parameters
+        // let statement = append_param_values(&statement, currency, agent, mnemonic, exchange);
+        //let cursor = statement.into_iter().map(|row| row.unwrap());
+        // for row in cursor {
+        //     log::debug!("row: {:?}", row);
+        // }
+
+        return result;
+    }
+
+    fn get_security_by_symbol(&self, symbol: &str) -> Security {
+        log::trace!("fetching security by symbol {:?}", symbol);
+
+        let conn = open_connection(&self.conn_str);
+        let sql = "select * from security where symbol=?";
         let mut stmt = conn.prepare(sql).expect("Error");
-        let rows = stmt
-            .query_map([], |row| {
-                let id = row.get::<usize, i64>(0).expect("error");
-                //log::debug!("row: {:?}", id);
-                return Ok(id);
+        let params = (1, symbol);
+        //let result = stmt.execute(params);
+        let security = stmt
+            .query_row(params, |r| {
+                let result = Security::new();
+
+                let x: i64 = r.get(0).expect("error");
+                log::debug!("row fetched: {:?}", x);
+
+                return Ok(result);
             })
-            .expect("Error");
+            .expect("Error fetching security");
 
-        // let count = rows.count();
-        // log::debug!("fetched {:?} rows", count);
+        log::debug!("query result: {:?}", security);
 
-        let mut result: Vec<i64> = vec![];
+        return security;
+    }
 
-        for row in rows {
-            let id = row.expect("Error reading row");
-            // log::debug!("id: {:?}", id);
-            result.push(id);
-        }
+    fn get_symbols(&self) -> Vec<SecuritySymbol> {
+        todo!()
+    }
 
-        return Ok(result);
+    fn update_price(&self, id: i32, price: &Price) -> anyhow::Result<usize> {
+        todo!()
     }
 }
 
@@ -138,7 +144,7 @@ fn map_price(row: &Row) -> Price {
 }
 
 /// rusqlite connection
-fn open_connection(conn_str: &String) -> Result<Connection> {
-    let connection = Connection::open(conn_str)?;
-    return Ok(connection);
+fn open_connection(conn_str: &String) -> Connection {
+    Connection::open(conn_str)
+        .expect("open sqlite connection")
 }

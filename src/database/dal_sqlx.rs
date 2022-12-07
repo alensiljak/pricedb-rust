@@ -5,7 +5,7 @@
 use async_trait::async_trait;
 use sqlx::{sqlite::SqliteRow, Connection, Row, SqliteConnection};
 
-use crate::model::{Price, Security};
+use crate::model::{NewPrice, Price, PriceFilter, Security, SecurityFilter};
 
 use super::Dal;
 
@@ -15,13 +15,19 @@ pub struct SqlxDal {
 
 #[async_trait]
 impl Dal for SqlxDal {
-    async fn get_securities(
-        &self,
-        currency: Option<String>,
-        agent: Option<String>,
-        mnemonic: Option<String>,
-        exchange: Option<String>,
-    ) -> Vec<crate::model::Security> {
+    fn add_price(&self, new_price: &NewPrice) {
+        todo!("complete")
+    }
+
+    fn delete_price(&self, id: i32) -> anyhow::Result<usize> {
+        todo!("complete")
+    }
+
+    fn get_prices(&self, filter: Option<PriceFilter>) -> Vec<Price> {
+        todo!("complete")
+    }
+
+    async fn get_securities(&self, filter: SecurityFilter) -> Vec<Security> {
         todo!("implement");
     }
 
@@ -47,8 +53,8 @@ impl Dal for SqlxDal {
         return vec![];
     }
 
-    async fn get_prices_for_security(&self, security_id: i64) -> anyhow::Result<Vec<Price>> {
-        let mut conn = self.get_connection().await.expect("Error opening database");
+    async fn get_prices_for_security(&self, security_id: i32) -> anyhow::Result<Vec<Price>> {
+        let mut conn = self.get_connection().await;
 
         // let result = sqlx::query_as!(
         //     Price,
@@ -76,28 +82,35 @@ impl Dal for SqlxDal {
         return Ok(result);
     }
 
-    async fn get_symbol_ids_with_prices(&self) -> anyhow::Result<Vec<i64>> {
+    async fn get_ids_of_symbols_with_prices(&self) -> anyhow::Result<Vec<i32>> {
         let mut result: Vec<i64> = vec![];
 
-        let mut conn = self.get_connection().await.expect("Error opening database");
+        let mut conn = self.get_connection().await?;
 
-        let rows = sqlx::query!(r#"select security_id from price"#)
+        let rows = sqlx::query("select security_id from price")
             .fetch_all(&mut conn)
             .await
             .expect("Error fetching prices");
         //symbol_ids
         for row in rows {
             //let x = row.security_id;
-            result.push(row.security_id);
+            result.push(row.get(0));
         }
 
         return Ok(result);
     }
+
+    fn update_price(&self, id: i32, price: &Price) -> anyhow::Result<usize> {
+        todo!("complete")
+    }
 }
 
 impl SqlxDal {
-    async fn get_connection(&self) -> anyhow::Result<SqliteConnection> {
-        let conn = SqliteConnection::connect(&self.conn_str).await?;
-        return Ok(conn);
+    async fn get_connection(&self) -> SqliteConnection {
+        // anyhow::Result<>
+        let conn = SqliteConnection::connect(&self.conn_str)
+            .await
+            .expect("sqlite connection");
+        conn
     }
 }

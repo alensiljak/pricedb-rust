@@ -6,21 +6,25 @@ use crate::database::Dal;
  * Exposing the main app functionality as a library, for testing purposes.
  */
 pub mod app;
+pub mod model;
+
 mod config;
 mod database;
-pub mod model;
+mod ledger_formatter;
 mod quote;
 
 /// Export prices in ledger format
 pub fn export() {
     // get prices
-    let prices = get_prices();
+    let mut prices = get_prices();
 
-    //prices.sort_by(compare)
-    todo!("sort by date");
+    // sort by date
+    prices.sort_by(|a, b| b.date.cmp(&a.date));
 
-    todo!("format in ledger format");
-    todo!("get export destination from configuration");
+    todo!("incomplete");
+
+    // format in ledger format
+    // get export destination from configuration
 }
 
 fn get_prices() -> Vec<Price> {

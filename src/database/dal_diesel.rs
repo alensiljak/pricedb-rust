@@ -33,6 +33,32 @@ pub fn establish_connection(db_path: &str) -> SqliteConnection {
 }
 
 impl Dal for DieselDal {
+    /**
+     * Inserts a new Price record.
+     */
+    fn add_price(&self, new_price: &NewPrice) {
+        use crate::database::schema::price::dsl::*;
+
+        log::debug!("inserting {:?}", new_price);
+
+        let conn = &mut establish_connection(&self.conn_str);
+
+        diesel::insert_into(price)
+            .values(new_price)
+            .execute(conn)
+            .expect("yo?");
+    }
+
+    fn delete_price(&self, id_to_delete: i32) -> Result<usize, anyhow::Error> {
+        use crate::database::schema::price::dsl::*;
+
+        let conn = &mut establish_connection(&self.conn_str);
+
+        let result = diesel::delete(price.filter(id.eq(id_to_delete))).execute(conn)?;
+
+        Ok(result)
+    }
+
     fn get_prices(&self, filter_option: Option<PriceFilter>) -> Vec<Price> {
         //use crate::database::schema::price::dsl::*;
         use crate::database::schema::price;
@@ -100,23 +126,12 @@ impl Dal for DieselDal {
         return result;
     }
 
-    fn delete_price(&self, id_to_delete: i32) -> Result<usize, anyhow::Error> {
-        use crate::database::schema::price::dsl::*;
-
-        let conn = &mut establish_connection(&self.conn_str);
-
-        let result = diesel::delete(price.filter(id.eq(id_to_delete))).execute(conn)?;
-
-        Ok(result)
-    }
-
-    #[allow(unused_variables)]
     fn get_security_by_symbol(&self, symbol: &str) -> Security {
         todo!("implement")
     }
 
     fn get_symbols(&self) -> Vec<crate::model::SecuritySymbol> {
-        todo!()
+        todo!("implement")
     }
 
     fn get_prices_for_security(
@@ -144,22 +159,6 @@ impl Dal for DieselDal {
         let ids = price.select(security_id).distinct().load(conn)?;
 
         Ok(ids)
-    }
-
-    /**
-     * Inserts a new Price record.
-     */
-    fn add_price(&self, new_price: &NewPrice) {
-        use crate::database::schema::price::dsl::*;
-
-        log::debug!("inserting {:?}", new_price);
-
-        let conn = &mut establish_connection(&self.conn_str);
-
-        diesel::insert_into(price)
-            .values(new_price)
-            .execute(conn)
-            .expect("yo?");
     }
 
     /**
