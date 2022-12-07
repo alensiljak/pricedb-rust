@@ -6,7 +6,6 @@
 // mod dal_sqlx;              // async-only
 // mod dal_sqlite;
 mod dal_rusqlite;
-// mod schema_seaquery;    // query builder
 
 use log::debug;
 

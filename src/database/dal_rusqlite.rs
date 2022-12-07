@@ -1,19 +1,11 @@
 /****
 * DAL implemented with rusqlite
+* Using SeaQuery to generate queries with variable parameters for filtering.
 *
 * Example for a query: https://stackoverflow.com/questions/67089430/how-do-we-use-select-query-with-an-external-where-parameter-in-rusqlite
-   let mut stmt = conn.prepare("SELECT id, name, age, data FROM person WHERE age=:age;")?;
-   let person_iter = stmt.query_map(&[(":age", &age.to_string())], |row| {
-       Ok(Person {
-           id: row.get(0)?,
-           name: row.get(1)?,
-           age: row.get(2)?,
-           data: row.get(3)?,
-       })
-   })?;
 */
 use rusqlite::{Connection, Row};
-use sea_query::{Expr, Query, SqliteQueryBuilder};
+use sea_query::{Expr, Query, SqliteQueryBuilder, QueryStatementWriter};
 
 use crate::model::{Price, Security, SecurityFilter, SecurityIden, SecuritySymbol};
 
@@ -91,28 +83,32 @@ impl Dal for RuSqliteDal {
 
     /// Search for the securities with the given filter.
     fn get_securities(&self, filter: SecurityFilter) -> Vec<Security> {
-        let result: Vec<Security> = vec![];
+        let mut result: Vec<Security> = vec![];
 
         // assemble the sql statement
-        // let columns = get_query_parameters(currency, agent, mnemonic, exchange);
-        // let sql = assemble_select_query(columns);
         // let sql = "select * from security";
-        let query = generate_query_with_filter(&filter);
-        let sql = query.0;
+        let sql = generate_query_with_filter(&filter);
 
-        log::debug!("select statement = {:?}, params: {:?}", sql, query.1);
+        log::debug!("select statement = {:?}", sql);
 
-        todo!("filtering");
-
-        // todo: implement filtering
         let conn = open_connection(&self.conn_str);
-        let statement = conn.prepare(&sql).unwrap();
-        // append parameters
-        // let statement = append_param_values(&statement, currency, agent, mnemonic, exchange);
-        //let cursor = statement.into_iter().map(|row| row.unwrap());
-        // for row in cursor {
-        //     log::debug!("row: {:?}", row);
-        // }
+        let mut statement = conn.prepare(&sql).unwrap();
+
+        let sec_iter = statement.query_map([], |row| {
+            // map
+            let sec = map_row_to_security(row);
+            log::debug!("parsed: {:?}", sec);
+            Ok(sec)
+        }).expect("Filtered Securities");
+
+        for item in sec_iter {
+            match item {
+                Ok(sec) => result.push(sec),
+                Err(_) => todo!(),
+            }
+        }
+
+        // log::debug!("securities: {:?}", result);
 
         return result;
     }
@@ -173,70 +169,48 @@ fn open_connection(conn_str: &String) -> Connection {
 }
 
 fn map_row_to_security(row: &Row) -> Security {
+    // let x: i32 = row.get(0).expect("field 0");
+    // log::debug!("mapping row {:?}", x);
+
     let sec = Security {
         id: row.get(0).expect("id"),
-        namespace: todo!(),
-        symbol: todo!(),
-        updater: todo!(),
-        currency: todo!(),
-        ledger_symbol: todo!(),
-        notes: todo!(),
+        namespace: row.get(1).expect("namespace"),
+        symbol: row.get(2).expect("symbol"),
+        updater: row.get(3).expect("updater"),
+        currency: row.get(4).expect("currency"),
+        ledger_symbol: row.get(5).expect("ledger symbol"),
+        notes: row.get(6).expect("notes"),
     };
 
     sec
 }
 
-fn generate_query_with_filter(filter: &SecurityFilter) -> (String, sea_query::Values) {
+/// Generates SELECT statement with the given parameters/filters.
+fn generate_query_with_filter(filter: &SecurityFilter) -> String {
     let query = Query::select()
+        // Order of columns:
+        .column(SecurityIden::Id)
+        .column(SecurityIden::Namespace)
         .column(SecurityIden::Symbol)
+        .column(SecurityIden::Updater)
+        .column(SecurityIden::Currency)
+        .column(SecurityIden::LedgerSymbol)
+        .column(SecurityIden::Notes)
+        //
         .from(SecurityIden::Table)
         .conditions(
             filter.currency.is_some(),
             |q| {
                 if let Some(cur) = filter.currency.to_owned() {
-                    q.and_where(Expr::col(SecurityIden::Currency).eq(cur.to_owned()));
+                    let uppercase_cur = cur.to_uppercase();
+                    q.and_where(Expr::col(SecurityIden::Currency).eq(uppercase_cur));
                 }
             },
             |q| {},
         )
         .to_owned();
 
-    query.build(SqliteQueryBuilder)
+    // query.build(SqliteQueryBuilder)
+    query.to_string(SqliteQueryBuilder)
 }
 
-/// Don't use this.
-/// It works but was written before finding .conditions()
-///
-fn generate_query_with_filter_manual(filter: &SecurityFilter) -> String {
-    let mut query = Query::select()
-        .column(SecurityIden::Id)
-        .from(SecurityIden::Table)
-        .to_owned();
-
-    // Some conditions
-    if let Some(agent) = &filter.agent {
-        query = query
-            .and_where(Expr::col(SecurityIden::Updater).eq(agent.to_owned()))
-            .to_owned();
-    }
-    if let Some(cur) = &filter.currency {
-        query = query
-            .and_where(Expr::col(SecurityIden::Currency).eq(cur.to_owned()))
-            .to_owned();
-    }
-    if let Some(exc) = &filter.exchange {
-        query = query
-            .and_where(Expr::col(SecurityIden::Namespace).eq(exc.to_owned()))
-            .to_owned();
-    }
-    if let Some(sym) = &filter.symbol {
-        query = query
-            .and_where(Expr::col(SecurityIden::Symbol).eq(sym.to_owned()))
-            .to_owned();
-    }
-
-    let x = query.build(SqliteQueryBuilder);
-    log::debug!("generated SQL: {:?}", x);
-
-    x.0
-}
