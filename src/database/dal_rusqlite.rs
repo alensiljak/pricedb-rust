@@ -5,9 +5,11 @@
 * Example for a query: https://stackoverflow.com/questions/67089430/how-do-we-use-select-query-with-an-external-where-parameter-in-rusqlite
 */
 use rusqlite::{Connection, Row};
-use sea_query::{Expr, Query, SqliteQueryBuilder, QueryStatementWriter};
+use sea_query::{Expr, Query, QueryStatementWriter, SqliteQueryBuilder};
 
-use crate::model::{Price, Security, SecurityFilter, SecurityIden, SecuritySymbol};
+use crate::model::{
+    NewPrice, Price, PriceFilter, PriceIden, Security, SecurityFilter, SecurityIden, SecuritySymbol,
+};
 
 use super::Dal;
 
@@ -16,7 +18,7 @@ pub struct RuSqliteDal {
 }
 
 impl Dal for RuSqliteDal {
-    fn add_price(&self, new_price: &crate::model::NewPrice) {
+    fn add_price(&self, new_price: &NewPrice) {
         todo!()
     }
 
@@ -50,7 +52,16 @@ impl Dal for RuSqliteDal {
         return Ok(result);
     }
 
-    fn get_prices(&self, filter: Option<crate::model::PriceFilter>) -> Vec<Price> {
+    fn get_prices(&self, filter: Option<PriceFilter>) -> Vec<Price> {
+        let mut result: Vec<Price> = vec![];
+
+        let sql = match filter {
+            Some(_) => generate_price_query_with_filter(&filter.unwrap()),
+            None => todo!("test this case!"), //"select * from price".to_owned()
+        };
+
+        log::debug!("get prices, sql: {:?}", sql);
+
         todo!()
     }
 
@@ -87,19 +98,21 @@ impl Dal for RuSqliteDal {
 
         // assemble the sql statement
         // let sql = "select * from security";
-        let sql = generate_query_with_filter(&filter);
+        let sql = generate_security_query_with_filter(&filter);
 
-        log::debug!("select statement = {:?}", sql);
+        log::debug!("securities sql: {:?}", sql);
 
         let conn = open_connection(&self.conn_str);
         let mut statement = conn.prepare(&sql).unwrap();
 
-        let sec_iter = statement.query_map([], |row| {
-            // map
-            let sec = map_row_to_security(row);
-            log::debug!("parsed: {:?}", sec);
-            Ok(sec)
-        }).expect("Filtered Securities");
+        let sec_iter = statement
+            .query_map([], |row| {
+                // map
+                let sec = map_row_to_security(row);
+                // log::debug!("parsed: {:?}", sec);
+                Ok(sec)
+            })
+            .expect("Filtered Securities");
 
         for item in sec_iter {
             match item {
@@ -186,7 +199,7 @@ fn map_row_to_security(row: &Row) -> Security {
 }
 
 /// Generates SELECT statement with the given parameters/filters.
-fn generate_query_with_filter(filter: &SecurityFilter) -> String {
+fn generate_security_query_with_filter(filter: &SecurityFilter) -> String {
     let query = Query::select()
         // Order of columns:
         .column(SecurityIden::Id)
@@ -199,11 +212,40 @@ fn generate_query_with_filter(filter: &SecurityFilter) -> String {
         //
         .from(SecurityIden::Table)
         .conditions(
+            filter.agent.is_some(),
+            |q| {
+                if let Some(agent) = filter.agent.to_owned() {
+                    q.and_where(Expr::col(SecurityIden::Updater).eq(agent));
+                }
+            },
+            |q| {},
+        )
+        .conditions(
             filter.currency.is_some(),
             |q| {
                 if let Some(cur) = filter.currency.to_owned() {
                     let uppercase_cur = cur.to_uppercase();
                     q.and_where(Expr::col(SecurityIden::Currency).eq(uppercase_cur));
+                }
+            },
+            |q| {},
+        )
+        .conditions(
+            filter.exchange.is_some(),
+            |q| {
+                if let Some(exc) = filter.exchange.to_owned() {
+                    let uppercase_exc = exc.to_uppercase();
+                    q.and_where(Expr::col(SecurityIden::Namespace).eq(uppercase_exc));
+                }
+            },
+            |q| {},
+        )
+        .conditions(
+            filter.symbol.is_some(),
+            |q| {
+                if let Some(sym) = filter.currency.to_owned() {
+                    let uppercase_sym = sym.to_uppercase();
+                    q.and_where(Expr::col(SecurityIden::Symbol).eq(uppercase_sym));
                 }
             },
             |q| {},
@@ -214,3 +256,80 @@ fn generate_query_with_filter(filter: &SecurityFilter) -> String {
     query.to_string(SqliteQueryBuilder)
 }
 
+fn generate_price_query_with_filter(filter: &PriceFilter) -> String {
+    let query = Query::select()
+        // Order of columns:
+        .column(PriceIden::Id)
+        .column(PriceIden::SecurityId)
+        .column(PriceIden::Date)
+        .column(PriceIden::Time)
+        .column(PriceIden::Value)
+        .column(PriceIden::Denom)
+        .column(PriceIden::Currency)
+        //
+        .from(PriceIden::Table)
+        .conditions(
+            filter.security_id.is_some(),
+            |q| {
+                if let Some(val) = filter.security_id {
+                    q.and_where(Expr::col(PriceIden::SecurityId).eq(val));
+                }
+            },
+            |q| {},
+        )
+        .conditions(
+            filter.date.is_some(),
+            |q| {
+                if let Some(val) = filter.date.to_owned() {
+                    q.and_where(Expr::col(PriceIden::Date).eq(val));
+                }
+            },
+            |q| {},
+        )
+        .conditions(
+            filter.time.is_some(),
+            |q| {
+                if let Some(val) = filter.time.to_owned() {
+                    q.and_where(Expr::col(PriceIden::Time).eq(val));
+                }
+            },
+            |q| {},
+        )
+        .to_owned();
+
+    // query.build(SqliteQueryBuilder)
+    query.to_string(SqliteQueryBuilder)
+}
+
+#[cfg(test)]
+mod tests {
+    use sea_query::{Cond, Condition, Expr, Query};
+
+    use crate::model::{PriceIden, SecurityFilter};
+
+    use super::generate_security_query_with_filter;
+
+    // #[test]
+    // fn test_conditions() {
+    //     let mut cond = Cond::all();
+    //     cond = cond.add(Expr::col(PriceIden::SecurityId).eq(130));
+
+    //     println!("Condition: {:?}", cond);
+
+    //     assert!(false)
+    // }
+
+    #[test]
+    fn test_sec_query_no_params() {
+        let filter = SecurityFilter {
+            currency: None,
+            agent: None,
+            exchange: None,
+            symbol: None,
+        };
+        let sql = generate_security_query_with_filter(&filter);
+
+        assert_eq!(sql, 
+            "SELECT \"id\", \"namespace\", \"symbol\", \"updater\", \"currency\", \"ledger_symbol\", \"notes\" FROM \"security\"");
+    }
+}
