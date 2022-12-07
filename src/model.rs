@@ -7,9 +7,11 @@
 
 use std::fmt::Display;
 
+use sea_query::{enum_def, Iden};
 // use crate::database::schema::price;
 
 #[derive(Debug, Clone, Eq, PartialEq, PartialOrd, Ord)]
+#[enum_def]
 #[allow(unused)]
 // #[derive(diesel::Queryable, diesel::Identifiable)]
 // #[diesel(table_name = price)]
@@ -70,8 +72,9 @@ pub(crate) struct PriceFilter {
     pub time: Option<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 // #[derive(diesel::Queryable)]
+#[enum_def]
 #[allow(unused)]
 pub struct Security {
     pub id: i32,

@@ -1,6 +1,21 @@
+/****
+* DAL implemented with rusqlite
+*
+* Example for a query: https://stackoverflow.com/questions/67089430/how-do-we-use-select-query-with-an-external-where-parameter-in-rusqlite
+   let mut stmt = conn.prepare("SELECT id, name, age, data FROM person WHERE age=:age;")?;
+   let person_iter = stmt.query_map(&[(":age", &age.to_string())], |row| {
+       Ok(Person {
+           id: row.get(0)?,
+           name: row.get(1)?,
+           age: row.get(2)?,
+           data: row.get(3)?,
+       })
+   })?;
+*/
 use rusqlite::{Connection, Row};
+use sea_query::{Expr, Query, SqliteQueryBuilder};
 
-use crate::model::{Price, Security, SecuritySymbol, SecurityFilter};
+use crate::model::{Price, Security, SecurityFilter, SecurityIden, SecuritySymbol};
 
 use super::Dal;
 
@@ -19,22 +34,22 @@ impl Dal for RuSqliteDal {
 
     fn get_ids_of_symbols_with_prices(&self) -> anyhow::Result<Vec<i32>> {
         let conn = open_connection(&self.conn_str);
-        let sql = "select security_id from price";
+        let sql = "select distinct security_id from price";
         let mut stmt = conn.prepare(sql).expect("Error");
-        let rows = stmt
+        let ids = stmt
             .query_map([], |row| {
                 let id = row.get::<usize, i32>(0).expect("error");
                 //log::debug!("row: {:?}", id);
                 return Ok(id);
             })
-            .expect("Error");
+            .expect("Mapped rows");
 
         // let count = rows.count();
         // log::debug!("fetched {:?} rows", count);
 
         let mut result: Vec<i32> = vec![];
 
-        for row in rows {
+        for row in ids {
             let id = row.expect("Error reading row");
             // log::debug!("id: {:?}", id);
             result.push(id);
@@ -81,12 +96,15 @@ impl Dal for RuSqliteDal {
         // assemble the sql statement
         // let columns = get_query_parameters(currency, agent, mnemonic, exchange);
         // let sql = assemble_select_query(columns);
-        let sql = "select * from security";
+        // let sql = "select * from security";
+        let sql = generate_query_with_filter(&filter);
         log::debug!("select statement = {:?}", sql);
+
+        todo!("complete");
 
         // todo: implement filtering
         let conn = open_connection(&self.conn_str);
-        let statement = conn.prepare(sql).unwrap();
+        let statement = conn.prepare(&sql).unwrap();
         // append parameters
         // let statement = append_param_values(&statement, currency, agent, mnemonic, exchange);
         //let cursor = statement.into_iter().map(|row| row.unwrap());
@@ -102,15 +120,19 @@ impl Dal for RuSqliteDal {
 
         let conn = open_connection(&self.conn_str);
         let sql = "select * from security where symbol=?";
-        let mut stmt = conn.prepare(sql).expect("Error");
+        let mut stmt = conn.prepare(sql).expect("Statement");
         let params = (1, symbol);
         //let result = stmt.execute(params);
         let security = stmt
             .query_row(params, |r| {
-                let result = Security::new();
+                // let result = Security::new();
 
-                let x: i64 = r.get(0).expect("error");
-                log::debug!("row fetched: {:?}", x);
+                //let x: i64 = r.get(0).expect("error");
+                let result = map_row_to_security(r);
+
+                log::debug!("row fetched: {:?}", result);
+
+                todo!("complete");
 
                 return Ok(result);
             })
@@ -145,6 +167,53 @@ fn map_price(row: &Row) -> Price {
 
 /// rusqlite connection
 fn open_connection(conn_str: &String) -> Connection {
-    Connection::open(conn_str)
-        .expect("open sqlite connection")
+    Connection::open(conn_str).expect("open sqlite connection")
+}
+
+fn map_row_to_security(row: &Row) -> Security {
+    let sec = Security {
+        id: row.get(0).expect("id"),
+        namespace: todo!(),
+        symbol: todo!(),
+        updater: todo!(),
+        currency: todo!(),
+        ledger_symbol: todo!(),
+        notes: todo!(),
+    };
+
+    sec
+}
+
+fn generate_query_with_filter(filter: &SecurityFilter) -> String {
+    let mut query = Query::select()
+        .column(SecurityIden::Id)
+        .from(SecurityIden::Table)
+        .to_owned();
+
+    // Some conditions
+    if let Some(agent) = &filter.agent {
+        query = query
+            .and_where(Expr::col(SecurityIden::Updater).eq(agent.to_owned()))
+            .to_owned();
+    }
+    if let Some(cur) = &filter.currency {
+        query = query
+            .and_where(Expr::col(SecurityIden::Currency).eq(cur.to_owned()))
+            .to_owned();
+    }
+    if let Some(exc) = &filter.exchange {
+        query = query
+            .and_where(Expr::col(SecurityIden::Namespace).eq(exc.to_owned()))
+            .to_owned();
+    }
+    if let Some(sym) = &filter.symbol {
+        query = query
+            .and_where(Expr::col(SecurityIden::Symbol).eq(sym.to_owned()))
+            .to_owned();
+    }
+
+    let x = query.build(SqliteQueryBuilder);
+    log::debug!("generated SQL: {:?}", x);
+
+    x.0
 }
