@@ -587,7 +587,7 @@ mod tests {
         let dal = get_test_dal();
 
         let filter = PriceFilter {
-            security_id: Some(100),
+            security_id: Some(1),
             date: None,
             time: None,
         };
@@ -595,7 +595,7 @@ mod tests {
 
         println!("prices: {:?}", actual);
 
-        assert!(actual.len() == 1);
+        assert_eq!(actual.len(), 2);
     }
 
     #[test]
