@@ -97,10 +97,12 @@ impl Dal for RuSqliteDal {
         // let columns = get_query_parameters(currency, agent, mnemonic, exchange);
         // let sql = assemble_select_query(columns);
         // let sql = "select * from security";
-        let sql = generate_query_with_filter(&filter);
-        log::debug!("select statement = {:?}", sql);
+        let query = generate_query_with_filter(&filter);
+        let sql = query.0;
 
-        todo!("complete");
+        log::debug!("select statement = {:?}, params: {:?}", sql, query.1);
+
+        todo!("filtering");
 
         // todo: implement filtering
         let conn = open_connection(&self.conn_str);
@@ -184,7 +186,28 @@ fn map_row_to_security(row: &Row) -> Security {
     sec
 }
 
-fn generate_query_with_filter(filter: &SecurityFilter) -> String {
+fn generate_query_with_filter(filter: &SecurityFilter) -> (String, sea_query::Values) {
+    let query = Query::select()
+        .column(SecurityIden::Symbol)
+        .from(SecurityIden::Table)
+        .conditions(
+            filter.currency.is_some(),
+            |q| {
+                if let Some(cur) = filter.currency.to_owned() {
+                    q.and_where(Expr::col(SecurityIden::Currency).eq(cur.to_owned()));
+                }
+            },
+            |q| {},
+        )
+        .to_owned();
+
+    query.build(SqliteQueryBuilder)
+}
+
+/// Don't use this.
+/// It works but was written before finding .conditions()
+///
+fn generate_query_with_filter_manual(filter: &SecurityFilter) -> String {
     let mut query = Query::select()
         .column(SecurityIden::Id)
         .from(SecurityIden::Table)
