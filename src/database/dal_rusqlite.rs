@@ -5,8 +5,7 @@
 * Example for a query: https://stackoverflow.com/questions/67089430/how-do-we-use-select-query-with-an-external-where-parameter-in-rusqlite
 */
 use rusqlite::{Connection, Row};
-use sea_query::{Expr, Query, SqliteQueryBuilder, Values};
-//use sea_query::{ColumnDef, Expr, Func, Iden, Order, Query, SqliteQueryBuilder, Table};
+use sea_query::{Expr, Query, SqliteQueryBuilder};
 use sea_query_rusqlite::{RusqliteBinder, RusqliteValues};
 
 use crate::model::{
@@ -91,7 +90,7 @@ impl Dal for RuSqliteDal {
         let mut statement = conn.prepare(&sql).unwrap();
 
         let sec_iter = statement
-            .query_map([], |row| {
+            .query_map(&*values.as_params(), |row| {
                 // map
                 let sec = map_row_to_price(row);
                 // log::debug!("parsed: {:?}", sec);
@@ -334,7 +333,7 @@ fn generate_security_query_with_filter(filter: &SecurityFilter) -> (String, Rusq
 }
 
 #[allow(unused_variables)]
-fn generate_price_query_with_filter(filter: &PriceFilter) -> (String, Values) {
+fn generate_price_query_with_filter(filter: &PriceFilter) -> (String, RusqliteValues) {
     let query = Query::select()
         // Order of columns:
         .column(PriceIden::Id)
@@ -375,17 +374,18 @@ fn generate_price_query_with_filter(filter: &PriceFilter) -> (String, Values) {
         )
         .to_owned();
 
-    query.build(SqliteQueryBuilder)
+    // query.build(SqliteQueryBuilder)
     //query.to_string(SqliteQueryBuilder)
+    query.build_rusqlite(SqliteQueryBuilder)
 }
 
 #[cfg(test)]
 mod tests {
     use sea_query::{ColumnDef, Table};
     use sea_query_rusqlite::RusqliteValue;
+    use test_log::test;
 
     use crate::{
-        get_prices,
         model::{NewPrice, SecurityFilter},
     };
 
@@ -393,7 +393,7 @@ mod tests {
 
     /// Creates a dummy dal and prepares an in-memory test database.
     fn get_test_dal() -> RuSqliteDal {
-        let dal = RuSqliteDal::new("sqlite::memory:".to_string());
+        let dal = RuSqliteDal::new(":memory:".to_string());
         prepare_test_db(&dal);
         insert_dummy_prices(&dal);
 
@@ -402,7 +402,7 @@ mod tests {
 
     fn prepare_test_db(dal: &RuSqliteDal) {
         // drop table, if exists
-        
+
         let sql = Table::drop()
             .table(PriceIden::Table)
             .if_exists()
@@ -463,9 +463,7 @@ mod tests {
     // fn test_conditions() {
     //     let mut cond = Cond::all();
     //     cond = cond.add(Expr::col(PriceIden::SecurityId).eq(130));
-
     //     println!("Condition: {:?}", cond);
-
     //     assert!(false)
     // }
 
@@ -532,8 +530,9 @@ mod tests {
     }
 
     #[test]
-    ///
-    fn test_get_prices() {
+    /// Test loading prices with an empty filter.
+    /// Loads all prices
+    fn test_get_prices_w_empty_filter() {
         let dal = get_test_dal();
 
         let filter = PriceFilter {
@@ -545,7 +544,23 @@ mod tests {
 
         println!("prices: {:?}", actual);
 
-        assert!(actual.len() > 0);
         assert!(actual.len() == 5);
+    }
+
+    #[test]
+    /// Test loading prices with a security id.
+    fn test_get_prices_w_filter() {
+        let dal = get_test_dal();
+
+        let filter = PriceFilter {
+            security_id: Some(100),
+            date: None,
+            time: None,
+        };
+        let actual = dal.get_prices(Some(filter));
+
+        println!("prices: {:?}", actual);
+
+        assert!(actual.len() == 1);
     }
 }
