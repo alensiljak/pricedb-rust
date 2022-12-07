@@ -16,14 +16,13 @@ use super::Dal;
 
 #[allow(unused)]
 pub struct RuSqliteDal {
-    pub(crate) conn_str: String,
+    //pub(crate) conn_str: String,
     pub(crate) conn: Connection,
 }
 
 impl RuSqliteDal {
     pub(crate) fn new(conn_str: String) -> RuSqliteDal {
         RuSqliteDal {
-            conn_str: conn_str.clone(),
             conn: open_connection(&conn_str),
         }
     }
@@ -38,8 +37,7 @@ impl Dal for RuSqliteDal {
         log::debug!("inserting price: {:?}", sql);
         log::debug!("values: {:?}", values);
 
-        let conn = open_connection(&self.conn_str);
-        let result = conn
+        let result = self.conn
             .execute(sql.as_str(), &*values.as_params())
             .expect("price inserted");
 
@@ -51,9 +49,8 @@ impl Dal for RuSqliteDal {
     }
 
     fn get_ids_of_symbols_with_prices(&self) -> anyhow::Result<Vec<i32>> {
-        let conn = open_connection(&self.conn_str);
         let sql = "select distinct security_id from price";
-        let mut stmt = conn.prepare(sql).expect("Error");
+        let mut stmt = self.conn.prepare(sql).expect("Error");
         let ids = stmt
             .query_map([], |row| {
                 let id = row.get::<usize, i32>(0).expect("error");
@@ -86,8 +83,7 @@ impl Dal for RuSqliteDal {
 
         log::debug!("get prices, sql: {:?}", sql);
 
-        let conn = open_connection(&self.conn_str);
-        let mut statement = conn.prepare(&sql).unwrap();
+        let mut statement = self.conn.prepare(&sql).unwrap();
 
         let sec_iter = statement
             .query_map(&*values.as_params(), |row| {
@@ -112,9 +108,8 @@ impl Dal for RuSqliteDal {
 
     fn get_prices_for_security(&self, security_id: i32) -> anyhow::Result<Vec<Price>> {
         let mut result: Vec<Price> = vec![];
-        let conn = open_connection(&self.conn_str);
         let sql = "select * from price where security_id=? order by date desc, time desc;";
-        let mut stmt = conn.prepare(sql).expect("Error");
+        let mut stmt = self.conn.prepare(sql).expect("Error");
 
         let rows = stmt
             .query_map([security_id], |row| {
@@ -147,8 +142,7 @@ impl Dal for RuSqliteDal {
 
         log::debug!("securities sql: {:?}", sql);
 
-        let conn = open_connection(&self.conn_str);
-        let mut statement = conn.prepare(&sql).unwrap();
+        let mut statement = self.conn.prepare(&sql).unwrap();
 
         let sec_iter = statement
             .query_map([], |row| {
@@ -174,9 +168,8 @@ impl Dal for RuSqliteDal {
     fn get_security_by_symbol(&self, symbol: &str) -> Security {
         log::trace!("fetching security by symbol {:?}", symbol);
 
-        let conn = open_connection(&self.conn_str);
         let sql = "select * from security where symbol=?";
-        let mut stmt = conn.prepare(sql).expect("Statement");
+        let mut stmt = self.conn.prepare(sql).expect("Statement");
         let params = (1, symbol);
         let security = stmt
             .query_row(params, |r| {
@@ -429,8 +422,6 @@ mod tests {
             .col(ColumnDef::new(PriceIden::Currency).string())
             .build(SqliteQueryBuilder);
 
-        // let conn_str = get_test_conn_str();
-        // let conn = open_connection(&conn_str);
         let result = dal.conn.execute(&sql, []).expect("result");
 
         assert_eq!(0, result);
@@ -505,7 +496,6 @@ mod tests {
         FROM MY_TABLE 
         WHERE @parameter IS NULL OR NAME = @parameter;"#;
 
-        //let conn = open_connection()
     }
 
     #[test]
