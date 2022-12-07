@@ -542,7 +542,7 @@ mod tests {
             date: "2022-12-01".to_string(),
             time: None,
             value: 100,
-            denom: 0,
+            denom: 10,
             currency: "AUD".to_string(),
         };
 
@@ -554,6 +554,13 @@ mod tests {
         //let expected = "INSERT INTO \"price\" (\"security_id\", \"date\", \"time\", \"value\", \"denom\", \"currency\") VALUES (111, '2022-12-01', NULL, 100, 0, 'AUD')";
         let expected = "INSERT INTO \"price\" (\"security_id\", \"date\", \"time\", \"value\", \"denom\", \"currency\") VALUES (?, ?, ?, ?, ?, ?)";
         assert_eq!(expected, sql);
+
+        assert_eq!(values.0[0].0, sea_query::Value::Int(Some(111)));
+        assert_eq!(values.0[1].0, sea_query::Value::String(Some(Box::new("2022-12-01".to_string()))));
+        assert_eq!(values.0[2].0, sea_query::Value::String(None));
+        assert_eq!(values.0[3].0, sea_query::Value::Int(Some(100)));
+        assert_eq!(values.0[4].0, sea_query::Value::Int(Some(10)));
+        assert_eq!(values.0[5].0, sea_query::Value::String(Some(Box::new("AUD".to_string()))));
     }
 
     #[test]

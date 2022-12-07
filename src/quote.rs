@@ -79,7 +79,8 @@ impl Quote {
             currency
         );
 
-        let price = actor.download(sec_symbol, currency).await.expect("Huston?");
+        let price = actor.download(sec_symbol, currency).await
+            .expect("downloaded price");
 
         Some(price)
     }

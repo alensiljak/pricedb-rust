@@ -84,7 +84,7 @@ impl YahooFinanceDownloader {
         let d = Decimal::from_f64(market_price).unwrap();
         // log::debug!("Decimal -> {:?} {:?}", d.mantissa(), d.scale());
         result.value = d.mantissa().to_i32().unwrap();
-        result.denom = d.scale() as i32;
+        result.denom = 10_i32.pow(d.scale()); // 10^scale
 
         // Currency
 
