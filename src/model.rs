@@ -52,17 +52,6 @@ impl Price {
         };
         return result;
     }
-
-    // pub fn for_insert() -> NewPrice {
-    //     NewPrice {
-    //         security_id: 0,
-    //         date: String::default(),
-    //         time: None,
-    //         value: 0,
-    //         denom: 0,
-    //         currency: String::default(),
-    //     }
-    // }
 }
 
 pub(crate) struct PriceFilter {

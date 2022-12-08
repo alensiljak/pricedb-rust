@@ -8,15 +8,14 @@ use rusqlite::{named_params, Connection, Row};
 use sea_query::{Expr, Query, SqliteQueryBuilder};
 use sea_query_rusqlite::{RusqliteBinder, RusqliteValues};
 
-use crate::model::{
+use crate::{model::{
     Price, PriceFilter, PriceIden, Security, SecurityFilter, SecurityIden, SecuritySymbol,
-};
+}, database::mappers_rusqlite::*};
 
 use super::Dal;
 
 #[allow(unused)]
 pub struct RuSqliteDal {
-    //pub(crate) conn_str: String,
     pub(crate) conn: Connection,
 }
 
@@ -213,59 +212,6 @@ fn map_price(row: &Row) -> Price {
 /// rusqlite connection
 fn open_connection(conn_str: &String) -> Connection {
     Connection::open(conn_str).expect("open sqlite connection")
-}
-
-fn map_row_to_price(row: &Row) -> Price {
-    let result = Price {
-        id: row.get(0).expect("value"),
-        security_id: row.get(1).expect("value"),
-        date: row.get(2).expect("value"),
-        time: row.get(3).expect("value"),
-        value: row.get(4).expect("value"),
-        denom: row.get(5).expect("value"),
-        currency: row.get(6).expect("value"),
-    };
-
-    result
-}
-
-fn map_row_to_security(row: &Row) -> Security {
-    let sec = Security {
-        id: row.get(0).expect("id"),
-        namespace: row.get(1).expect("namespace"),
-        symbol: row.get(2).expect("symbol"),
-        updater: row.get(3).expect("updater"),
-        currency: row.get(4).expect("currency"),
-        ledger_symbol: row.get(5).expect("ledger symbol"),
-        notes: row.get(6).expect("notes"),
-    };
-
-    sec
-}
-
-fn generate_insert_price(new_price: &Price) -> (String, RusqliteValues) {
-    let result = Query::insert()
-        .into_table(PriceIden::Table)
-        .columns([
-            PriceIden::SecurityId,
-            PriceIden::Date,
-            PriceIden::Time,
-            PriceIden::Value,
-            PriceIden::Denom,
-            PriceIden::Currency,
-        ])
-        .values_panic([
-            new_price.security_id.into(),
-            new_price.date.to_owned().into(),
-            new_price.time.to_owned().into(),
-            new_price.value.into(),
-            new_price.denom.into(),
-            new_price.currency.to_owned().into(),
-        ])
-        .build_rusqlite(SqliteQueryBuilder);
-    // .build(SqliteQueryBuilder);
-    //.to_string(SqliteQueryBuilder);
-    result
 }
 
 /// Generates SELECT statement with the given parameters/filters.
@@ -543,41 +489,6 @@ mod tests {
         let sql = r#"SELECT * 
         FROM MY_TABLE 
         WHERE @parameter IS NULL OR NAME = @parameter;"#;
-    }
-
-    #[test]
-    fn test_price_insert_statement() {
-        let new_price = Price {
-            id: i32::default(),
-            security_id: 111,
-            date: "2022-12-01".to_string(),
-            time: None,
-            value: 100,
-            denom: 10,
-            currency: "AUD".to_string(),
-        };
-
-        // let sql = dal.add_price(&new_price);
-        let (sql, values) = generate_insert_price(&new_price);
-
-        println!("sql: {:?}, values: {:?}", sql, values);
-
-        //let expected = "INSERT INTO \"price\" (\"security_id\", \"date\", \"time\", \"value\", \"denom\", \"currency\") VALUES (111, '2022-12-01', NULL, 100, 0, 'AUD')";
-        let expected = "INSERT INTO \"price\" (\"security_id\", \"date\", \"time\", \"value\", \"denom\", \"currency\") VALUES (?, ?, ?, ?, ?, ?)";
-        assert_eq!(expected, sql);
-
-        assert_eq!(values.0[0].0, sea_query::Value::Int(Some(111)));
-        assert_eq!(
-            values.0[1].0,
-            sea_query::Value::String(Some(Box::new("2022-12-01".to_string())))
-        );
-        assert_eq!(values.0[2].0, sea_query::Value::String(None));
-        assert_eq!(values.0[3].0, sea_query::Value::Int(Some(100)));
-        assert_eq!(values.0[4].0, sea_query::Value::Int(Some(10)));
-        assert_eq!(
-            values.0[5].0,
-            sea_query::Value::String(Some(Box::new("AUD".to_string())))
-        );
     }
 
     #[test]
