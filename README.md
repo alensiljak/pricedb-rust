@@ -19,6 +19,8 @@ The configuration file is located in the user's config directory, i.e. ~/.config
 
 The database is (currently) created manually. The functionality to automatically generate the database file needs to be completed.
 
+A database file is available at the [data directory](https://gitlab.com/alensiljak/price-database/-/tree/master/data) in the Python repository. This can be used temporarily, until the database initialization scripts are consolidated (they are currently only used in tests).
+
 ## Commands
 
 The application is a Command-Line Interface (CLI) and displays the available options when run.

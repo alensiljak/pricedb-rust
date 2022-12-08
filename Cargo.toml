@@ -16,7 +16,7 @@ chrono = "0.4.23"
 clap = { version = "4.0.29", features = ["cargo", "derive"] }
 confy = "0.5.1"
 # diesel = { version = "2.0.2", features = ["sqlite"] }
-env_logger = "0.9.3"
+env_logger = "0.10.0"
 log = "0.4.17"
 reqwest = { version = "0.11.13", features = ["json"] }
 rust_decimal = "1.27.0"
@@ -35,4 +35,4 @@ tokio = { version = "1.23.0", features = ["full"] }
 # strum = { version = "0.24.1", features = ["derive"] }
 
 [dev-dependencies]
-env_logger = "0.9.3"
+env_logger = "0.10.0"
