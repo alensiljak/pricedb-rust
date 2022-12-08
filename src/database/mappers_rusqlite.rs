@@ -113,6 +113,13 @@ pub(crate) fn generate_update_price(price: &Price) -> (String, RusqliteValues) {
     result
 }
 
+pub(crate) fn generate_delete_price(price: &Price) -> (String, RusqliteValues) {
+    Query::delete()
+        .from_table(PriceIden::Table)
+        .and_where(Expr::col(PriceIden::Id).eq(price.id))
+        .build_rusqlite(SqliteQueryBuilder)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -123,7 +130,7 @@ mod tests {
 
     fn create_dummy_price() -> Price {
         Price {
-            id: i32::default(),
+            id: 13,
             security_id: 155,
             date: "2022-12-07".to_owned(),
             time: Some("12:00:01".to_owned()),
@@ -191,10 +198,22 @@ mod tests {
         );
 
         // currency
-        let actual_currency = &params.0[5].0;
-        assert_eq!(
-            *actual_currency,
-            sea_query::Value::String(Some(Box::new(price.currency)))
-        );
+        let actual_currency: String = params.0[5].0.to_owned().unwrap();
+        assert_eq!(*actual_currency, price.currency);
+    }
+
+    #[test]
+    fn test_gen_delete_price() {
+        let price = create_dummy_price();
+
+        let (sql, values) = generate_delete_price(&price);
+
+        assert_eq!(sql, r#"DELETE FROM "price" WHERE "id" = ?"#);
+
+        assert!(values.0.len() == 1);
+
+        let actual_id: i32 = values.0[0].0.to_owned().unwrap();
+        // println!("actual id = {actual_id:?}");
+        assert_eq!(actual_id, 13);
     }
 }
