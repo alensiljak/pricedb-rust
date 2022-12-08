@@ -15,19 +15,11 @@ async fn main() {
     env_logger::init();
     log::trace!("starting");
 
-    // todo: CLI configuration
-    // let cmd = interface::configure_cli();
-    // let matches = cmd.get_matches();
-
     let args = Cli::parse();
 
     log::debug!("Command: {:?}", args.command);
 
     if args.command.is_none() {
-        // use clap::CommandFactory;
-        // let mut cmd = Args::command();
-        // cmd.print_help();
-        // clap::App::print_help();
         println!("No command issued");
         return;
     }

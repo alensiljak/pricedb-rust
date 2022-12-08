@@ -4,6 +4,7 @@ use clap::{Command, Parser, Subcommand};
 // #[derive(Clap)]
 #[command(name = "Price Database")]
 #[command(author="Alen Šiljak", version, about, long_about = None)]
+#[command(arg_required_else_help=true)]
 pub(crate) struct Cli {
     #[command(subcommand)]
     pub(crate) command: Option<Commands>,
@@ -50,25 +51,4 @@ pub(crate) enum Commands {
         symbol: Option<String>,
     },
     // securities
-}
-
-/// Example for how to configure the CLI.
-pub fn configure_cli() -> Command {
-    let cmd = clap::command!()
-        .arg_required_else_help(true)
-        //.arg(clap::arg!(--two <VALUE>).required(true))
-        //.arg(clap::arg!(--one <VALUE>).required(true));
-        .subcommand(Command::new("config"))
-        .subcommand(Command::new("dl"))
-        .subcommand(get_export_cmd())
-        .subcommand(Command::new("prune"));
-
-    cmd
-
-    //clap::Command::new("rule").arg_required_else_help(true);
-}
-
-fn get_export_cmd() -> Command {
-    Command::new("export")
-        .about("Export prices in ledger format")
 }
