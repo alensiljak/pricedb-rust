@@ -79,10 +79,12 @@ impl Dal for RuSqliteDal {
     fn get_prices(&self, filter: Option<PriceFilter>) -> Vec<Price> {
         let mut result: Vec<Price> = vec![];
 
-        let (sql, values) = match filter {
-            Some(_) => generate_price_query_with_filter(&filter.unwrap()),
-            None => todo!("test this case!"), //"select * from price".to_owned()
+        let filter_internal: PriceFilter = match filter {
+            Some(_) => filter.unwrap(),
+            None => PriceFilter::new()  // empty filter required
         };
+
+        let (sql, values) = generate_select_price_with_filter(&filter_internal);
 
         log::debug!("get prices, sql: {:?}", sql);
 
@@ -283,7 +285,7 @@ fn generate_select_security_with_filter(filter: &SecurityFilter) -> (String, Rus
 }
 
 #[allow(unused_variables)]
-fn generate_price_query_with_filter(filter: &PriceFilter) -> (String, RusqliteValues) {
+fn generate_select_price_with_filter(filter: &PriceFilter) -> (String, RusqliteValues) {
     let query = Query::select()
         // Order of columns:
         .column(PriceIden::Id)

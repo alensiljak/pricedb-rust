@@ -7,6 +7,7 @@
 
 use std::fmt::Display;
 
+use rust_decimal::{prelude::ToPrimitive, Decimal};
 use sea_query::enum_def;
 // use crate::database::schema::price;
 
@@ -25,19 +26,6 @@ pub struct Price {
     pub currency: String,
 }
 
-// #[derive(Debug, Clone, PartialEq)]
-// #[derive(diesel::Insertable)]
-// #[diesel(table_name = price)]
-// pub struct NewPrice {
-//     pub security_id: i32,
-//     pub date: String,
-//     pub time: Option<String>,
-//     pub value: i32,
-//     pub denom: i32,
-//     // pub value_dec: Decimal,
-//     pub currency: String,
-// }
-
 impl Price {
     pub fn new() -> Price {
         let result = Price {
@@ -52,12 +40,48 @@ impl Price {
         };
         return result;
     }
+
+    pub fn to_decimal(&self) -> Decimal {
+        let scale = self.scale();
+
+        Decimal::new(self.value.into(), scale)
+    }
+
+    pub fn scale(&self) -> u32 {
+        let denom_f = self.denom as f64;
+        let scale = denom_f.log10();
+
+        scale as u32
+    }
 }
+
+// #[derive(Debug, Clone, PartialEq)]
+// #[derive(diesel::Insertable)]
+// #[diesel(table_name = price)]
+// pub struct NewPrice {
+//     pub security_id: i32,
+//     pub date: String,
+//     pub time: Option<String>,
+//     pub value: i32,
+//     pub denom: i32,
+//     // pub value_dec: Decimal,
+//     pub currency: String,
+// }
 
 pub(crate) struct PriceFilter {
     pub security_id: Option<i32>,
     pub date: Option<String>,
     pub time: Option<String>,
+}
+
+impl PriceFilter {
+    pub fn new() -> PriceFilter {
+        PriceFilter {
+            security_id: None,
+            date: None,
+            time: None,
+        }
+    }
 }
 
 #[derive(Debug, Default)]
@@ -101,9 +125,12 @@ pub struct SecurityFilter {
 
 impl SecurityFilter {
     pub fn new() -> SecurityFilter {
-        SecurityFilter { currency: None, agent: None, 
-            exchange: None, 
-            symbol: None }
+        SecurityFilter {
+            currency: None,
+            agent: None,
+            exchange: None,
+            symbol: None,
+        }
     }
 }
 
@@ -146,7 +173,7 @@ impl Display for SecuritySymbol {
 
 #[cfg(test)]
 mod tests {
-    use super::SecuritySymbol;
+    use super::*;
 
     #[test]
     fn test_parse() {
@@ -162,5 +189,32 @@ mod tests {
 
         assert_eq!(s.namespace, "");
         assert_eq!(s.mnemonic, "AUD");
+    }
+
+    #[test]
+    fn scale_calculation() {
+        let mut p = Price::new();
+
+        // we need only the price values
+        p.value = 12345;
+        p.denom = 100;
+        assert_eq!(2, p.scale());
+
+        p.value = 12345;
+        p.denom = 1000;
+        assert_eq!(3, p.scale());
+    }
+
+    #[test]
+    fn price_value() {
+        let mut p = Price::new();
+        // we need only the price values
+        p.value = 12345;
+        p.denom = 100;
+
+        let actual = p.to_decimal();
+
+        assert_eq!(actual, Decimal::from_str_exact("123.45").unwrap());
+        assert_eq!(actual.to_string(), "123.45");
     }
 }

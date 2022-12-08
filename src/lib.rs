@@ -169,10 +169,13 @@ impl App {
     }
 
     fn get_prices(&self) -> Vec<Price> {
-        // let filter = PriceFilter { security_id: None, date: (), time: () }
         let prices = self.dal.get_prices(None);
 
         // log::debug!("fetched prices: {prices:?}");
+
+        // todo: sort by namespace/symbol?
+        // prices.sort_by(compare);
+        //prices.sort_by(|a, b| b.date.cmp(&a.date));
 
         prices
     }
@@ -228,11 +231,23 @@ impl App {
         let mut prices = self.get_prices();
 
         // sort by date
-        prices.sort_by(|a, b| b.date.cmp(&a.date));
+        //prices.sort_by(|a, b| b.date.cmp(&a.date) && b.time.cmp(&a.time));
+        prices.sort_unstable_by_key(|price| {
+            (
+                price.date.to_owned(),
+                match price.time {
+                    Some(_) => price.time.to_owned().unwrap(),
+                    None => "".to_owned(),
+                },
+            )
+        });
+        log::debug!("sorted: {prices:?}");
+
+        // format in ledger format
+        let output = ledger_formatter::format_prices(prices);
 
         todo!("incomplete");
 
-        // format in ledger format
         // get export destination from configuration
     }
 

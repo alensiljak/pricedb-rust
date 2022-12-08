@@ -206,7 +206,7 @@ mod tests {
     fn test_gen_delete_price() {
         let price = create_dummy_price();
 
-        let (sql, values) = generate_delete_price(&price);
+        let (sql, values) = generate_delete_price(price.id);
 
         assert_eq!(sql, r#"DELETE FROM "price" WHERE "id" = ?"#);
 
