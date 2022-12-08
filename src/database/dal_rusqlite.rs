@@ -4,7 +4,7 @@
 *
 * Example for a query: https://stackoverflow.com/questions/67089430/how-do-we-use-select-query-with-an-external-where-parameter-in-rusqlite
 */
-use rusqlite::{Connection, Row};
+use rusqlite::{named_params, Connection, Row};
 use sea_query::{Expr, Query, SqliteQueryBuilder};
 use sea_query_rusqlite::{RusqliteBinder, RusqliteValues};
 
@@ -169,9 +169,10 @@ impl Dal for RuSqliteDal {
     fn get_security_by_symbol(&self, symbol: &str) -> Security {
         log::trace!("fetching security by symbol {:?}", symbol);
 
-        let sql = "select * from security where symbol=?";
+        let sql = "select * from security where symbol = :symbol";
         let mut stmt = self.conn.prepare(sql).expect("Statement");
-        let params = (1, symbol);
+        // let params = (1, symbol);
+        let params = named_params! { ":symbol": symbol };
         let security = stmt
             .query_row(params, |r| {
                 let result = map_row_to_security(r);
@@ -482,10 +483,18 @@ mod tests {
 
     fn insert_dummy_securities(dal: &RuSqliteDal) {
         let sql = "INSERT INTO Security (id, namespace, symbol, currency) VALUES (?1, ?2, ?3, ?4)";
-        dal.conn.execute(sql, (1, "NULL", "VTI", "USD")).expect("inserted record");
-        dal.conn.execute(sql, (2, "XETRA", "EL49", "EUR")).expect("inserted record");
-        dal.conn.execute(sql, (3, "ASX", "VAS", "AUD")).expect("inserted record");
-        dal.conn.execute(sql, (4, "LSE", "VHYL", "GBP")).expect("inserted record");
+        dal.conn
+            .execute(sql, (1, "NULL", "VTI", "USD"))
+            .expect("inserted record");
+        dal.conn
+            .execute(sql, (2, "XETRA", "EL49", "EUR"))
+            .expect("inserted record");
+        dal.conn
+            .execute(sql, (3, "ASX", "VAS", "AUD"))
+            .expect("inserted record");
+        dal.conn
+            .execute(sql, (4, "LSE", "VHYL", "GBP"))
+            .expect("inserted record");
     }
 
     // #[test]
@@ -556,11 +565,17 @@ mod tests {
         assert_eq!(expected, sql);
 
         assert_eq!(values.0[0].0, sea_query::Value::Int(Some(111)));
-        assert_eq!(values.0[1].0, sea_query::Value::String(Some(Box::new("2022-12-01".to_string()))));
+        assert_eq!(
+            values.0[1].0,
+            sea_query::Value::String(Some(Box::new("2022-12-01".to_string())))
+        );
         assert_eq!(values.0[2].0, sea_query::Value::String(None));
         assert_eq!(values.0[3].0, sea_query::Value::Int(Some(100)));
         assert_eq!(values.0[4].0, sea_query::Value::Int(Some(10)));
-        assert_eq!(values.0[5].0, sea_query::Value::String(Some(Box::new("AUD".to_string()))));
+        assert_eq!(
+            values.0[5].0,
+            sea_query::Value::String(Some(Box::new("AUD".to_string())))
+        );
     }
 
     #[test]
@@ -608,5 +623,17 @@ mod tests {
 
         assert_ne!(securities.len(), 0);
         assert_eq!(securities.len(), 4);
+    }
+
+    #[test]
+    fn test_get_security_by_symbol() {
+        let dal = get_test_dal();
+
+        let symbol = "EL49";
+
+        let actual = dal.get_security_by_symbol(symbol);
+
+        assert_eq!(actual.currency, Some("EUR".to_string()));
+        assert_eq!(actual.namespace, Some("XETRA".to_string()));
     }
 }

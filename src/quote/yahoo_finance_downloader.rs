@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use async_trait::async_trait;
-use chrono::NaiveDateTime;
+use chrono::{NaiveDateTime, TimeZone, FixedOffset, DateTime};
 use rust_decimal::{
     prelude::{FromPrimitive, ToPrimitive},
     Decimal,
@@ -73,8 +73,6 @@ impl YahooFinanceDownloader {
 
         let meta = &body["chart"]["result"][0]["meta"];
         assert_ne!(*meta, Value::Null);
-        // Parse
-        // log::debug!("meta: {:?}", meta);
 
         // Price
 
@@ -90,18 +88,25 @@ impl YahooFinanceDownloader {
 
         result.currency = meta["currency"].as_str().unwrap().to_string();
 
-        // Date / time
+        // Date
 
         let seconds = meta["regularMarketTime"].as_i64().unwrap();
         // log::debug!("seconds {:?}", seconds);
-        // let time = chrono::offset::Utc::now();
-        //let timestamp = NaiveDateTime::from_timestamp_millis(seconds).unwrap();
-        let timestamp = NaiveDateTime::from_timestamp_opt(seconds, 0).unwrap();
-        // log::debug!("time {:?}", timestamp);
-        let date_str = timestamp.date().to_string();
+        let offset = meta["gmtoffset"].as_i64().unwrap().to_i32().unwrap();
+        let fo = FixedOffset::east_opt(offset).unwrap();
+
+        let utc = NaiveDateTime::from_timestamp_opt(seconds, 0).unwrap();
+        // log::debug!("time {:?}", date_time);
+        let dt_fo = fo.from_utc_datetime(&utc);
+
+        // utc.date()
+        let date_str = dt_fo.date_naive().to_string();
         // log::debug!("Parsed date is {:?}", date_str);
         result.date = date_str;
-        let time_str = timestamp.time().to_string();
+
+        // Time
+
+        let time_str = dt_fo.time().to_string();
         // log::debug!("Parsed time is {:?}", time_str);
         result.time = Some(time_str);
 
@@ -133,6 +138,8 @@ impl Downloader for YahooFinanceDownloader {
 /// # Tests
 #[cfg(test)]
 mod tests {
+    use chrono::{NaiveDateTime, TimeZone, FixedOffset};
+
     use crate::quote::Downloader;
     #[allow(unused_imports)]
     use crate::{model::SecuritySymbol, quote::yahoo_finance_downloader::YahooFinanceDownloader};
@@ -198,5 +205,44 @@ mod tests {
         log::debug!("downloaded {:?}", result);
 
         assert_eq!(result.currency, "USD");
+    }
+
+    #[test]
+    /// Various options for parsing timestamps.
+    fn test_parsing_time() {
+        let secs = 1670429622;
+
+        // let time = chrono::offset::Utc::now();
+
+        // let ts_millis = NaiveDateTime::from_timestamp_millis(seconds).unwrap();
+        // println!("millis: {:?}", ts_millis);
+        
+        let ndt_ts_opt = NaiveDateTime::from_timestamp_opt(secs, 0).unwrap();
+        // println!("opts: {:?}", ts_opts);
+        assert_eq!(ndt_ts_opt.to_string(), "2022-12-07 16:13:42");
+
+        // let ts_opt = Utc.timestamp_opt(seconds, 0);
+        // println!("ts_opt {:?}", ts_opt);
+        
+        // assert_eq!(Utc.timestamp_opt(seconds, 0).unwrap().to_string(), "2015-05-15 00:00:00 UTC");
+        // let dt_utc = Utc.timestamp_opt(secs, 0).unwrap();
+        //dt_utc.with_timezone(tz);
+
+        // get the offset from json
+        let offset = 3600;
+
+        let fo = FixedOffset::east_opt(offset).unwrap();
+        println!("offset: {:?}", fo);
+        let dt_fo = fo.from_utc_datetime(&ndt_ts_opt);
+        // println!("dt fixed offset: {:?}", dt_fo);
+        assert_eq!(dt_fo.to_string(), "2022-12-07 17:13:42 +01:00");
+
+        //let dt: DateTime<> = DateTime::from_utc(ndt_ts_opt, fo);
+
+        // let fixed_dt = dt.with_timezone(&FixedOffset::east_opt(9*3600).unwrap());
+        //let tz: dyn TimeZone = TimeZone::from_offset(&offset);
+        //FixedOffset::from_utc_datetime(&self, &utc);
+        //DateTime::with_timezone(&self, tz)
+
     }
 }
