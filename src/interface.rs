@@ -1,10 +1,14 @@
-use clap::{Command, Parser, Subcommand};
+use clap::{Parser, Subcommand};
 
 #[derive(Parser, Debug)]
-// #[derive(Clap)]
 #[command(name = "Price Database")]
-#[command(author="Alen Šiljak", version, about, long_about = None)]
+#[command(author, version, about, long_about = None)]  // these are loaded from Cargo.toml
 #[command(arg_required_else_help=true)]
+#[command(help_template=r#"{before-help}{name} {version}
+{author-with-newline}{about-with-newline}
+{usage-heading} {usage}
+
+{all-args}{after-help}"#)]
 pub(crate) struct Cli {
     #[command(subcommand)]
     pub(crate) command: Option<Commands>,
