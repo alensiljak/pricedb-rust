@@ -79,7 +79,7 @@ mod tests {
     #[test]
     fn test_format_price_wo_time() {
         let mut symbol = Security::new();
-        symbol.ledger_symbol = Some("EL4X_DE".into());
+        symbol.ledger_symbol = Some("VAS_AX".into());
 
         let price = Price {
             id: 113,
@@ -95,5 +95,5 @@ mod tests {
 
         // println!("{actual:?}");
 
-        assert_eq!(actual, "P 2022-12-01 12:25:34 EL4X_DE 125.34 AUD");
+        assert_eq!(actual, "P 2022-12-01 00:00:00 VAS_AX 125.34 AUD");
     }}

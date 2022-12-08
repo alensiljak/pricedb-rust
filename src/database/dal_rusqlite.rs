@@ -190,15 +190,15 @@ fn open_connection(conn_str: &String) -> Connection {
     Connection::open(conn_str).expect("open sqlite connection")
 }
 
-fn get_security_columns() -> Vec<SecurityIden> {
+fn get_security_columns() -> Vec<(SecurityIden, SecurityIden)> {
     vec![
-        SecurityIden::Id,
-        SecurityIden::Namespace,
-        SecurityIden::Symbol,
-        SecurityIden::Updater,
-        SecurityIden::Currency,
-        SecurityIden::LedgerSymbol,
-        SecurityIden::Notes,
+        (SecurityIden::Table, SecurityIden::Id),
+        (SecurityIden::Table, SecurityIden::Namespace),
+        (SecurityIden::Table, SecurityIden::Symbol),
+        (SecurityIden::Table, SecurityIden::Updater),
+        (SecurityIden::Table, SecurityIden::Currency),
+        (SecurityIden::Table, SecurityIden::LedgerSymbol),
+        (SecurityIden::Table, SecurityIden::Notes),
     ]
 }
 
@@ -259,26 +259,23 @@ fn generate_select_security_with_filter(filter: &SecurityFilter) -> (String, Rus
 
 /// Select all securities that have linked price records.
 fn generate_select_securities_having_prices() -> (String, RusqliteValues) {
-    // Query::select()
-    //     .columns(get_security_columns())
-    //     .from(SecurityIden::Table)
-    //     .inner_join(
-    //         PriceIden::Table,
-    //         Expr::tbl(SecurityIden::Table, SecurityIden::Id)
-    //             .equals(PriceIden::Table, PriceIden::SecurityId),
-    //     )
-    //     .order_by(SecurityIden::Namespace, sea_query::Order::Asc)
-    //     .order_by(SecurityIden::Symbol, sea_query::Order::Asc)
-    //     .build_rusqlite(SqliteQueryBuilder)
-
-    let sql = r#"SELECT security.id, "namespace", "symbol", "updater", 
-        security.currency, "ledger_symbol", "notes" 
-        FROM "security" 
-            INNER JOIN "price" ON "security"."id" = "price"."security_id" 
-        ORDER BY "namespace" ASC, "symbol" ASC"#;
-    let values = RusqliteValues(vec![]);
-
-    (sql.to_owned(), values)
+    Query::select()
+        .columns(get_security_columns())
+        .from(SecurityIden::Table)
+        .inner_join(
+            PriceIden::Table,
+            Expr::tbl(SecurityIden::Table, SecurityIden::Id)
+                .equals(PriceIden::Table, PriceIden::SecurityId),
+        )
+        .order_by(
+            (SecurityIden::Table, SecurityIden::Namespace),
+            sea_query::Order::Asc,
+        )
+        .order_by(
+            (SecurityIden::Table, SecurityIden::Symbol),
+            sea_query::Order::Asc,
+        )
+        .build_rusqlite(SqliteQueryBuilder)
 }
 
 fn generate_select_price_with_filter(filter: &PriceFilter) -> (String, RusqliteValues) {
@@ -556,7 +553,10 @@ mod tests {
     fn test_select_securities_having_prices() {
         let (sql, values) = generate_select_securities_having_prices();
 
-        assert_eq!(sql, r#"SELECT "id", "namespace", "symbol", "updater", "currency", "ledger_symbol", "notes" FROM "security" INNER JOIN "price" ON "security"."id" = "price"."security_id" ORDER BY "namespace" ASC, "symbol" ASC"#);
+        assert_eq!(
+            r#"SELECT "security"."id", "security"."namespace", "security"."symbol", "security"."updater", "security"."currency", "security"."ledger_symbol", "security"."notes" FROM "security" INNER JOIN "price" ON "security"."id" = "price"."security_id" ORDER BY "security"."namespace" ASC, "security"."symbol" ASC"#,
+            sql
+        );
         assert!(values.0.len() == 0);
     }
 }
