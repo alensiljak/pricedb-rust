@@ -11,7 +11,6 @@ mod mappers_rusqlite;
 use log::debug;
 
 use crate::{
-    config::PriceDbConfig,
     model::{Price, PriceFilter, Security, SecurityFilter, SecuritySymbol},
 };
 
@@ -29,15 +28,9 @@ pub(crate) fn init_dal() -> impl Dal {
     return dal;
 }
 
-fn load_config() -> Result<PriceDbConfig, anyhow::Error> {
-    let config: PriceDbConfig = confy::load("pricedb", "config")?;
-
-    Ok(config)
-}
-
 /// Loads database path from the configuration.
 fn load_db_path() -> String {
-    let config = load_config().expect("Error reading configuration");
+    let config = super::load_config().expect("Error reading configuration");
 
     debug!("configuration: {:?}", config);
 

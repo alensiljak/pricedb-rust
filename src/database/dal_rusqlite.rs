@@ -4,7 +4,7 @@
 *
 * Example for a query: https://stackoverflow.com/questions/67089430/how-do-we-use-select-query-with-an-external-where-parameter-in-rusqlite
 */
-use rusqlite::{named_params, Connection, Row};
+use rusqlite::{named_params, Connection};
 use sea_query::{Expr, Query, SqliteQueryBuilder};
 use sea_query_rusqlite::{RusqliteBinder, RusqliteValues};
 
@@ -54,31 +54,6 @@ impl Dal for RuSqliteDal {
         Ok(result)
     }
 
-    // fn get_symbols_having_prices(&self) -> Vec<Security> {
-    //     let sql = "select distinct security_id from price";
-    //     let mut stmt = self.conn.prepare(sql).expect("Error");
-    //     let ids = stmt
-    //         .query_map([], |row| {
-    //             let id = row.get::<usize, i32>(0).expect("error");
-    //             //log::debug!("row: {:?}", id);
-    //             return Ok(id);
-    //         })
-    //         .expect("Mapped rows");
-
-    //     // let count = rows.count();
-    //     // log::debug!("fetched {:?} rows", count);
-
-    //     let mut result: Vec<i32> = vec![];
-
-    //     for row in ids {
-    //         let id = row.expect("Error reading row");
-    //         // log::debug!("id: {:?}", id);
-    //         result.push(id);
-    //     }
-
-    //     return Ok(result);
-    // }
-
     fn get_securitiess_having_prices(&self) -> Vec<Security> {
         let (sql, values) = generate_select_securities_having_prices();
 
@@ -125,7 +100,7 @@ impl Dal for RuSqliteDal {
             }
         }
 
-        log::debug!("found prices: {:?}", result);
+        // log::debug!("found prices: {:?}", result);
 
         result
     }
@@ -137,23 +112,16 @@ impl Dal for RuSqliteDal {
 
         let rows = stmt
             .query_map([security_id], |row| {
-                let price = map_price(row);
-                // log::debug!("price read {:?}", price);
-
-                return Ok(price);
+                let price = map_row_to_price(row);
+                Ok(price)
             })
             .expect("Error");
 
-        // let cursor: Vec<Result<Price, rusqlite::Error>> = rows.collect();
-        // log::debug!("cursor: {:?}", cursor);
-
         for row in rows {
-            //let record = map_price(&row);
             let record = row.expect("error extracting price");
             result.push(record);
-            // log::debug!("row: {:?}", row);
         }
-        return Ok(result);
+        Ok(result)
     }
 
     /// Search for the securities with the given filter.
@@ -168,9 +136,7 @@ impl Dal for RuSqliteDal {
 
         let result = statement
             .query_map(&*values.as_params(), |row| {
-                // map
                 let sec = map_row_to_security(row);
-                // log::debug!("parsed: {:?}", sec);
                 Ok(sec)
             })
             .expect("Filtered Securities")
@@ -219,35 +185,28 @@ impl Dal for RuSqliteDal {
     }
 }
 
-fn map_price(row: &Row) -> Price {
-    let price = Price {
-        id: row.get(0).expect("error reading field"),
-        security_id: row.get(1).expect("error"),
-        date: row.get(2).expect("error"),
-        time: row.get(3).expect("error"),
-        value: row.get(4).expect("error"),
-        denom: row.get(5).expect("error"),
-        currency: row.get(6).expect("error"),
-    };
-    price
-}
-
 /// rusqlite connection
 fn open_connection(conn_str: &String) -> Connection {
     Connection::open(conn_str).expect("open sqlite connection")
+}
+
+fn get_security_columns() -> Vec<SecurityIden> {
+    vec![
+        SecurityIden::Id,
+        SecurityIden::Namespace,
+        SecurityIden::Symbol,
+        SecurityIden::Updater,
+        SecurityIden::Currency,
+        SecurityIden::LedgerSymbol,
+        SecurityIden::Notes,
+    ]
 }
 
 /// Generates SELECT statement with the given parameters/filters.
 fn generate_select_security_with_filter(filter: &SecurityFilter) -> (String, RusqliteValues) {
     let query = Query::select()
         // Order of columns:
-        .column(SecurityIden::Id)
-        .column(SecurityIden::Namespace)
-        .column(SecurityIden::Symbol)
-        .column(SecurityIden::Updater)
-        .column(SecurityIden::Currency)
-        .column(SecurityIden::LedgerSymbol)
-        .column(SecurityIden::Notes)
+        .columns(get_security_columns())
         //
         .from(SecurityIden::Table)
         .conditions(
@@ -300,14 +259,26 @@ fn generate_select_security_with_filter(filter: &SecurityFilter) -> (String, Rus
 
 /// Select all securities that have linked price records.
 fn generate_select_securities_having_prices() -> (String, RusqliteValues) {
-    Query::select()
-        .from(SecurityIden::Table)
-        .inner_join(
-            PriceIden::Table,
-            Expr::tbl(SecurityIden::Table, SecurityIden::Id)
-                .equals(PriceIden::Table, PriceIden::SecurityId),
-        )
-        .build_rusqlite(SqliteQueryBuilder)
+    // Query::select()
+    //     .columns(get_security_columns())
+    //     .from(SecurityIden::Table)
+    //     .inner_join(
+    //         PriceIden::Table,
+    //         Expr::tbl(SecurityIden::Table, SecurityIden::Id)
+    //             .equals(PriceIden::Table, PriceIden::SecurityId),
+    //     )
+    //     .order_by(SecurityIden::Namespace, sea_query::Order::Asc)
+    //     .order_by(SecurityIden::Symbol, sea_query::Order::Asc)
+    //     .build_rusqlite(SqliteQueryBuilder)
+
+    let sql = r#"SELECT security.id, "namespace", "symbol", "updater", 
+        security.currency, "ledger_symbol", "notes" 
+        FROM "security" 
+            INNER JOIN "price" ON "security"."id" = "price"."security_id" 
+        ORDER BY "namespace" ASC, "symbol" ASC"#;
+    let values = RusqliteValues(vec![]);
+
+    (sql.to_owned(), values)
 }
 
 fn generate_select_price_with_filter(filter: &PriceFilter) -> (String, RusqliteValues) {
@@ -480,14 +451,6 @@ mod tests {
             .expect("inserted record");
     }
 
-    // #[test]
-    // fn test_conditions() {
-    //     let mut cond = Cond::all();
-    //     cond = cond.add(Expr::col(PriceIden::SecurityId).eq(130));
-    //     println!("Condition: {:?}", cond);
-    //     assert!(false)
-    // }
-
     #[test]
     fn test_sec_query_wo_params() {
         let filter = SecurityFilter {
@@ -517,7 +480,7 @@ mod tests {
 
         print!("{:?}", values);
 
-        let expected = "SELECT \"id\", \"namespace\", \"symbol\", \"updater\", \"currency\", \"ledger_symbol\", \"notes\" FROM \"security\" WHERE \"currency\" = ?";
+        let expected = r#"SELECT "id", "namespace", "symbol", "updater", "currency", "ledger_symbol", "notes" FROM "security" WHERE "currency" = ?"#;
         assert_eq!(expected, sql);
         let exp_val = RusqliteValue(sea_query::Value::String(Some(Box::new("AUD".to_owned()))));
         assert_eq!(exp_val, values.0[0]);
@@ -593,7 +556,7 @@ mod tests {
     fn test_select_securities_having_prices() {
         let (sql, values) = generate_select_securities_having_prices();
 
-        assert!(values.0.len() > 0);
-        assert_eq!(sql, r#""#);
+        assert_eq!(sql, r#"SELECT "id", "namespace", "symbol", "updater", "currency", "ledger_symbol", "notes" FROM "security" INNER JOIN "price" ON "security"."id" = "price"."security_id" ORDER BY "namespace" ASC, "symbol" ASC"#);
+        assert!(values.0.len() == 0);
     }
 }

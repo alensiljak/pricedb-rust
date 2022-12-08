@@ -1,3 +1,4 @@
+use config::PriceDbConfig;
 /*
  * Application
  * Exposing the main app functionality as a library, for testing purposes.
@@ -18,7 +19,7 @@ use crate::{
     quote::Quote,
 };
 
-use std::vec;
+use std::{vec, fs};
 
 use anyhow::Error;
 
@@ -198,7 +199,9 @@ impl App {
             security_ids = self
                 .dal
                 .get_securitiess_having_prices()
-                .iter().map(|item| item.id).collect();
+                .iter()
+                .map(|item| item.id)
+                .collect();
             // log::debug!("symbol ids with prices: {:?}", security_ids);
         }
 
@@ -241,17 +244,29 @@ impl App {
                 },
             )
         });
-        log::debug!("sorted: {prices:?}");
+        // log::debug!("sorted: {prices:?}");
 
         // get all symbols with prices
-        let symbols = self.dal.get_securitiess_having_prices();
+        let securities = self.dal.get_securitiess_having_prices();
+        // log::debug!("{securities:?}");
+        // let mut sec_map: HashMap<i32, Security> = HashMap::new();
+        // for sec in securities {
+        //     sec_map.insert(sec.id, sec);
+        // }
 
         // format in ledger format
-        let output = ledger_formatter::format_prices(prices, &symbols);
+        let output = ledger_formatter::format_prices(prices, &securities);
 
-        todo!("incomplete");
+        // log::debug!("output: {output:?}");
 
         // get export destination from configuration
+        let cfg = load_config().expect("configuration");
+        let target = cfg.export_destination;
+
+        log::debug!("saving to {target:?}");
+
+        save_text_file(output, target);
+        
     }
 
     /// Deletes price history for the given Security, leaving only the latest price.
@@ -290,11 +305,6 @@ impl App {
     }
 }
 
-// fn get_dal() -> impl Dal {
-//     let dal = database::init_dal();
-//     dal
-// }
-
 async fn download_price(symbol: SecuritySymbol, currency: &str, agent: &str) -> Option<Price> {
     // todo: there must be a symbol
     let mut dl = Quote::new();
@@ -311,4 +321,15 @@ async fn download_price(symbol: SecuritySymbol, currency: &str, agent: &str) -> 
 
     let price = prices[0].to_owned();
     Some(price)
+}
+
+fn load_config() -> Result<PriceDbConfig, anyhow::Error> {
+    let config: PriceDbConfig = confy::load("pricedb", "config")?;
+
+    Ok(config)
+}
+
+fn save_text_file(contents: String, location: String) {
+    fs::write(location, contents)
+        .expect("file saved");
 }
