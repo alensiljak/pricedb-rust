@@ -197,8 +197,8 @@ impl App {
             // load all symbols
             security_ids = self
                 .dal
-                .get_ids_of_symbols_with_prices()
-                .expect("Error fetching symbol ids.");
+                .get_securitiess_having_prices()
+                .iter().map(|item| item.id).collect();
             // log::debug!("symbol ids with prices: {:?}", security_ids);
         }
 
@@ -243,8 +243,11 @@ impl App {
         });
         log::debug!("sorted: {prices:?}");
 
+        // get all symbols with prices
+        let symbols = self.dal.get_securitiess_having_prices();
+
         // format in ledger format
-        let output = ledger_formatter::format_prices(prices);
+        let output = ledger_formatter::format_prices(prices, &symbols);
 
         todo!("incomplete");
 

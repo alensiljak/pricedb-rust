@@ -1,22 +1,20 @@
-use rust_decimal::{Decimal, prelude::ToPrimitive};
-
-use crate::model::{Price, SecuritySymbol};
-
-/**
+/*
  * Formats prices for Ledger
- *
  */
 
-#[allow(unused)]
+use crate::{
+    model::{Price, Security},
+};
+
 /// format a list of prices
-pub(crate) fn format_prices(prices: Vec<Price>) -> String {
+pub(crate) fn format_prices(prices: Vec<Price>, symbols: &Vec<Security>) -> String {
     let mut output = String::default();
 
-    todo!("load symbols");
-    let symbol = SecuritySymbol::parse("symbol");
-
     for price in prices {
-        output += format_price(&price, &symbol).as_str();
+        // find the matching symbol
+        let symbol = symbols.iter().find(|x| x.id == price.security_id).expect("a matching symbol");
+
+        output += format_price(&price, symbol).as_str();
         output += "\n";
 
         todo!("complete");
@@ -24,12 +22,11 @@ pub(crate) fn format_prices(prices: Vec<Price>) -> String {
     output
 }
 
-#[allow(unused)]
 /** Formats a single Price record.
  * ledger price format, ISO format supported:
  * P 2004-06-21 02:17:58 VTI $27.76
  */
-fn format_price(price: &Price, symbol: &SecuritySymbol) -> String {
+fn format_price(price: &Price, symbol: &Security) -> String {
     let date = price.date.to_owned();
     let time = match &price.time {
         Some(price_time) => price_time.to_owned(),
@@ -37,8 +34,10 @@ fn format_price(price: &Price, symbol: &SecuritySymbol) -> String {
     };
     let date_time = format!("{date} {time}");
 
-    let mnemonic = &symbol.mnemonic;
-    //let value = price.value.to_f32().unwrap() / price.denom.to_f32().unwrap();
+    let mnemonic = match symbol.ledger_symbol {
+        Some(_) => symbol.ledger_symbol.to_owned(),
+        None => Some(symbol.symbol.to_owned()),
+    }.expect("valid symbol");
     let value = price.to_decimal();
     let currency = &price.currency;
 
@@ -47,13 +46,15 @@ fn format_price(price: &Price, symbol: &SecuritySymbol) -> String {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::{Price, SecuritySymbol};
+    use crate::model::Price;
 
     use super::*;
 
     #[test]
     fn test_single_price_formatting() {
-        let symbol = SecuritySymbol::parse("XETRA:EL4X");
+        let mut symbol = Security::new();
+        symbol.ledger_symbol = Some("EL4X_DE".into());
+
         let price = Price {
             id: 113,
             security_id: 26,
@@ -66,8 +67,8 @@ mod tests {
 
         let actual = format_price(&price, &symbol);
 
-        println!("{actual:?}");
+        // println!("{actual:?}");
 
-        assert_eq!(actual, "P 2022-12-01 12:25:34 EL4X 125.34 EUR");
+        assert_eq!(actual, "P 2022-12-01 12:25:34 EL4X_DE 125.34 EUR");
     }
 }

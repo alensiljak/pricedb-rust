@@ -8,9 +8,12 @@ use rusqlite::{named_params, Connection, Row};
 use sea_query::{Expr, Query, SqliteQueryBuilder};
 use sea_query_rusqlite::{RusqliteBinder, RusqliteValues};
 
-use crate::{model::{
-    Price, PriceFilter, PriceIden, Security, SecurityFilter, SecurityIden, SecuritySymbol,
-}, database::mappers_rusqlite::*};
+use crate::{
+    database::mappers_rusqlite::*,
+    model::{
+        Price, PriceFilter, PriceIden, Security, SecurityFilter, SecurityIden, SecuritySymbol,
+    },
+};
 
 use super::Dal;
 
@@ -51,29 +54,45 @@ impl Dal for RuSqliteDal {
         Ok(result)
     }
 
-    fn get_ids_of_symbols_with_prices(&self) -> anyhow::Result<Vec<i32>> {
-        let sql = "select distinct security_id from price";
-        let mut stmt = self.conn.prepare(sql).expect("Error");
-        let ids = stmt
-            .query_map([], |row| {
-                let id = row.get::<usize, i32>(0).expect("error");
-                //log::debug!("row: {:?}", id);
-                return Ok(id);
+    // fn get_symbols_having_prices(&self) -> Vec<Security> {
+    //     let sql = "select distinct security_id from price";
+    //     let mut stmt = self.conn.prepare(sql).expect("Error");
+    //     let ids = stmt
+    //         .query_map([], |row| {
+    //             let id = row.get::<usize, i32>(0).expect("error");
+    //             //log::debug!("row: {:?}", id);
+    //             return Ok(id);
+    //         })
+    //         .expect("Mapped rows");
+
+    //     // let count = rows.count();
+    //     // log::debug!("fetched {:?} rows", count);
+
+    //     let mut result: Vec<i32> = vec![];
+
+    //     for row in ids {
+    //         let id = row.expect("Error reading row");
+    //         // log::debug!("id: {:?}", id);
+    //         result.push(id);
+    //     }
+
+    //     return Ok(result);
+    // }
+
+    fn get_securitiess_having_prices(&self) -> Vec<Security> {
+        let (sql, values) = generate_select_securities_having_prices();
+
+        let mut stmt = self.conn.prepare(&sql).expect("Statement");
+        let result = stmt
+            .query_map(&*values.as_params(), |row| {
+                let sec = map_row_to_security(row);
+                Ok(sec)
             })
-            .expect("Mapped rows");
+            .expect("securities mapped")
+            .flatten()
+            .collect();
 
-        // let count = rows.count();
-        // log::debug!("fetched {:?} rows", count);
-
-        let mut result: Vec<i32> = vec![];
-
-        for row in ids {
-            let id = row.expect("Error reading row");
-            // log::debug!("id: {:?}", id);
-            result.push(id);
-        }
-
-        return Ok(result);
+        result
     }
 
     fn get_prices(&self, filter: Option<PriceFilter>) -> Vec<Price> {
@@ -81,7 +100,7 @@ impl Dal for RuSqliteDal {
 
         let filter_internal: PriceFilter = match filter {
             Some(_) => filter.unwrap(),
-            None => PriceFilter::new()  // empty filter required
+            None => PriceFilter::new(), // empty filter required
         };
 
         let (sql, values) = generate_select_price_with_filter(&filter_internal);
@@ -139,8 +158,6 @@ impl Dal for RuSqliteDal {
 
     /// Search for the securities with the given filter.
     fn get_securities(&self, filter: SecurityFilter) -> Vec<Security> {
-        let mut result: Vec<Security> = vec![];
-
         // assemble the sql statement
         // let sql = "select * from security";
         let (sql, values) = generate_select_security_with_filter(&filter);
@@ -149,25 +166,20 @@ impl Dal for RuSqliteDal {
 
         let mut statement = self.conn.prepare(&sql).unwrap();
 
-        let sec_iter = statement
+        let result = statement
             .query_map(&*values.as_params(), |row| {
                 // map
                 let sec = map_row_to_security(row);
                 // log::debug!("parsed: {:?}", sec);
                 Ok(sec)
             })
-            .expect("Filtered Securities");
-
-        for item in sec_iter {
-            match item {
-                Ok(sec) => result.push(sec),
-                Err(_) => todo!(),
-            }
-        }
+            .expect("Filtered Securities")
+            .flatten()
+            .collect();
 
         // log::debug!("securities: {:?}", result);
 
-        return result;
+        result
     }
 
     fn get_security_by_symbol(&self, symbol: &str) -> Security {
@@ -198,11 +210,11 @@ impl Dal for RuSqliteDal {
 
     fn update_price(&self, price: &Price) -> anyhow::Result<usize> {
         let (sql, params) = generate_update_price(price);
-        
+
         log::debug!("updating price record: {sql:?}, {params:?}");
 
         let result = self.conn.execute(&sql, &*params.as_params())?;
-        
+
         Ok(result)
     }
 }
@@ -277,14 +289,27 @@ fn generate_select_security_with_filter(filter: &SecurityFilter) -> (String, Rus
             },
             |_q| {},
         )
-        .to_owned();
+        // .to_owned();
+        .build_rusqlite(SqliteQueryBuilder);
 
     // query.build(SqliteQueryBuilder)
-    //query.to_string(SqliteQueryBuilder)
-    query.build_rusqlite(SqliteQueryBuilder)
+    // query.to_string(SqliteQueryBuilder)
+    // query.build_rusqlite(SqliteQueryBuilder)
+    query
 }
 
-#[allow(unused_variables)]
+/// Select all securities that have linked price records.
+fn generate_select_securities_having_prices() -> (String, RusqliteValues) {
+    Query::select()
+        .from(SecurityIden::Table)
+        .inner_join(
+            PriceIden::Table,
+            Expr::tbl(SecurityIden::Table, SecurityIden::Id)
+                .equals(PriceIden::Table, PriceIden::SecurityId),
+        )
+        .build_rusqlite(SqliteQueryBuilder)
+}
+
 fn generate_select_price_with_filter(filter: &PriceFilter) -> (String, RusqliteValues) {
     let query = Query::select()
         // Order of columns:
@@ -304,7 +329,7 @@ fn generate_select_price_with_filter(filter: &PriceFilter) -> (String, RusqliteV
                     q.and_where(Expr::col(PriceIden::SecurityId).eq(val));
                 }
             },
-            |q| {},
+            |_q| {},
         )
         .conditions(
             filter.date.is_some(),
@@ -313,7 +338,7 @@ fn generate_select_price_with_filter(filter: &PriceFilter) -> (String, RusqliteV
                     q.and_where(Expr::col(PriceIden::Date).eq(val));
                 }
             },
-            |q| {},
+            |_q| {},
         )
         .conditions(
             filter.time.is_some(),
@@ -322,7 +347,7 @@ fn generate_select_price_with_filter(filter: &PriceFilter) -> (String, RusqliteV
                     q.and_where(Expr::col(PriceIden::Time).eq(val));
                 }
             },
-            |q| {},
+            |_q| {},
         )
         .to_owned();
 
@@ -500,8 +525,8 @@ mod tests {
 
     // #[test]
     // fn test_null_param() {
-    //     let sql = r#"SELECT * 
-    //     FROM MY_TABLE 
+    //     let sql = r#"SELECT *
+    //     FROM MY_TABLE
     //     WHERE @parameter IS NULL OR NAME = @parameter;"#;
     // }
 
@@ -562,5 +587,13 @@ mod tests {
 
         assert_eq!(actual.currency, Some("EUR".to_string()));
         assert_eq!(actual.namespace, Some("XETRA".to_string()));
+    }
+
+    #[test]
+    fn test_select_securities_having_prices() {
+        let (sql, values) = generate_select_securities_having_prices();
+
+        assert!(values.0.len() > 0);
+        assert_eq!(sql, r#""#);
     }
 }

@@ -57,7 +57,8 @@ pub(crate) trait Dal {
 
     /// Returns all the ids of the symbols that have prices in the database.
     /// Used for pruning.
-    fn get_ids_of_symbols_with_prices(&self) -> anyhow::Result<Vec<i32>>;
+    //fn get_ids_of_symbols_with_prices(&self) -> anyhow::Result<Vec<i32>>;
+    fn get_securitiess_having_prices(&self) -> Vec<Security>;
 
     fn get_prices(&self, filter: Option<PriceFilter>) -> Vec<Price>;
 

@@ -7,7 +7,7 @@
 
 use std::fmt::Display;
 
-use rust_decimal::{prelude::ToPrimitive, Decimal};
+use rust_decimal::Decimal;
 use sea_query::enum_def;
 // use crate::database::schema::price;
 
