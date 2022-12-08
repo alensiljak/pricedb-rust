@@ -46,7 +46,9 @@ impl Dal for RuSqliteDal {
 
     #[allow(unused_variables)]
     fn delete_price(&self, id: i32) -> anyhow::Result<usize> {
-        todo!()
+        let (sql, values) = generate_delete_price(id);
+        let result = self.conn.execute(&sql, &*values.as_params())?;
+        Ok(result)
     }
 
     fn get_ids_of_symbols_with_prices(&self) -> anyhow::Result<Vec<i32>> {

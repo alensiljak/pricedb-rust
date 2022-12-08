@@ -113,10 +113,10 @@ pub(crate) fn generate_update_price(price: &Price) -> (String, RusqliteValues) {
     result
 }
 
-pub(crate) fn generate_delete_price(price: &Price) -> (String, RusqliteValues) {
+pub(crate) fn generate_delete_price(id: i32) -> (String, RusqliteValues) {
     Query::delete()
         .from_table(PriceIden::Table)
-        .and_where(Expr::col(PriceIden::Id).eq(price.id))
+        .and_where(Expr::col(PriceIden::Id).eq(id))
         .build_rusqlite(SqliteQueryBuilder)
 }
 
