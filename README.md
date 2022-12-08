@@ -1,6 +1,35 @@
 # pricedb-rust
 Fetching commodity prices and exporting in Ledger format
 
+# Introduction
+
+This utility downloads and stores commodity prices used by Ledger-cli.
+
+It stores the prices in an Sqlite database.
+
+This is a continuation of the Price Database project. The [previous version](https://gitlab.com/alensiljak/price-database) was implemented in Python. It has been migrated to Rust.
+
+# Usage
+
+## Configuration
+
+The configuration file is located in the user's config directory, i.e. ~/.config/pricedb.
+
+## Data Store
+
+The database is (currently) created manually. The functionality to automatically generate the database file needs to be completed.
+
+## Commands
+
+The application is a Command-Line Interface (CLI) and displays the available options when run.
+The most-common commands:
+
+```shell
+pricedb dl
+pricedb prune
+pricedb export
+```
+
 # Development
 
 ## SQLite
