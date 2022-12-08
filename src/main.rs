@@ -15,17 +15,19 @@ async fn main() {
     env_logger::init();
     log::trace!("starting");
 
-    // CLI configuration
-    //clap::Command::new("rule").arg_required_else_help(true);
+    // todo: CLI configuration
+    // let cmd = interface::configure_cli();
+    // let matches = cmd.get_matches();
 
-    let cli = Cli::parse();
+    let args = Cli::parse();
 
-    log::debug!("Command: {:?}", cli.command);
+    log::debug!("Command: {:?}", args.command);
 
-    if cli.command.is_none() {
+    if args.command.is_none() {
         // use clap::CommandFactory;
         // let mut cmd = Args::command();
         // cmd.print_help();
+        // clap::App::print_help();
         println!("No command issued");
         return;
     }
@@ -34,7 +36,7 @@ async fn main() {
 
     // export
 
-    if let Some(Commands::Export {}) = &cli.command {
+    if let Some(Commands::Export {}) = &args.command {
         app.export();
     }
 
@@ -45,7 +47,7 @@ async fn main() {
         agent,
         exchange,
         symbol,
-    }) = &cli.command
+    }) = &args.command
     {
         let filter = SecurityFilter {
             currency: currency.clone(),
@@ -58,7 +60,7 @@ async fn main() {
 
     // prune
 
-    if let Some(Commands::Prune { symbol }) = &cli.command {
+    if let Some(Commands::Prune { symbol }) = &args.command {
         app.prune(symbol);
     }
 }

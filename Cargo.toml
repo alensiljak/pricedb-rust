@@ -13,7 +13,7 @@ license = "GPL-3.0-or-later"
 anyhow = "1.0.66"
 async-trait = "0.1.59"
 chrono = "0.4.23"
-clap = { version = "4.0.29", features = ["derive"] }
+clap = { version = "4.0.29", features = ["cargo", "derive"] }
 confy = "0.5.1"
 # diesel = { version = "2.0.2", features = ["sqlite"] }
 env_logger = "0.9.3"
