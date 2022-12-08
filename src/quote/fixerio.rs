@@ -12,7 +12,7 @@ use serde_json::Value;
 /// Fixerio downloader
 use crate::{
     config::PriceDbConfig,
-    model::{NewPrice, SecuritySymbol},
+    model::{SecuritySymbol, Price},
 };
 
 use super::Downloader;
@@ -72,7 +72,7 @@ impl Fixerio {
 impl Downloader for Fixerio {
     /// Download latest rates. Caches the (daily) prices into a temp directory.
     #[allow(unused_variables)]
-    async fn download(&self, security_symbol: SecuritySymbol, currency: &str) -> Result<NewPrice> {
+    async fn download(&self, security_symbol: SecuritySymbol, currency: &str) -> Result<Price> {
         //let namespace = security_symbol.namespace.to_uppercase();
         let currency = currency.to_uppercase();
         let mnemonic = security_symbol.mnemonic.to_uppercase();
@@ -136,7 +136,7 @@ fn get_todays_file_path() -> String {
 
 /// Read and map a single currency rate
 /// symbol: The currency to fetch the rate for.
-fn map_rates_to_price(rates: Value, symbol: &str) -> NewPrice {
+fn map_rates_to_price(rates: Value, symbol: &str) -> Price {
     let date_str = rates["date"].as_str().unwrap().to_string();
 
     // Get value
@@ -158,7 +158,8 @@ fn map_rates_to_price(rates: Value, symbol: &str) -> NewPrice {
 
     // result
 
-    NewPrice {
+    Price {
+        id: i32::default(),
         security_id: i32::default(),
         date: date_str,
         time: None,
@@ -186,8 +187,6 @@ fn read_rates_from_cache() -> Value {
 /// Unit tests
 #[cfg(test)]
 mod tests {
-    use chrono::NaiveDate;
-
     use super::*;
 
     #[test]

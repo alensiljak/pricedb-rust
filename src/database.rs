@@ -6,12 +6,13 @@
 // mod dal_sqlx;              // async-only
 // mod dal_sqlite;
 mod dal_rusqlite;
+mod mappers_rusqlite;
 
 use log::debug;
 
 use crate::{
     config::PriceDbConfig,
-    model::{NewPrice, Price, PriceFilter, Security, SecurityFilter, SecuritySymbol},
+    model::{Price, PriceFilter, Security, SecurityFilter, SecuritySymbol},
 };
 
 /// Initialize database connection.
@@ -49,7 +50,7 @@ fn load_db_path() -> String {
 
 pub(crate) trait Dal {
     /// Inserts a new price record.
-    fn add_price(&self, new_price: &NewPrice) -> usize;
+    fn add_price(&self, new_price: &Price) -> usize;
 
     /// Deletes a price record.
     fn delete_price(&self, id: i32) -> anyhow::Result<usize>;

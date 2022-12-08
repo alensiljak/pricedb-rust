@@ -14,7 +14,7 @@ mod ledger_formatter;
 mod quote;
 
 use crate::{
-    model::{NewPrice, PriceFilter, SecurityFilter, SecuritySymbol},
+    model::{PriceFilter, SecurityFilter, SecuritySymbol},
     quote::Quote,
 };
 
@@ -33,7 +33,7 @@ impl App {
         }
     }
 
-    pub fn add_price(&self, new_price: NewPrice) {
+    pub fn add_price(&self, new_price: Price) {
         log::debug!("Adding price {:?}", new_price);
 
         // Is there a price already?
@@ -261,7 +261,7 @@ impl App {
 //     dal
 // }
 
-async fn download_price(symbol: SecuritySymbol, currency: &str, agent: &str) -> Option<NewPrice> {
+async fn download_price(symbol: SecuritySymbol, currency: &str, agent: &str) -> Option<Price> {
     // todo: there must be a symbol
     let mut dl = Quote::new();
 

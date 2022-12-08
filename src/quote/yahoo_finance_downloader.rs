@@ -1,14 +1,14 @@
 use std::collections::HashMap;
 
 use async_trait::async_trait;
-use chrono::{NaiveDateTime, TimeZone, FixedOffset, DateTime};
+use chrono::{NaiveDateTime, TimeZone, FixedOffset};
 use rust_decimal::{
     prelude::{FromPrimitive, ToPrimitive},
     Decimal,
 };
 use serde_json::Value;
 
-use crate::model::{NewPrice, Price, SecuritySymbol};
+use crate::model::{Price, SecuritySymbol};
 
 use anyhow::{Ok, Result};
 
@@ -61,7 +61,7 @@ impl YahooFinanceDownloader {
 
     /// Extract the Price from JSON.
     ///
-    fn get_price_from_json(&self, body: &Value) -> Result<NewPrice> {
+    fn get_price_from_json(&self, body: &Value) -> Result<Price> {
         let chart = &body["chart"];
         let error = &chart["error"];
 
@@ -69,7 +69,7 @@ impl YahooFinanceDownloader {
         //log::debug!("error? {:?}", error);
         assert_eq!(*error, Value::Null);
 
-        let mut result = Price::for_insert();
+        let mut result = Price::new();
 
         let meta = &body["chart"]["result"][0]["meta"];
         assert_ne!(*meta, Value::Null);
@@ -99,7 +99,6 @@ impl YahooFinanceDownloader {
         // log::debug!("time {:?}", date_time);
         let dt_fo = fo.from_utc_datetime(&utc);
 
-        // utc.date()
         let date_str = dt_fo.date_naive().to_string();
         // log::debug!("Parsed date is {:?}", date_str);
         result.date = date_str;
@@ -116,7 +115,7 @@ impl YahooFinanceDownloader {
 
 #[async_trait]
 impl Downloader for YahooFinanceDownloader {
-    async fn download(&self, security_symbol: SecuritySymbol, _currency: &str) -> Result<NewPrice> {
+    async fn download(&self, security_symbol: SecuritySymbol, _currency: &str) -> Result<Price> {
         let url = self.assemble_url(&security_symbol);
 
         log::debug!("fetching from {:?}", url);

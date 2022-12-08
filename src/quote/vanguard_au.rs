@@ -6,7 +6,7 @@ use chrono::NaiveDate;
 use rust_decimal::{prelude::ToPrimitive, Decimal};
 use serde_json::Value;
 
-use crate::model::{NewPrice, Price, SecuritySymbol};
+use crate::model::{Price, SecuritySymbol};
 
 use super::Downloader;
 
@@ -77,8 +77,8 @@ impl VanguardAuDownloader {
         return fund_info;
     }
 
-    fn parse_price(&self, fund_info: &FundInfo) -> Result<NewPrice> {
-        let mut price = Price::for_insert();
+    fn parse_price(&self, fund_info: &FundInfo) -> Result<Price> {
+        let mut price = Price::new();
 
         let x = NaiveDate::parse_from_str(fund_info.date.as_str(), "%d %b %Y").unwrap();
         price.date = x.to_string();
@@ -101,7 +101,7 @@ impl VanguardAuDownloader {
 
 #[async_trait]
 impl Downloader for VanguardAuDownloader {
-    async fn download(&self, security_symbol: SecuritySymbol, _currency: &str) -> Result<NewPrice> {
+    async fn download(&self, security_symbol: SecuritySymbol, _currency: &str) -> Result<Price> {
         if security_symbol
             .namespace
             .ne("VANGUARD".to_uppercase().as_str())

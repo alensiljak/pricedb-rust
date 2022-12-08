@@ -10,7 +10,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 
 use crate::{
-    model::{NewPrice, SecuritySymbol},
+    model::{SecuritySymbol, Price},
     quote::{
         fixerio::Fixerio, vanguard_au::VanguardAuDownloader,
         yahoo_finance_downloader::YahooFinanceDownloader,
@@ -36,7 +36,7 @@ impl Quote {
     }
 
     /// Fetch prices for the given symbols.
-    pub async fn fetch(&self, exchange: &str, symbols: Vec<String>) -> Vec<NewPrice> {
+    pub async fn fetch(&self, exchange: &str, symbols: Vec<String>) -> Vec<Price> {
         let mut result = vec![];
 
         for symbol in symbols {
@@ -52,7 +52,7 @@ impl Quote {
         result
     }
 
-    async fn download(&self, exchange: &str, symbol: &str) -> Option<NewPrice> {
+    async fn download(&self, exchange: &str, symbol: &str) -> Option<Price> {
         if exchange != exchange.to_uppercase() {
             panic!("handle this case!");
         }
@@ -119,5 +119,5 @@ impl Quote {
 
 #[async_trait]
 trait Downloader {
-    async fn download(&self, security_symbol: SecuritySymbol, currency: &str) -> Result<NewPrice>;
+    async fn download(&self, security_symbol: SecuritySymbol, currency: &str) -> Result<Price>;
 }

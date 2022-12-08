@@ -9,7 +9,7 @@ use sea_query::{Expr, Query, SqliteQueryBuilder};
 use sea_query_rusqlite::{RusqliteBinder, RusqliteValues};
 
 use crate::model::{
-    NewPrice, Price, PriceFilter, PriceIden, Security, SecurityFilter, SecurityIden, SecuritySymbol,
+    Price, PriceFilter, PriceIden, Security, SecurityFilter, SecurityIden, SecuritySymbol,
 };
 
 use super::Dal;
@@ -29,10 +29,10 @@ impl RuSqliteDal {
 }
 
 impl Dal for RuSqliteDal {
-    fn add_price(&self, new_price: &NewPrice) -> usize {
+    fn add_price(&self, new_price: &Price) -> usize {
         log::debug!("inserting {:?}", new_price);
 
-        let (sql, values) = generate_insert_sql_for_price(new_price);
+        let (sql, values) = generate_insert_price(new_price);
 
         log::debug!("inserting price: {:?}", sql);
         log::debug!("values: {:?}", values);
@@ -139,7 +139,7 @@ impl Dal for RuSqliteDal {
 
         // assemble the sql statement
         // let sql = "select * from security";
-        let (sql, values) = generate_security_query_with_filter(&filter);
+        let (sql, values) = generate_select_security_with_filter(&filter);
 
         log::debug!("securities sql: {:?}", sql);
 
@@ -243,7 +243,7 @@ fn map_row_to_security(row: &Row) -> Security {
     sec
 }
 
-fn generate_insert_sql_for_price(new_price: &NewPrice) -> (String, RusqliteValues) {
+fn generate_insert_price(new_price: &Price) -> (String, RusqliteValues) {
     let result = Query::insert()
         .into_table(PriceIden::Table)
         .columns([
@@ -269,7 +269,7 @@ fn generate_insert_sql_for_price(new_price: &NewPrice) -> (String, RusqliteValue
 }
 
 /// Generates SELECT statement with the given parameters/filters.
-fn generate_security_query_with_filter(filter: &SecurityFilter) -> (String, RusqliteValues) {
+fn generate_select_security_with_filter(filter: &SecurityFilter) -> (String, RusqliteValues) {
     let query = Query::select()
         // Order of columns:
         .column(SecurityIden::Id)
@@ -380,7 +380,7 @@ mod tests {
     use sea_query_rusqlite::RusqliteValue;
     use test_log::test;
 
-    use crate::model::{NewPrice, SecurityFilter};
+    use crate::model::SecurityFilter;
 
     use super::*;
 
@@ -458,9 +458,10 @@ mod tests {
         assert_eq!(0, result);
     }
 
-    fn create_dummy_price(security_id: i32, value: i32, denom_opt: Option<i32>) -> NewPrice {
+    fn create_dummy_price(security_id: i32, value: i32, denom_opt: Option<i32>) -> Price {
         let date: String = chrono::Local::now().date_naive().to_string();
-        NewPrice {
+        Price {
+            id: i32::default(),
             security_id,
             date,
             time: None,
@@ -513,7 +514,7 @@ mod tests {
             exchange: None,
             symbol: None,
         };
-        let (sql, values) = generate_security_query_with_filter(&filter);
+        let (sql, values) = generate_select_security_with_filter(&filter);
 
         let expected = "SELECT \"id\", \"namespace\", \"symbol\", \"updater\", \"currency\", \"ledger_symbol\", \"notes\" FROM \"security\"";
         assert_eq!(expected, sql);
@@ -527,7 +528,7 @@ mod tests {
             exchange: None,
             symbol: None,
         };
-        let (sql, values) = generate_security_query_with_filter(&filter);
+        let (sql, values) = generate_select_security_with_filter(&filter);
 
         print!("{:?}", values);
 
@@ -546,7 +547,8 @@ mod tests {
 
     #[test]
     fn test_price_insert_statement() {
-        let new_price = NewPrice {
+        let new_price = Price {
+            id: i32::default(),
             security_id: 111,
             date: "2022-12-01".to_string(),
             time: None,
@@ -556,7 +558,7 @@ mod tests {
         };
 
         // let sql = dal.add_price(&new_price);
-        let (sql, values) = generate_insert_sql_for_price(&new_price);
+        let (sql, values) = generate_insert_price(&new_price);
 
         println!("sql: {:?}, values: {:?}", sql, values);
 

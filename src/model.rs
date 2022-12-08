@@ -12,7 +12,6 @@ use sea_query::enum_def;
 
 #[derive(Debug, Clone, Eq, PartialEq, PartialOrd, Ord)]
 #[enum_def]
-#[allow(unused)]
 // #[derive(diesel::Queryable, diesel::Identifiable)]
 // #[diesel(table_name = price)]
 pub struct Price {
@@ -26,44 +25,44 @@ pub struct Price {
     pub currency: String,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+// #[derive(Debug, Clone, PartialEq)]
 // #[derive(diesel::Insertable)]
 // #[diesel(table_name = price)]
-pub struct NewPrice {
-    pub security_id: i32,
-    pub date: String,
-    pub time: Option<String>,
-    pub value: i32,
-    pub denom: i32,
-    // pub value_dec: Decimal,
-    pub currency: String,
-}
+// pub struct NewPrice {
+//     pub security_id: i32,
+//     pub date: String,
+//     pub time: Option<String>,
+//     pub value: i32,
+//     pub denom: i32,
+//     // pub value_dec: Decimal,
+//     pub currency: String,
+// }
 
 impl Price {
     pub fn new() -> Price {
         let result = Price {
             id: 0,
             security_id: 0,
-            date: "".to_string(),
-            time: None,
-            value: 0,
-            denom: 0,
-            currency: "".to_string(),
-            // value_dec: dec!(0),
-        };
-        return result;
-    }
-
-    pub fn for_insert() -> NewPrice {
-        NewPrice {
-            security_id: 0,
             date: String::default(),
             time: None,
             value: 0,
             denom: 0,
             currency: String::default(),
-        }
+            // value_dec: dec!(0),
+        };
+        return result;
     }
+
+    // pub fn for_insert() -> NewPrice {
+    //     NewPrice {
+    //         security_id: 0,
+    //         date: String::default(),
+    //         time: None,
+    //         value: 0,
+    //         denom: 0,
+    //         currency: String::default(),
+    //     }
+    // }
 }
 
 pub(crate) struct PriceFilter {
