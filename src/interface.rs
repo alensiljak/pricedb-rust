@@ -13,6 +13,12 @@ pub(crate) enum Commands {
     // Add
 
     // Cfg
+    #[command(about = "Configuration")]
+    Config {
+        // #[command(subcommand)]
+        // show {},
+    },
+
     #[command(about = "Download prices")]
     Dl {
         #[arg(short = 'x', long)]
