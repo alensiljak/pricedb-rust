@@ -5,6 +5,7 @@ use crate::model::Price;
  *
  */
 
+#[allow(unused)]
 /// format a list of prices
 pub(crate) fn format_prices(prices: Vec<Price>) -> String {
     let mut output = String::default();
@@ -17,6 +18,7 @@ pub(crate) fn format_prices(prices: Vec<Price>) -> String {
     output
 }
 
+#[allow(unused)]
 /**
  * Formats single Price record.
  * ledger price format, ISO format supported:

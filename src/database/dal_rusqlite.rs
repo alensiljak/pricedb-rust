@@ -192,7 +192,13 @@ impl Dal for RuSqliteDal {
     }
 
     fn update_price(&self, id: i32, price: &Price) -> anyhow::Result<usize> {
-        todo!()
+        let (sql, params) = generate_update_price(price);
+        
+        log::debug!("updating price record: {sql:?}, {params:?}");
+
+        let result = self.conn.execute(&sql, &*params.as_params())?;
+        
+        Ok(result)
     }
 }
 
@@ -264,7 +270,7 @@ fn generate_select_security_with_filter(filter: &SecurityFilter) -> (String, Rus
                     q.and_where(Expr::col(SecurityIden::Symbol).eq(uppercase_sym));
                 }
             },
-            |q| {},
+            |_q| {},
         )
         .to_owned();
 

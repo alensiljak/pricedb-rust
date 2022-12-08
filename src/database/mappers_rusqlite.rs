@@ -3,10 +3,10 @@ Data mappers dal/models
  */
 
 use rusqlite::Row;
-use sea_query::{Query, SqliteQueryBuilder};
-use sea_query_rusqlite::{RusqliteValues, RusqliteBinder};
+use sea_query::{Expr, Query, SqliteQueryBuilder};
+use sea_query_rusqlite::{RusqliteBinder, RusqliteValues};
 
-use crate::model::{Price, Security, PriceIden};
+use crate::model::{Price, PriceIden, Security};
 
 pub(crate) fn map_row_to_price(row: &Row) -> Price {
     let result = Price {
@@ -36,7 +36,7 @@ pub(crate) fn map_row_to_security(row: &Row) -> Security {
     sec
 }
 
-pub(crate) fn generate_insert_price(new_price: &Price) -> (String, RusqliteValues) {
+pub(crate) fn generate_insert_price(price: &Price) -> (String, RusqliteValues) {
     let result = Query::insert()
         .into_table(PriceIden::Table)
         .columns([
@@ -48,16 +48,45 @@ pub(crate) fn generate_insert_price(new_price: &Price) -> (String, RusqliteValue
             PriceIden::Currency,
         ])
         .values_panic([
-            new_price.security_id.into(),
-            new_price.date.to_owned().into(),
-            new_price.time.to_owned().into(),
-            new_price.value.into(),
-            new_price.denom.into(),
-            new_price.currency.to_owned().into(),
+            price.security_id.into(),
+            price.date.to_owned().into(),
+            price.time.to_owned().into(),
+            price.value.into(),
+            price.denom.into(),
+            price.currency.to_owned().into(),
         ])
         .build_rusqlite(SqliteQueryBuilder);
     // .build(SqliteQueryBuilder);
     //.to_string(SqliteQueryBuilder);
+    result
+}
+
+pub(crate) fn generate_update_price(price: &Price) -> (String, RusqliteValues) {
+    let mut stmt = Query::update()
+        .table(PriceIden::Table)
+        .values([
+            (PriceIden::SecurityId, price.security_id.into()),
+            (PriceIden::Date, price.date.to_owned().into()),
+            //(PriceIden::Time, price.time.)
+            (PriceIden::Value, price.value.into()),
+            (PriceIden::Denom, price.denom.into()),
+            (PriceIden::Currency, price.currency.to_owned().into()),
+        ])
+        .to_owned();
+
+    if price.time.is_some() {
+        let value = price.time.to_owned().unwrap().as_str().to_owned();
+        stmt = stmt
+            .value::<PriceIden, String>(PriceIden::Time, value.into())
+            .to_owned();
+    }
+
+    // todo: Update only the record with the given id.
+    stmt = stmt
+        .and_where(Expr::col(PriceIden::Id).eq(price.id))
+        .to_owned();
+
+    let result = stmt.build_rusqlite(SqliteQueryBuilder);
     result
 }
 
@@ -66,6 +95,20 @@ mod tests {
     use super::*;
 
     use crate::model::Price;
+
+    use test_log::test;
+
+    fn create_dummy_price() -> Price {
+        Price {
+            id: i32::default(),
+            security_id: 155,
+            date: "2022-12-07".to_owned(),
+            time: Some("12:00:01".to_owned()),
+            value: 12345,
+            denom: 100,
+            currency: "EUR".to_owned(),
+        }
+    }
 
     #[test]
     fn test_price_insert_statement() {
@@ -84,8 +127,8 @@ mod tests {
 
         println!("sql: {:?}, values: {:?}", sql, values);
 
-        //let expected = "INSERT INTO \"price\" (\"security_id\", \"date\", \"time\", \"value\", \"denom\", \"currency\") VALUES (111, '2022-12-01', NULL, 100, 0, 'AUD')";
-        let expected = "INSERT INTO \"price\" (\"security_id\", \"date\", \"time\", \"value\", \"denom\", \"currency\") VALUES (?, ?, ?, ?, ?, ?)";
+        //let expected = "INSERT INTO "price" ("security_id", "date", "time", "value", "denom", "currency") VALUES (111, '2022-12-01', NULL, 100, 0, 'AUD')";
+        let expected = r#"INSERT INTO "price" ("security_id", "date", "time", "value", "denom", "currency") VALUES (?, ?, ?, ?, ?, ?)"#;
         assert_eq!(expected, sql);
 
         assert_eq!(values.0[0].0, sea_query::Value::Int(Some(111)));
@@ -93,6 +136,7 @@ mod tests {
             values.0[1].0,
             sea_query::Value::String(Some(Box::new("2022-12-01".to_string())))
         );
+
         assert_eq!(values.0[2].0, sea_query::Value::String(None));
         assert_eq!(values.0[3].0, sea_query::Value::Int(Some(100)));
         assert_eq!(values.0[4].0, sea_query::Value::Int(Some(10)));
@@ -102,5 +146,22 @@ mod tests {
         );
     }
 
+    #[test]
+    fn test_gen_update_price() {
+        let price = create_dummy_price();
 
+        let (sql, params) = generate_update_price(&price);
+
+        println!("update: {sql:?}");
+        println!("{params:?}");
+
+        assert_eq!(
+            sql,
+            r#"UPDATE "price" SET "security_id" = ?, "date" = ?, "value" = ?, "denom" = ?, "currency" = ?, "time" = ? WHERE "id" = ?"#
+        );
+        
+        // make sure that the time value is in there
+        let actual_time = &params.0[5].0;
+        assert_eq!(*actual_time, sea_query::Value::String(Some(Box::new("12:00:01".to_owned()))));
+    }
 }
