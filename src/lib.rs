@@ -72,9 +72,13 @@ impl App {
             // let cur_denom = Decimal::from_i32(price.denom).unwrap();
             // let new_value = cur_val / cur_denom;
 
-            let mut updated = existing.clone();
+            let mut should_update = false;
+            //let mut for_update = existing.clone();
+            let mut for_update = Price::new();
 
-            log::debug!("clone of the price to update: {:?}", updated);
+            for_update.id = existing.id;
+
+            // log::debug!("clone of the price to update: {:?}", for_update);
 
             if existing.value != new_price.value {
                 log::info!(
@@ -82,14 +86,24 @@ impl App {
                     existing.value,
                     new_price.value
                 );
-                updated.value = new_price.value;
+                for_update.value = new_price.value;
+                should_update = true;
             }
             if existing.denom != new_price.denom {
                 log::info!("Updating denom {} to {}", existing.denom, new_price.denom);
-                updated.denom = new_price.denom;
+                for_update.denom = new_price.denom;
+                should_update = true;
             }
 
-            let update_result = self.dal.update_price(existing.id, &updated);
+            // Exit if there's nothing to update.
+            if !should_update {
+                log::debug!("Nothing to update");
+                return;
+            };
+
+            log::debug!("updating record {new_price:?}");
+
+            let update_result = self.dal.update_price(&for_update);
             match update_result {
                 Ok(_) => {
                     // everything ok
@@ -178,7 +192,8 @@ impl App {
             security_ids.push(security.id);
         } else {
             // load all symbols
-            security_ids = self.dal
+            security_ids = self
+                .dal
                 .get_ids_of_symbols_with_prices()
                 .expect("Error fetching symbol ids.");
             // log::debug!("symbol ids with prices: {:?}", security_ids);
@@ -227,7 +242,8 @@ impl App {
 
         let mut count = 0;
         // get prices for the given security
-        let prices = self.dal
+        let prices = self
+            .dal
             .get_prices_for_security(security_id)
             .expect("Error fetching prices for security");
 

@@ -44,6 +44,7 @@ impl Dal for RuSqliteDal {
         result
     }
 
+    #[allow(unused_variables)]
     fn delete_price(&self, id: i32) -> anyhow::Result<usize> {
         todo!()
     }
@@ -171,7 +172,7 @@ impl Dal for RuSqliteDal {
         let sql = "select * from security where symbol = :symbol";
         let mut stmt = self.conn.prepare(sql).expect("Statement");
         // let params = (1, symbol);
-        let params = named_params! { ":symbol": symbol };
+        let params = named_params! { ":symbol": symbol.to_uppercase() };
         let security = stmt
             .query_row(params, |r| {
                 let result = map_row_to_security(r);
@@ -191,7 +192,7 @@ impl Dal for RuSqliteDal {
         todo!()
     }
 
-    fn update_price(&self, id: i32, price: &Price) -> anyhow::Result<usize> {
+    fn update_price(&self, price: &Price) -> anyhow::Result<usize> {
         let (sql, params) = generate_update_price(price);
         
         log::debug!("updating price record: {sql:?}, {params:?}");
@@ -240,7 +241,7 @@ fn generate_select_security_with_filter(filter: &SecurityFilter) -> (String, Rus
                     q.and_where(Expr::col(SecurityIden::Updater).eq(agent));
                 }
             },
-            |q| {},
+            |_q| {},
         )
         .conditions(
             filter.currency.is_some(),
@@ -250,7 +251,7 @@ fn generate_select_security_with_filter(filter: &SecurityFilter) -> (String, Rus
                     q.and_where(Expr::col(SecurityIden::Currency).eq(uppercase_cur));
                 }
             },
-            |q| {},
+            |_q| {},
         )
         .conditions(
             filter.exchange.is_some(),
@@ -260,7 +261,7 @@ fn generate_select_security_with_filter(filter: &SecurityFilter) -> (String, Rus
                     q.and_where(Expr::col(SecurityIden::Namespace).eq(uppercase_exc));
                 }
             },
-            |q| {},
+            |_q| {},
         )
         .conditions(
             filter.symbol.is_some(),
@@ -468,8 +469,11 @@ mod tests {
         };
         let (sql, values) = generate_select_security_with_filter(&filter);
 
-        let expected = "SELECT \"id\", \"namespace\", \"symbol\", \"updater\", \"currency\", \"ledger_symbol\", \"notes\" FROM \"security\"";
+        let expected = r#"SELECT "id", "namespace", "symbol", "updater", "currency", "ledger_symbol", "notes" FROM "security""#;
         assert_eq!(expected, sql);
+
+        // There are no parameters.
+        assert!(values.0.len() == 0);
     }
 
     #[test]
@@ -490,12 +494,12 @@ mod tests {
         assert_eq!(exp_val, values.0[0]);
     }
 
-    #[test]
-    fn test_null_param() {
-        let sql = r#"SELECT * 
-        FROM MY_TABLE 
-        WHERE @parameter IS NULL OR NAME = @parameter;"#;
-    }
+    // #[test]
+    // fn test_null_param() {
+    //     let sql = r#"SELECT * 
+    //     FROM MY_TABLE 
+    //     WHERE @parameter IS NULL OR NAME = @parameter;"#;
+    // }
 
     #[test]
     /// Test loading prices with an empty filter.

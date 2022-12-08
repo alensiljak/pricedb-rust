@@ -69,5 +69,5 @@ pub(crate) trait Dal {
 
     fn get_symbols(&self) -> Vec<SecuritySymbol>;
 
-    fn update_price(&self, id: i32, price: &Price) -> anyhow::Result<usize>;
+    fn update_price(&self, price: &Price) -> anyhow::Result<usize>;
 }
