@@ -70,4 +70,5 @@ pub fn configure_cli() -> Command {
 
 fn get_export_cmd() -> Command {
     Command::new("export")
+        .about("Export prices in ledger format")
 }

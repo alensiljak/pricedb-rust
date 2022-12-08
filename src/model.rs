@@ -13,8 +13,6 @@ use sea_query::enum_def;
 
 #[derive(Debug, Clone, Eq, PartialEq, PartialOrd, Ord)]
 #[enum_def]
-// #[derive(diesel::Queryable, diesel::Identifiable)]
-// #[diesel(table_name = price)]
 pub struct Price {
     pub id: i32,
     pub security_id: i32,
@@ -22,7 +20,6 @@ pub struct Price {
     pub time: Option<String>,
     pub value: i32,
     pub denom: i32,
-    // pub value_dec: Decimal,
     pub currency: String,
 }
 
@@ -55,19 +52,6 @@ impl Price {
     }
 }
 
-// #[derive(Debug, Clone, PartialEq)]
-// #[derive(diesel::Insertable)]
-// #[diesel(table_name = price)]
-// pub struct NewPrice {
-//     pub security_id: i32,
-//     pub date: String,
-//     pub time: Option<String>,
-//     pub value: i32,
-//     pub denom: i32,
-//     // pub value_dec: Decimal,
-//     pub currency: String,
-// }
-
 pub(crate) struct PriceFilter {
     pub security_id: Option<i32>,
     pub date: Option<String>,
@@ -85,9 +69,7 @@ impl PriceFilter {
 }
 
 #[derive(Debug, Default)]
-// #[derive(diesel::Queryable)]
 #[enum_def]
-#[allow(unused)]
 pub struct Security {
     pub id: i32,
     pub namespace: Option<String>,
