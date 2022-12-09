@@ -191,17 +191,15 @@ impl App {
 
     pub fn list_prices(
         &self,
-        date: &Option<String>,
-        currency: &Option<String>,
-        last: &Option<String>,
+        _date: &Option<String>,
+        _currency: &Option<String>,
+        _last: &Option<String>,
     ) {
         // load and show all prices
         let prices = self.dal.get_prices(None);
         for price in prices {
             println!("{price:?}");
         }
-        
-        todo!("complete")
     }
 
     /// Prune historical prices for the given symbol, leaving only the latest.

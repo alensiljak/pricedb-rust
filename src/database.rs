@@ -10,9 +10,7 @@ mod mappers_rusqlite;
 
 use log::debug;
 
-use crate::{
-    model::{Price, PriceFilter, Security, SecurityFilter, SecuritySymbol},
-};
+use crate::model::{Price, PriceFilter, Security, SecurityFilter};
 
 /// Initialize database connection.
 pub(crate) fn init_dal() -> impl Dal {
@@ -48,20 +46,21 @@ pub(crate) trait Dal {
     /// Deletes a price record.
     fn delete_price(&self, id: i32) -> anyhow::Result<usize>;
 
-    /// Returns all the ids of the symbols that have prices in the database.
-    /// Used for pruning.
-    //fn get_ids_of_symbols_with_prices(&self) -> anyhow::Result<Vec<i32>>;
-    fn get_securitiess_having_prices(&self) -> Vec<Security>;
-
     fn get_prices(&self, filter: Option<PriceFilter>) -> Vec<Price>;
 
     fn get_prices_for_security(&self, security_id: i32) -> anyhow::Result<Vec<Price>>;
 
+    fn get_prices_with_symbols(&self) -> Vec<Price>;
+
     fn get_securities(&self, filter: SecurityFilter) -> Vec<Security>;
+
+    /// Returns all the ids of the symbols that have prices in the database.
+    /// Used for pruning.
+    fn get_securitiess_having_prices(&self) -> Vec<Security>;
 
     fn get_security_by_symbol(&self, symbol: &str) -> Security;
 
-    fn get_symbols(&self) -> Vec<SecuritySymbol>;
+    // fn get_symbols(&self) -> Vec<SecuritySymbol>;
 
     fn update_price(&self, price: &Price) -> anyhow::Result<usize>;
 }

@@ -10,9 +10,7 @@ use sea_query_rusqlite::{RusqliteBinder, RusqliteValues};
 
 use crate::{
     database::mappers_rusqlite::*,
-    model::{
-        Price, PriceFilter, PriceIden, Security, SecurityFilter, SecurityIden, SecuritySymbol,
-    },
+    model::*,
 };
 
 use super::Dal;
@@ -71,8 +69,6 @@ impl Dal for RuSqliteDal {
     }
 
     fn get_prices(&self, filter: Option<PriceFilter>) -> Vec<Price> {
-        let mut result: Vec<Price> = vec![];
-
         let filter_internal: PriceFilter = match filter {
             Some(_) => filter.unwrap(),
             None => PriceFilter::new(), // empty filter required
@@ -84,44 +80,50 @@ impl Dal for RuSqliteDal {
 
         let mut statement = self.conn.prepare(&sql).unwrap();
 
-        let sec_iter = statement
+        let prices = statement
             .query_map(&*values.as_params(), |row| {
                 // map
                 let sec = map_row_to_price(row);
-                // log::debug!("parsed: {:?}", sec);
                 Ok(sec)
             })
-            .expect("Filtered Securities");
+            .expect("Filtered Securities")
+            .flatten()
+            .collect();
 
-        for item in sec_iter {
-            match item {
-                Ok(sec) => result.push(sec),
-                Err(_) => todo!(),
-            }
-        }
-
-        // log::debug!("found prices: {:?}", result);
-
-        result
+        prices
     }
 
     fn get_prices_for_security(&self, security_id: i32) -> anyhow::Result<Vec<Price>> {
-        let mut result: Vec<Price> = vec![];
         let sql = "select * from price where security_id=? order by date desc, time desc;";
         let mut stmt = self.conn.prepare(sql).expect("Error");
 
-        let rows = stmt
+        let prices = stmt
             .query_map([security_id], |row| {
                 let price = map_row_to_price(row);
                 Ok(price)
             })
-            .expect("Error");
+            .expect("mapped rows")
+            .flatten()
+            .collect();
 
-        for row in rows {
-            let record = row.expect("error extracting price");
-            result.push(record);
-        }
-        Ok(result)
+        Ok(prices)
+    }
+
+    fn get_prices_with_symbols(&self) -> Vec<Price> {
+        let sql = generate_select_prices_symbols(PriceSymbolOrder::Symbol);
+
+        let mut statement = self.conn.prepare(&sql).unwrap();
+
+        let prices = statement
+            .query_map([], |row| {
+                let sec = map_row_to_price(row);
+                Ok(sec)
+            })
+            .expect("Filtered Securities")
+            .flatten()
+            .collect();
+
+        prices
     }
 
     /// Search for the securities with the given filter.
@@ -170,10 +172,6 @@ impl Dal for RuSqliteDal {
         return security;
     }
 
-    fn get_symbols(&self) -> Vec<SecuritySymbol> {
-        todo!()
-    }
-
     fn update_price(&self, price: &Price) -> anyhow::Result<usize> {
         let (sql, params) = generate_update_price(price);
 
@@ -188,6 +186,72 @@ impl Dal for RuSqliteDal {
 /// rusqlite connection
 fn open_connection(conn_str: &String) -> Connection {
     Connection::open(conn_str).expect("open sqlite connection")
+}
+
+fn generate_select_price_with_filter(filter: &PriceFilter) -> (String, RusqliteValues) {
+    Query::select()
+        .columns(get_price_columns())
+        .from(PriceIden::Table)
+        .conditions(
+            filter.security_id.is_some(),
+            |q| {
+                if let Some(val) = filter.security_id {
+                    q.and_where(Expr::col(PriceIden::SecurityId).eq(val));
+                }
+            },
+            |_q| {},
+        )
+        .conditions(
+            filter.date.is_some(),
+            |q| {
+                if let Some(val) = filter.date.to_owned() {
+                    q.and_where(Expr::col(PriceIden::Date).eq(val));
+                }
+            },
+            |_q| {},
+        )
+        .conditions(
+            filter.time.is_some(),
+            |q| {
+                if let Some(val) = filter.time.to_owned() {
+                    q.and_where(Expr::col(PriceIden::Time).eq(val));
+                }
+            },
+            |_q| {},
+        )
+        // .to_owned();
+        .build_rusqlite(SqliteQueryBuilder)
+
+    // query.build(SqliteQueryBuilder)
+    //query.to_string(SqliteQueryBuilder)
+}
+
+fn generate_select_prices_symbols(order: PriceSymbolOrder) -> String {
+    let sql = r#"SELECT price.id, security_id, date, time, value, denom, price.currency,
+	    namespace, symbol
+    FROM price INNER JOIN security
+	    ON price.security_id = security.id"#;
+
+    let order_str = match order {
+        PriceSymbolOrder::Symbol => "ORDER BY namespace, symbol",
+        PriceSymbolOrder::DateTime => "ORDER BY date, time",
+    };
+
+    let result = sql.to_owned() + order_str;
+
+    result
+}
+
+fn get_price_columns() -> Vec<(PriceIden, PriceIden)> {
+    vec![
+        (PriceIden::Table, PriceIden::Id),
+        (PriceIden::Table, PriceIden::SecurityId),
+        (PriceIden::Table, PriceIden::Date),
+        (PriceIden::Table, PriceIden::Time),
+        (PriceIden::Table, PriceIden::Value),
+        (PriceIden::Table, PriceIden::Denom),
+        (PriceIden::Table, PriceIden::Currency),
+    ]
 }
 
 fn get_security_columns() -> Vec<(SecurityIden, SecurityIden)> {
@@ -278,50 +342,10 @@ fn generate_select_securities_having_prices() -> (String, RusqliteValues) {
         .build_rusqlite(SqliteQueryBuilder)
 }
 
-fn generate_select_price_with_filter(filter: &PriceFilter) -> (String, RusqliteValues) {
-    let query = Query::select()
-        // Order of columns:
-        .column(PriceIden::Id)
-        .column(PriceIden::SecurityId)
-        .column(PriceIden::Date)
-        .column(PriceIden::Time)
-        .column(PriceIden::Value)
-        .column(PriceIden::Denom)
-        .column(PriceIden::Currency)
-        //
-        .from(PriceIden::Table)
-        .conditions(
-            filter.security_id.is_some(),
-            |q| {
-                if let Some(val) = filter.security_id {
-                    q.and_where(Expr::col(PriceIden::SecurityId).eq(val));
-                }
-            },
-            |_q| {},
-        )
-        .conditions(
-            filter.date.is_some(),
-            |q| {
-                if let Some(val) = filter.date.to_owned() {
-                    q.and_where(Expr::col(PriceIden::Date).eq(val));
-                }
-            },
-            |_q| {},
-        )
-        .conditions(
-            filter.time.is_some(),
-            |q| {
-                if let Some(val) = filter.time.to_owned() {
-                    q.and_where(Expr::col(PriceIden::Time).eq(val));
-                }
-            },
-            |_q| {},
-        )
-        .to_owned();
-
-    // query.build(SqliteQueryBuilder)
-    //query.to_string(SqliteQueryBuilder)
-    query.build_rusqlite(SqliteQueryBuilder)
+#[allow(dead_code)]
+enum PriceSymbolOrder {
+    Symbol,
+    DateTime,
 }
 
 #[cfg(test)]
