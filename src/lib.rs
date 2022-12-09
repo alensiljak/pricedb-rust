@@ -24,18 +24,18 @@ pub const APP_NAME: &str = "pricedb";
 
 pub struct App {
     config: PriceDbConfig,
-    dal: OnceCell<Box<dyn Dal>>
+    dal: OnceCell<Box<dyn Dal>>,
 }
 
 impl App {
     pub fn new(config: PriceDbConfig) -> Self {
         App {
             config,
-            dal: OnceCell::new()
+            dal: OnceCell::new(),
         }
     }
 
-    pub fn add_price(&self, new_price: Price) {
+    pub fn add_price(&self, new_price: Price) -> usize {
         log::debug!("Adding price {:?}", new_price);
 
         let dal = self.get_dal();
@@ -47,74 +47,17 @@ impl App {
             date: Some(new_price.date.to_owned()),
             time: new_price.time.to_owned(),
         };
-        // security_id, date, time
         let existing_prices = dal.get_prices(Some(filter));
 
         // insert or update
-        if existing_prices.is_empty() {
+        let result = if existing_prices.is_empty() {
             // insert
-            log::debug!("Inserting");
-
-            dal.add_price(&new_price);
-
-            println!("Added {new_price:?}");
+            self.insert_price(&new_price)
         } else {
             // update
-            log::debug!("Updating");
-            // get an existing record
-            let existing = existing_prices.first().expect("error fetching security");
-
-            println!("Existing price found: {existing:?}");
-
-            if new_price.currency != existing.currency {
-                log::error!(
-                    "The currencies are different {:?} vs {:?}",
-                    new_price.currency,
-                    existing.currency
-                );
-                panic!("The currencies differ!");
-            }
-
-            let mut should_update = false;
-            let mut for_update = Price::new();
-
-            for_update.id = existing.id;
-
-            // log::debug!("clone of the price to update: {:?}", for_update);
-
-            if existing.value != new_price.value {
-                println!(
-                    "Updating value from {:?} to {}",
-                    existing.value, new_price.value
-                );
-                for_update.value = new_price.value;
-                should_update = true;
-            }
-            if existing.denom != new_price.denom {
-                println!("Updating denom {} to {}", existing.denom, new_price.denom);
-                for_update.denom = new_price.denom;
-                should_update = true;
-            }
-
-            // Exit if there's nothing to update.
-            if !should_update {
-                log::debug!("Nothing to update");
-                return;
-            };
-
-            log::debug!("updating record {new_price:?}");
-
-            let update_result = dal.update_price(&for_update);
-            match update_result {
-                Ok(_) => {
-                    // everything ok
-                }
-                Err(e) => {
-                    log::error!("{}", e);
-                    panic!("{}", e);
-                }
-            }
-        }
+            self.update_price(existing_prices, &new_price)
+        };
+        result
     }
 
     pub fn config_show(&self) {
@@ -293,17 +236,25 @@ impl App {
             let dal = database::init_dal(&self.config.price_database_path);
 
             // Create tables if needed.
-            let tables= dal.get_tables();
+            let tables = dal.get_tables();
             if tables.is_empty() {
                 log::debug!("Creating tables...");
                 dal.create_tables();
             }
-    
+
             Box::new(dal)
         })
     }
 
     // Private
+
+    fn insert_price(&self, new_price: &Price) -> usize {
+        println!("Inserting {new_price:?}");
+
+        let dal = self.get_dal();
+
+        dal.add_price(&new_price)
+    }
 
     fn get_prices(&self) -> Vec<Price> {
         let dal = self.get_dal();
@@ -349,6 +300,59 @@ impl App {
         }
 
         Ok(count)
+    }
+
+    fn update_price(&self, existing_prices: Vec<Price>, new_price: &Price) -> usize {
+        log::debug!("Updating");
+
+        let dal = self.get_dal();
+
+        // get an existing record
+        let existing = existing_prices.first().expect("error fetching security");
+
+        log::debug!("Existing price found: {existing:?}");
+
+        if new_price.currency != existing.currency {
+            log::error!(
+                "The currencies are different {:?} vs {:?}",
+                new_price.currency,
+                existing.currency
+            );
+            panic!("The currencies differ!");
+        }
+
+        let mut should_update = false;
+        let mut for_update = Price::new();
+
+        for_update.id = existing.id;
+
+        // log::debug!("clone of the price to update: {:?}", for_update);
+
+        if existing.value != new_price.value {
+            println!(
+                "Updating value from {:?} to {}",
+                existing.value, new_price.value
+            );
+            for_update.value = new_price.value;
+            should_update = true;
+        }
+        if existing.denom != new_price.denom {
+            println!("Updating denom {} to {}", existing.denom, new_price.denom);
+            for_update.denom = new_price.denom;
+            should_update = true;
+        }
+
+        // Exit if there's nothing to update.
+        if !should_update {
+            log::debug!("Nothing to update");
+            return 0;
+        };
+
+        //log::debug!("updating record {new_price:?}");
+        println!("for {new_price:?}");
+
+        let update_result = dal.update_price(&for_update).unwrap();
+        update_result
     }
 }
 
