@@ -3,29 +3,28 @@ use config::PriceDbConfig;
  * Application
  * Exposing the main app functionality as a library, for testing purposes.
  */
-use model::Price;
-
-use crate::database::Dal;
-
-pub mod model;
-
 mod config;
 mod database;
 mod ledger_formatter;
+pub mod model;
 mod quote;
 
 use crate::{
-    model::{PriceFilter, SecurityFilter, SecuritySymbol},
+    database::Dal,
+    model::{Price, PriceFilter, SecurityFilter, SecuritySymbol},
     quote::Quote,
 };
 
-use std::{vec, fs};
+use std::{fs, vec};
 
 use anyhow::Error;
 
 pub struct App {
     dal: Box<dyn Dal>,
 }
+
+const APP_NAME: &str = "pricedb";
+const CFG_NAME: &str = "config";
 
 impl App {
     pub fn new() -> App {
@@ -115,6 +114,15 @@ impl App {
                 }
             }
         }
+    }
+
+    pub fn config_show(&self) {
+        let path = confy::get_configuration_file_path(APP_NAME, CFG_NAME)
+            .expect("configuration path");
+        let cfg = load_config().expect("configuration");
+
+        println!("Configuration file: {path:?}");
+        println!("{cfg:?}");
     }
 
     pub async fn download_prices(&self, filter: SecurityFilter) {
@@ -266,7 +274,6 @@ impl App {
         log::debug!("saving to {target:?}");
 
         save_text_file(output, target);
-        
     }
 
     /// Deletes price history for the given Security, leaving only the latest price.
@@ -324,12 +331,11 @@ async fn download_price(symbol: SecuritySymbol, currency: &str, agent: &str) -> 
 }
 
 fn load_config() -> Result<PriceDbConfig, anyhow::Error> {
-    let config: PriceDbConfig = confy::load("pricedb", "config")?;
+    let config: PriceDbConfig = confy::load(APP_NAME, CFG_NAME)?;
 
     Ok(config)
 }
 
 fn save_text_file(contents: String, location: String) {
-    fs::write(location, contents)
-        .expect("file saved");
+    fs::write(location, contents).expect("file saved");
 }

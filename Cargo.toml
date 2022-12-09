@@ -1,6 +1,6 @@
 [package]
 name = "pricedb"
-version = "0.9.2"
+version = "0.9.3"
 authors = ["Alen Šiljak <dev@alensiljak.eu.org>"]
 edition = "2021"
 description = "Commodity price retrieval and storage. Helper for Plain-Text Accounting apps."

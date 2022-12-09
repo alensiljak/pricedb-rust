@@ -19,12 +19,13 @@ async fn main() {
 
     log::debug!("Command: {:?}", args.command);
 
-    if args.command.is_none() {
-        println!("No command issued");
-        return;
-    }
-
     let app = pricedb::App::new();
+
+    // config
+
+    if let Some(Commands::Config(interface::ConfigCmd::Show)) = &args.command {
+        app.config_show();
+    }
 
     // export
 

@@ -1,6 +1,7 @@
-use clap::{Parser, Subcommand};
-
-#[derive(Parser, Debug)]
+/**
+ * CLI interface
+ */
+#[derive(clap::Parser, Debug)]
 #[command(name = "Price Database")]
 #[command(author, version, about, long_about = None)]  // these are loaded from Cargo.toml
 #[command(arg_required_else_help=true)]
@@ -14,16 +15,20 @@ pub(crate) struct Cli {
     pub(crate) command: Option<Commands>,
 }
 
-#[derive(Subcommand, Debug)]
+#[derive(clap::Subcommand, Debug)]
 pub(crate) enum Commands {
     // Add
 
     // Cfg
+    // #[command(subcommand)]
     #[command(about = "Configuration")]
-    Config {
-        // #[command(subcommand)]
-        // show {},
-    },
+    #[command(arg_required_else_help(true))]
+    // #[command(flatten)]
+    #[clap(subcommand)]
+    Config(ConfigCmd),
+    // {
+    //     pub(crate) Show
+    // },
 
     #[command(about = "Download prices")]
     Dl {
@@ -55,4 +60,10 @@ pub(crate) enum Commands {
         symbol: Option<String>,
     },
     // securities
+}
+
+#[derive(clap::Subcommand, Debug)]
+pub(super) enum ConfigCmd {
+    /// Displays the current configuration
+    Show,
 }
