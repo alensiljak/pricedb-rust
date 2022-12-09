@@ -26,7 +26,7 @@ pub struct Quote {
 }
 
 impl Quote {
-    pub fn new() -> Quote {
+    pub fn new() -> Self {
         Quote {
             symbol: None,
             exchange: None,

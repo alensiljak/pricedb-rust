@@ -15,7 +15,7 @@ pub(crate) struct VanguardAuDownloader {
 }
 
 impl VanguardAuDownloader {
-    pub fn new() -> VanguardAuDownloader {
+    pub fn new() -> Self {
         let funds_map = HashMap::from([
             ("VANGUARD:BOND", "8123"),
             ("VANGUARD:HINT", "8146"),
@@ -142,7 +142,7 @@ struct FundInfo {
 }
 
 impl FundInfo {
-    fn new() -> FundInfo {
+    fn new() -> Self {
         FundInfo {
             name: String::default(),
             identifier: String::default(),

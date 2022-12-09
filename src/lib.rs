@@ -1,3 +1,6 @@
+//! Price Database
+//! API / business logic
+
 use config::PriceDbConfig;
 /*
  * Application
@@ -24,7 +27,8 @@ pub struct App {}
 const APP_NAME: &str = "pricedb";
 
 impl App {
-    pub fn new() -> App {
+    pub fn new() -> Self {
+
         App {}
     }
 

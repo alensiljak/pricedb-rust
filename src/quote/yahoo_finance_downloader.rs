@@ -22,7 +22,7 @@ pub struct YahooFinanceDownloader {
 }
 
 impl YahooFinanceDownloader {
-    pub fn new() -> YahooFinanceDownloader {
+    pub fn new() -> Self {
         let namespaces = HashMap::from([
             ("AMS", "AS"),
             ("ASX", "AX"),

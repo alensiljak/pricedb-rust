@@ -12,7 +12,7 @@ use serde_json::Value;
 /// Fixerio downloader
 use crate::{
     config::PriceDbConfig,
-    model::{SecuritySymbol, Price},
+    model::{SecuritySymbol, Price}, APP_NAME,
 };
 
 use super::Downloader;
@@ -22,9 +22,9 @@ pub struct Fixerio {
 }
 
 impl Fixerio {
-    pub fn new() -> Fixerio {
+    pub fn new() -> Self {
         Fixerio {
-            api_key: get_api_key(),
+            api_key: get_fixerio_api_key(),
         }
     }
 
@@ -105,8 +105,8 @@ impl Downloader for Fixerio {
 
 /// Loads Fixerio API key from the config.
 /// Panics if not found.
-fn get_api_key() -> String {
-    let config_result: Result<PriceDbConfig, ConfyError> = confy::load("pricedb", "config");
+fn get_fixerio_api_key() -> String {
+    let config_result: Result<PriceDbConfig, ConfyError> = confy::load(APP_NAME, None);
     match config_result {
         Ok(config) => config.fixerio_api_key,
         Err(e) => panic!("Fixerio API key not loaded: {}", e),
@@ -189,20 +189,23 @@ fn read_rates_from_cache() -> Value {
 mod tests {
     use super::*;
 
+    /// This test depends on having a value 
     #[test]
     fn test_config_read() {
-        let key = get_api_key();
+        let key = get_fixerio_api_key();
 
         assert_ne!(key, String::default());
         assert_eq!(key.len(), 32);
     }
 
-    #[test]
-    fn test_cache_check() {
+    /// Cached rates must exist after fetching.
+    #[tokio::test]
+    async fn test_cache_check() {
         let f = Fixerio::new();
+        f.download_rates("EUR").await.expect("rates fetched");
         let result = f.latest_rates_exist();
 
-        assert_eq!(result, false);
+        assert_eq!(true, result);
     }
 
     #[test]

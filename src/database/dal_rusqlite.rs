@@ -482,7 +482,7 @@ mod tests {
         };
         let (sql, values) = generate_select_security_with_filter(&filter);
 
-        let expected = r#"SELECT "id", "namespace", "symbol", "updater", "currency", "ledger_symbol", "notes" FROM "security""#;
+        let expected = r#"SELECT "security"."id", "security"."namespace", "security"."symbol", "security"."updater", "security"."currency", "security"."ledger_symbol", "security"."notes" FROM "security""#;
         assert_eq!(expected, sql);
 
         // There are no parameters.
@@ -501,7 +501,7 @@ mod tests {
 
         print!("{:?}", values);
 
-        let expected = r#"SELECT "id", "namespace", "symbol", "updater", "currency", "ledger_symbol", "notes" FROM "security" WHERE "currency" = ?"#;
+        let expected = r#"SELECT "security"."id", "security"."namespace", "security"."symbol", "security"."updater", "security"."currency", "security"."ledger_symbol", "security"."notes" FROM "security" WHERE "currency" = ?"#;
         assert_eq!(expected, sql);
         let exp_val = RusqliteValue(sea_query::Value::String(Some(Box::new("AUD".to_owned()))));
         assert_eq!(exp_val, values.0[0]);

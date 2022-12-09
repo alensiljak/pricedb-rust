@@ -10,7 +10,7 @@ pub struct Database {
 }
 
 impl Database {
-    pub fn new() -> Database {
+    pub fn new() -> Self {
         let db_path: String = load_db_path();
 
         let rb = repositories::initialize_database(db_path);

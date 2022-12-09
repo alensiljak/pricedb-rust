@@ -24,7 +24,7 @@ pub struct Price {
 }
 
 impl Price {
-    pub fn new() -> Price {
+    pub fn new() -> Self {
         let result = Price {
             id: 0,
             security_id: 0,
@@ -59,7 +59,7 @@ pub(crate) struct PriceFilter {
 }
 
 impl PriceFilter {
-    pub fn new() -> PriceFilter {
+    pub fn new() -> Self {
         PriceFilter {
             security_id: None,
             date: None,
@@ -84,7 +84,7 @@ pub struct Security {
 impl Security {
     /// Creates a new instance
     #[allow(unused)]
-    pub fn new() -> Security {
+    pub fn new() -> Self {
         Security {
             id: 0,
             namespace: Some("".to_string()),
@@ -106,7 +106,7 @@ pub struct SecurityFilter {
 }
 
 impl SecurityFilter {
-    pub fn new() -> SecurityFilter {
+    pub fn new() -> Self {
         SecurityFilter {
             currency: None,
             agent: None,
