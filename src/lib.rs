@@ -19,21 +19,19 @@ use std::{fs, vec};
 
 use anyhow::Error;
 
-pub struct App {
-    dal: Box<dyn Dal>,
-}
+pub struct App {}
 
 const APP_NAME: &str = "pricedb";
 
 impl App {
     pub fn new() -> App {
-        App {
-            dal: Box::new(database::init_dal()),
-        }
+        App {}
     }
 
     pub fn add_price(&self, new_price: Price) {
         log::debug!("Adding price {:?}", new_price);
+
+        let dal = App::create_dal();
 
         // Is there already a price with the same id, date, and time?
 
@@ -43,15 +41,15 @@ impl App {
             time: new_price.time.to_owned(),
         };
         // security_id, date, time
-        let existing_prices = self.dal.get_prices(Some(filter));
+        let existing_prices = dal.get_prices(Some(filter));
 
         // insert or update
         if existing_prices.len() == 0 {
             // insert
             log::debug!("Inserting");
-            
-            self.dal.add_price(&new_price);
-            
+
+            dal.add_price(&new_price);
+
             println!("Added {new_price:?}");
         } else {
             // update
@@ -80,8 +78,7 @@ impl App {
             if existing.value != new_price.value {
                 println!(
                     "Updating value from {:?} to {}",
-                    existing.value,
-                    new_price.value
+                    existing.value, new_price.value
                 );
                 for_update.value = new_price.value;
                 should_update = true;
@@ -100,7 +97,7 @@ impl App {
 
             log::debug!("updating record {new_price:?}");
 
-            let update_result = self.dal.update_price(&for_update);
+            let update_result = dal.update_price(&for_update);
             match update_result {
                 Ok(_) => {
                     // everything ok
@@ -124,7 +121,8 @@ impl App {
     pub async fn download_prices(&self, filter: SecurityFilter) {
         log::debug!("download filter: {:?}", filter);
 
-        let securities = self.dal.get_securities(filter);
+        let dal = App::create_dal();
+        let securities = dal.get_securities(filter);
 
         // Debug
         {
@@ -174,7 +172,8 @@ impl App {
     }
 
     fn get_prices(&self) -> Vec<Price> {
-        let prices = self.dal.get_prices(None);
+        let dal = App::create_dal();
+        let prices = dal.get_prices(None);
 
         // log::debug!("fetched prices: {prices:?}");
 
@@ -192,7 +191,8 @@ impl App {
         _last: &Option<String>,
     ) {
         // load and show all prices
-        let prices = self.dal.get_prices(None);
+        let dal = App::create_dal();
+        let prices = dal.get_prices(None);
         for price in prices {
             println!("{price:?}");
         }
@@ -204,17 +204,17 @@ impl App {
     pub fn prune(&self, symbol: &Option<String>) -> u16 {
         log::trace!("Pruning symbol: {:?}", symbol);
 
+        let dal = App::create_dal();
         let mut security_ids = vec![];
 
         if symbol.is_some() {
             // get id
             let symb = symbol.as_ref().unwrap().as_str();
-            let security = self.dal.get_security_by_symbol(symb);
+            let security = dal.get_security_by_symbol(symb);
             security_ids.push(security.id);
         } else {
             // load all symbols
-            security_ids = self
-                .dal
+            security_ids = dal
                 .get_securitiess_having_prices()
                 .iter()
                 .map(|item| item.id)
@@ -264,7 +264,8 @@ impl App {
         // log::debug!("sorted: {prices:?}");
 
         // get all symbols with prices
-        let securities = self.dal.get_securitiess_having_prices();
+        let dal = App::create_dal();
+        let securities = dal.get_securitiess_having_prices();
         // log::debug!("{securities:?}");
         // let mut sec_map: HashMap<i32, Security> = HashMap::new();
         // for sec in securities {
@@ -285,14 +286,18 @@ impl App {
         save_text_file(output, target);
     }
 
+    fn create_dal() -> impl Dal {
+        database::init_dal()
+    }
+
     /// Deletes price history for the given Security, leaving only the latest price.
     fn prune_for_sec(&self, security_id: i32) -> anyhow::Result<u16, Error> {
         log::trace!("pruning prices for security id: {:?}", security_id);
 
         let mut count = 0;
         // get prices for the given security
-        let prices = self
-            .dal
+        let dal = App::create_dal();
+        let prices = dal
             .get_prices_for_security(security_id)
             .expect("Error fetching prices for security");
 
@@ -313,7 +318,7 @@ impl App {
         for price in to_prune {
             log::debug!("deleting price: {:?}", price);
 
-            self.dal.delete_price(price.id)?;
+            dal.delete_price(price.id)?;
             count += 1;
         }
 

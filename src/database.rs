@@ -23,7 +23,7 @@ pub(crate) fn init_dal() -> impl Dal {
     //let dal = dal_sqlite::SqliteDal {conn_str};
     let dal = dal_rusqlite::RuSqliteDal::new(conn_str);
 
-    return dal;
+    dal
 }
 
 /// Loads database path from the configuration.
