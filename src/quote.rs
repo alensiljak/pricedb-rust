@@ -86,18 +86,17 @@ impl Quote {
     }
 
     fn get_downloader(&self) -> Box<dyn Downloader> {
-        //let actor: Box<dyn Downloader>;
         match self.source.as_ref().unwrap().as_str() {
             "yahoo_finance" => {
-                println!("should use yahoo");
+                log::trace!("using yahoo finance");
                 return Box::new(YahooFinanceDownloader::new());
             }
             "fixerio" => {
-                println!("use fixerio");
+                log::trace!("using fixerio");
                 return Box::new(Fixerio::new());
             }
             "vanguard_au" => {
-                log::debug!("Using Vanguard downloader");
+                log::trace!("using vanguard");
                 return Box::new(VanguardAuDownloader::new());
             }
             _ => {

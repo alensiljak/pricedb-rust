@@ -35,7 +35,7 @@ impl App {
     pub fn add_price(&self, new_price: Price) {
         log::debug!("Adding price {:?}", new_price);
 
-        // Is there a price already?
+        // Is there already a price with the same id, date, and time?
 
         let filter = PriceFilter {
             security_id: Some(new_price.security_id),
@@ -43,20 +43,23 @@ impl App {
             time: new_price.time.to_owned(),
         };
         // security_id, date, time
-        let prices = self.dal.get_prices(Some(filter));
+        let existing_prices = self.dal.get_prices(Some(filter));
 
         // insert or update
-        if prices.len() == 0 {
+        if existing_prices.len() == 0 {
             // insert
             log::debug!("Inserting");
+            
             self.dal.add_price(&new_price);
+            
+            println!("Added {new_price:?}");
         } else {
             // update
             log::debug!("Updating");
             // get an existing record
-            let existing = prices.first().expect("error fetching security");
+            let existing = existing_prices.first().expect("error fetching security");
 
-            log::info!("Existing price found: {:?}", existing);
+            println!("Existing price found: {existing:?}");
 
             if new_price.currency != existing.currency {
                 log::error!(
@@ -67,12 +70,7 @@ impl App {
                 panic!("The currencies differ!");
             }
 
-            // let cur_val = Decimal::from_i32(price.value).unwrap();
-            // let cur_denom = Decimal::from_i32(price.denom).unwrap();
-            // let new_value = cur_val / cur_denom;
-
             let mut should_update = false;
-            //let mut for_update = existing.clone();
             let mut for_update = Price::new();
 
             for_update.id = existing.id;
@@ -80,7 +78,7 @@ impl App {
             // log::debug!("clone of the price to update: {:?}", for_update);
 
             if existing.value != new_price.value {
-                log::info!(
+                println!(
                     "Updating value from {:?} to {}",
                     existing.value,
                     new_price.value
@@ -89,7 +87,7 @@ impl App {
                 should_update = true;
             }
             if existing.denom != new_price.denom {
-                log::info!("Updating denom {} to {}", existing.denom, new_price.denom);
+                println!("Updating denom {} to {}", existing.denom, new_price.denom);
                 for_update.denom = new_price.denom;
                 should_update = true;
             }
@@ -116,8 +114,7 @@ impl App {
     }
 
     pub fn config_show(&self) {
-        let path =
-            confy::get_configuration_file_path(APP_NAME, None).expect("configuration path");
+        let path = confy::get_configuration_file_path(APP_NAME, None).expect("configuration path");
         let cfg = load_config().expect("configuration");
 
         println!("Configuration file: {path:?}");
@@ -145,7 +142,7 @@ impl App {
         }
 
         if securities.len() == 0 {
-            print!("No Securities found for the given parameters.");
+            println!("No Securities found for the given parameters.");
             return;
         }
 
@@ -283,7 +280,7 @@ impl App {
         let cfg = load_config().expect("configuration");
         let target = cfg.export_destination;
 
-        log::debug!("saving to {target:?}");
+        println!("Prices exported to {target:?}");
 
         save_text_file(output, target);
     }
