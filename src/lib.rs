@@ -2,6 +2,7 @@
 //! API / business logic
 
 use config::PriceDbConfig;
+
 /*
  * Application
  * Exposing the main app functionality as a library, for testing purposes.
@@ -12,11 +13,7 @@ mod ledger_formatter;
 pub mod model;
 mod quote;
 
-use crate::{
-    database::Dal,
-    model::*,
-    quote::Quote,
-};
+use crate::{database::Dal, model::*, quote::Quote};
 
 use std::{fs, vec};
 
@@ -26,6 +23,7 @@ pub const APP_NAME: &str = "pricedb";
 
 pub struct App {
     config: PriceDbConfig,
+    // dal: Option<Box<dyn Dal>>,
 }
 
 impl App {
@@ -198,7 +196,6 @@ impl App {
         _currency: &Option<String>,
         _last: &Option<String>,
     ) -> String {
-        
         let dal = self.create_dal();
         let prices = dal.get_prices(None);
 
@@ -337,7 +334,7 @@ impl App {
     fn create_dal(&self) -> impl Dal {
         database::init_dal(&self.config.price_database_path)
     }
-    }
+}
 
 async fn download_price(symbol: SecuritySymbol, currency: &str, agent: &str) -> Option<Price> {
     // todo: there must be a symbol

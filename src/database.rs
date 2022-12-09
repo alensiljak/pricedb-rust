@@ -14,31 +14,34 @@ use crate::model::{Price, PriceFilter, Security, SecurityFilter};
 
 /// Initialize database connection.
 /// `db_path` is the path to the file.
-/// 
+///
 /// "sqlite::memory:" or ":memory:"
 pub(crate) fn init_dal(db_path: &String) -> impl Dal {
-    validate_db_path(db_path);
+    let own_path: String = validate_db_path(db_path);
 
     // choose the dal implementation here.
     // let dal = dal_diesel::DieselDal { db_path };
     // let dal = dal_sqlx::SqlxDal { db_path };
     //let dal = dal_sqlite::SqliteDal {db_path};
-    dal_rusqlite::RuSqliteDal::new(db_path.to_owned())
+    dal_rusqlite::RuSqliteDal::new(own_path)
 }
 
-fn validate_db_path(db_path: &String) {
-    // let config = super::load_config().expect("Error reading configuration");
-    // debug!("configuration: {:?}", config);
-    // let db_path = config.price_database_path;
-
+fn validate_db_path(db_path: &String) -> String {
     debug!("Db path: {:?}", db_path);
 
-    if db_path.eq("") {
-        panic!(
-            r#"The database path has not been configured. 
-            Please edit the config file manually and add the database file path.
-            Run `pricedb config show` to display the exact location of the config file."#
-        )
+    match db_path.is_empty() {
+        true => {
+            // panic!(
+            //     r#"The database path has not been configured.
+            //     Please edit the config file manually and add the database file path.
+            //     Run `pricedb config show` to display the exact location of the config file."#
+            // )
+            println!(
+                "The database path has not been configured. Using a temporary in-memory instance."
+            );
+            ":memory:".to_owned()
+        }
+        false => db_path.to_owned(),
     }
 }
 
