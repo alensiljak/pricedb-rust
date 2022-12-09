@@ -6,7 +6,7 @@ use config::PriceDbConfig;
  * Application
  * Exposing the main app functionality as a library, for testing purposes.
  */
-mod config;
+pub mod config;
 mod database;
 mod ledger_formatter;
 pub mod model;
@@ -14,7 +14,7 @@ mod quote;
 
 use crate::{
     database::Dal,
-    model::{Price, PriceFilter, SecurityFilter, SecuritySymbol},
+    model::*,
     quote::Quote,
 };
 
@@ -22,20 +22,23 @@ use std::{fs, vec};
 
 use anyhow::Error;
 
-pub struct App {}
+pub const APP_NAME: &str = "pricedb";
 
-const APP_NAME: &str = "pricedb";
+pub struct App {
+    config: PriceDbConfig,
+}
 
 impl App {
-    pub fn new() -> Self {
-
-        App {}
+    pub fn new(config: PriceDbConfig) -> Self {
+        App {
+            config,
+        }
     }
 
     pub fn add_price(&self, new_price: Price) {
         log::debug!("Adding price {:?}", new_price);
 
-        let dal = App::create_dal();
+        let dal = self.create_dal();
 
         // Is there already a price with the same id, date, and time?
 
@@ -116,7 +119,8 @@ impl App {
 
     pub fn config_show(&self) {
         let path = confy::get_configuration_file_path(APP_NAME, None).expect("configuration path");
-        let cfg = load_config().expect("configuration");
+        // let cfg = load_config().expect("configuration");
+        let cfg = &self.config;
 
         println!("Configuration file: {path:?}");
         println!("{cfg:?}");
@@ -125,7 +129,7 @@ impl App {
     pub async fn download_prices(&self, filter: SecurityFilter) {
         log::debug!("download filter: {:?}", filter);
 
-        let dal = App::create_dal();
+        let dal = self.create_dal();
         let securities = dal.get_securities(filter);
 
         // Debug
@@ -176,7 +180,7 @@ impl App {
     }
 
     fn get_prices(&self) -> Vec<Price> {
-        let dal = App::create_dal();
+        let dal = self.create_dal();
         let prices = dal.get_prices(None);
 
         // log::debug!("fetched prices: {prices:?}");
@@ -188,18 +192,26 @@ impl App {
         prices
     }
 
+    /// Load and display all prices.
+    /// Also returns the list as a string, for testing.
     pub fn list_prices(
         &self,
         _date: &Option<String>,
         _currency: &Option<String>,
         _last: &Option<String>,
-    ) {
-        // load and show all prices
-        let dal = App::create_dal();
+    ) -> String {
+        
+        let dal = self.create_dal();
         let prices = dal.get_prices(None);
+
+        let mut output = String::new();
+
         for price in prices {
             println!("{price:?}");
+            output += "{price:?}";
         }
+
+        output
     }
 
     /// Prune historical prices for the given symbol, leaving only the latest.
@@ -208,7 +220,7 @@ impl App {
     pub fn prune(&self, symbol: &Option<String>) -> u16 {
         log::trace!("Pruning symbol: {:?}", symbol);
 
-        let dal = App::create_dal();
+        let dal = self.create_dal();
         let mut security_ids = vec![];
 
         if symbol.is_some() {
@@ -268,7 +280,7 @@ impl App {
         // log::debug!("sorted: {prices:?}");
 
         // get all symbols with prices
-        let dal = App::create_dal();
+        let dal = self.create_dal();
         let securities = dal.get_securitiess_having_prices();
         // log::debug!("{securities:?}");
         // let mut sec_map: HashMap<i32, Security> = HashMap::new();
@@ -282,16 +294,11 @@ impl App {
         // log::debug!("output: {output:?}");
 
         // get export destination from configuration
-        let cfg = load_config().expect("configuration");
-        let target = cfg.export_destination;
+        let target = &self.config.export_destination;
 
         println!("Prices exported to {target:?}");
 
-        save_text_file(output, target);
-    }
-
-    fn create_dal() -> impl Dal {
-        database::init_dal()
+        save_text_file(&output, target);
     }
 
     /// Deletes price history for the given Security, leaving only the latest price.
@@ -300,7 +307,7 @@ impl App {
 
         let mut count = 0;
         // get prices for the given security
-        let dal = App::create_dal();
+        let dal = self.create_dal();
         let prices = dal
             .get_prices_for_security(security_id)
             .expect("Error fetching prices for security");
@@ -328,7 +335,11 @@ impl App {
 
         return Ok(count);
     }
-}
+
+    fn create_dal(&self) -> impl Dal {
+        database::init_dal(&self.config.price_database_path)
+    }
+    }
 
 async fn download_price(symbol: SecuritySymbol, currency: &str, agent: &str) -> Option<Price> {
     // todo: there must be a symbol
@@ -348,12 +359,6 @@ async fn download_price(symbol: SecuritySymbol, currency: &str, agent: &str) -> 
     Some(price)
 }
 
-fn load_config() -> Result<PriceDbConfig, anyhow::Error> {
-    let config: PriceDbConfig = confy::load(APP_NAME, None)?;
-
-    Ok(config)
-}
-
-fn save_text_file(contents: String, location: String) {
+fn save_text_file(contents: &String, location: &String) {
     fs::write(location, contents).expect("file saved");
 }

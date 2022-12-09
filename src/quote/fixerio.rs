@@ -23,7 +23,7 @@ pub struct Fixerio {
 
 impl Fixerio {
     pub fn new() -> Self {
-        Fixerio {
+        Self {
             api_key: get_fixerio_api_key(),
         }
     }

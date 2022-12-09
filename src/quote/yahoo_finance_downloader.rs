@@ -36,7 +36,7 @@ impl YahooFinanceDownloader {
             ("XETRA", "DE"),
         ]);
 
-        YahooFinanceDownloader {
+        Self {
             url: "https://query1.finance.yahoo.com/v8/finance/chart/".to_string(),
             namespaces,
         }

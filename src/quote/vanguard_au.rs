@@ -23,7 +23,7 @@ impl VanguardAuDownloader {
             ("VANGUARD:HY", "8148"),
         ]);
 
-        VanguardAuDownloader { funds_map }
+        Self { funds_map }
     }
 
     /// Fetches retail fund prices.
@@ -131,7 +131,7 @@ impl Downloader for VanguardAuDownloader {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 struct FundInfo {
     name: String,
     identifier: String,
@@ -143,13 +143,6 @@ struct FundInfo {
 
 impl FundInfo {
     fn new() -> Self {
-        FundInfo {
-            name: String::default(),
-            identifier: String::default(),
-            date: String::default(),
-            value: String::default(),
-            mstar_id: String::default(),
-            // currency: String::default(),
-        }
+        Self::default()
     }
 }

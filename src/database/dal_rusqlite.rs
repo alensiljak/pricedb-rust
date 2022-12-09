@@ -5,13 +5,10 @@
 * Example for a query: https://stackoverflow.com/questions/67089430/how-do-we-use-select-query-with-an-external-where-parameter-in-rusqlite
 */
 use rusqlite::{named_params, Connection};
-use sea_query::{Expr, Query, SqliteQueryBuilder};
+use sea_query::{ColumnDef, Expr, Query, SqliteQueryBuilder, Table};
 use sea_query_rusqlite::{RusqliteBinder, RusqliteValues};
 
-use crate::{
-    database::mappers_rusqlite::*,
-    model::*,
-};
+use crate::{database::mappers_rusqlite::*, model::*};
 
 use super::Dal;
 
@@ -180,6 +177,72 @@ impl Dal for RuSqliteDal {
         let result = self.conn.execute(&sql, &*params.as_params())?;
 
         Ok(result)
+    }
+
+    //// Schema
+
+    fn create_tables(&self) {
+        // drop Security table, if exists
+
+        let sql = Table::drop()
+            .table(SecurityIden::Table)
+            .if_exists()
+            .build(SqliteQueryBuilder);
+        self.conn.execute(&sql, []).expect("result");
+
+        // create Prices table
+
+        let sql = Table::create()
+            .table(SecurityIden::Table)
+            .if_not_exists()
+            .col(
+                ColumnDef::new(SecurityIden::Id)
+                    .integer()
+                    .not_null()
+                    .auto_increment()
+                    .primary_key(),
+            )
+            .col(ColumnDef::new(SecurityIden::Namespace).string().null())
+            .col(ColumnDef::new(SecurityIden::Symbol).string())
+            .col(ColumnDef::new(SecurityIden::Updater).string().null())
+            .col(ColumnDef::new(SecurityIden::Currency).string().null())
+            .col(ColumnDef::new(SecurityIden::LedgerSymbol).string().null())
+            .col(ColumnDef::new(SecurityIden::Notes).string().null())
+            .build(SqliteQueryBuilder);
+
+        self.conn.execute(&sql, []).expect("result");
+
+        // drop Prices table, if exists
+
+        let sql = Table::drop()
+            .table(PriceIden::Table)
+            .if_exists()
+            .build(SqliteQueryBuilder);
+        self.conn.execute(&sql, []).expect("result");
+
+        // create Prices table
+
+        let sql = Table::create()
+            .table(PriceIden::Table)
+            .if_not_exists()
+            .col(
+                ColumnDef::new(PriceIden::Id)
+                    .integer()
+                    .not_null()
+                    .auto_increment()
+                    .primary_key(),
+            )
+            .col(ColumnDef::new(PriceIden::SecurityId).integer())
+            .col(ColumnDef::new(PriceIden::Date).string())
+            .col(ColumnDef::new(PriceIden::Time).string().null())
+            .col(ColumnDef::new(PriceIden::Value).integer())
+            .col(ColumnDef::new(PriceIden::Denom).integer())
+            .col(ColumnDef::new(PriceIden::Currency).string())
+            .build(SqliteQueryBuilder);
+
+        let result = self.conn.execute(&sql, []).expect("result");
+
+        assert_eq!(0, result);
     }
 }
 
@@ -350,7 +413,6 @@ enum PriceSymbolOrder {
 
 #[cfg(test)]
 mod tests {
-    use sea_query::{ColumnDef, Table};
     use sea_query_rusqlite::RusqliteValue;
     use test_log::test;
 
@@ -361,75 +423,12 @@ mod tests {
     /// Creates a dummy dal and prepares an in-memory test database.
     fn get_test_dal() -> RuSqliteDal {
         let dal = RuSqliteDal::new(":memory:".to_string());
-        prepare_test_db(&dal);
+        dal.create_tables();
+
         insert_dummy_prices(&dal);
         insert_dummy_securities(&dal);
 
         dal
-    }
-
-    fn prepare_test_db(dal: &RuSqliteDal) {
-        // drop Security table, if exists
-
-        let sql = Table::drop()
-            .table(SecurityIden::Table)
-            .if_exists()
-            .build(SqliteQueryBuilder);
-        dal.conn.execute(&sql, []).expect("result");
-
-        // create Prices table
-
-        let sql = Table::create()
-            .table(SecurityIden::Table)
-            .if_not_exists()
-            .col(
-                ColumnDef::new(SecurityIden::Id)
-                    .integer()
-                    .not_null()
-                    .auto_increment()
-                    .primary_key(),
-            )
-            .col(ColumnDef::new(SecurityIden::Namespace).string().null())
-            .col(ColumnDef::new(SecurityIden::Symbol).string())
-            .col(ColumnDef::new(SecurityIden::Updater).string().null())
-            .col(ColumnDef::new(SecurityIden::Currency).string().null())
-            .col(ColumnDef::new(SecurityIden::LedgerSymbol).string().null())
-            .col(ColumnDef::new(SecurityIden::Notes).string().null())
-            .build(SqliteQueryBuilder);
-
-        dal.conn.execute(&sql, []).expect("result");
-
-        // drop Prices table, if exists
-
-        let sql = Table::drop()
-            .table(PriceIden::Table)
-            .if_exists()
-            .build(SqliteQueryBuilder);
-        dal.conn.execute(&sql, []).expect("result");
-
-        // create Prices table
-
-        let sql = Table::create()
-            .table(PriceIden::Table)
-            .if_not_exists()
-            .col(
-                ColumnDef::new(PriceIden::Id)
-                    .integer()
-                    .not_null()
-                    .auto_increment()
-                    .primary_key(),
-            )
-            .col(ColumnDef::new(PriceIden::SecurityId).integer())
-            .col(ColumnDef::new(PriceIden::Date).string())
-            .col(ColumnDef::new(PriceIden::Time).string().null())
-            .col(ColumnDef::new(PriceIden::Value).integer())
-            .col(ColumnDef::new(PriceIden::Denom).integer())
-            .col(ColumnDef::new(PriceIden::Currency).string())
-            .build(SqliteQueryBuilder);
-
-        let result = dal.conn.execute(&sql, []).expect("result");
-
-        assert_eq!(0, result);
     }
 
     fn create_dummy_price(security_id: i32, value: i32, denom_opt: Option<i32>) -> Price {

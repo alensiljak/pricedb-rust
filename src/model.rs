@@ -11,7 +11,7 @@ use rust_decimal::Decimal;
 use sea_query::enum_def;
 // use crate::database::schema::price;
 
-#[derive(Debug, Clone, Eq, PartialEq, PartialOrd, Ord)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, PartialOrd, Ord)]
 #[enum_def]
 pub struct Price {
     pub id: i32,
@@ -25,7 +25,7 @@ pub struct Price {
 
 impl Price {
     pub fn new() -> Self {
-        let result = Price {
+        Self {
             id: 0,
             security_id: 0,
             date: String::default(),
@@ -34,8 +34,7 @@ impl Price {
             denom: 0,
             currency: String::default(),
             // value_dec: dec!(0),
-        };
-        return result;
+        }
     }
 
     pub fn to_decimal(&self) -> Decimal {
@@ -60,7 +59,7 @@ pub(crate) struct PriceFilter {
 
 impl PriceFilter {
     pub fn new() -> Self {
-        PriceFilter {
+        Self {
             security_id: None,
             date: None,
             time: None,
@@ -85,7 +84,7 @@ impl Security {
     /// Creates a new instance
     #[allow(unused)]
     pub fn new() -> Self {
-        Security {
+        Self {
             id: 0,
             namespace: Some("".to_string()),
             symbol: "".to_string(),
@@ -107,7 +106,7 @@ pub struct SecurityFilter {
 
 impl SecurityFilter {
     pub fn new() -> Self {
-        SecurityFilter {
+        Self {
             currency: None,
             agent: None,
             exchange: None,

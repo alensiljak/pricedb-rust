@@ -17,7 +17,8 @@ impl Database {
         let result = Database {
             rb
         };
-        return result;
+        
+        result
     }
 }
 

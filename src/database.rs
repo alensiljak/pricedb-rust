@@ -13,36 +13,35 @@ use log::debug;
 use crate::model::{Price, PriceFilter, Security, SecurityFilter};
 
 /// Initialize database connection.
-pub(crate) fn init_dal() -> impl Dal {
-    // "sqlite::memory:" or ":memory:"
-    let conn_str = load_db_path();
+/// `db_path` is the path to the file.
+/// 
+/// "sqlite::memory:" or ":memory:"
+pub(crate) fn init_dal(db_path: &String) -> impl Dal {
+    validate_db_path(db_path);
 
     // choose the dal implementation here.
-    // let dal = dal_diesel::DieselDal { conn_str };
-    // let dal = dal_sqlx::SqlxDal { conn_str };
-    //let dal = dal_sqlite::SqliteDal {conn_str};
-    let dal = dal_rusqlite::RuSqliteDal::new(conn_str);
+    // let dal = dal_diesel::DieselDal { db_path };
+    // let dal = dal_sqlx::SqlxDal { db_path };
+    //let dal = dal_sqlite::SqliteDal {db_path};
+    let dal = dal_rusqlite::RuSqliteDal::new(db_path.to_owned());
 
     dal
 }
 
-/// Loads database path from the configuration.
-fn load_db_path() -> String {
-    let config = super::load_config().expect("Error reading configuration");
-
-    debug!("configuration: {:?}", config);
-
-    let db_path = config.price_database_path;
+fn validate_db_path(db_path: &String) {
+    // let config = super::load_config().expect("Error reading configuration");
+    // debug!("configuration: {:?}", config);
+    // let db_path = config.price_database_path;
 
     debug!("Db path: {:?}", db_path);
 
-    if db_path == String::default() {
-        panic!(r#"The database path has not been configured. 
+    if db_path.eq("") {
+        panic!(
+            r#"The database path has not been configured. 
             Please edit the config file manually and add the database file path.
-            Run `pricedb config show` to display the exact location of the config file."#)
+            Run `pricedb config show` to display the exact location of the config file."#
+        )
     }
-
-    return db_path;
 }
 
 pub(crate) trait Dal {
@@ -69,4 +68,8 @@ pub(crate) trait Dal {
     // fn get_symbols(&self) -> Vec<SecuritySymbol>;
 
     fn update_price(&self, price: &Price) -> anyhow::Result<usize>;
+
+    //// Schema
+
+    fn create_tables(&self);
 }

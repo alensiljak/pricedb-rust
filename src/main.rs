@@ -13,7 +13,7 @@ mod interface;
 
 use clap::Parser;
 use interface::{Cli, Commands};
-use pricedb::model::SecurityFilter;
+use pricedb::{model::SecurityFilter, config::PriceDbConfig};
 
 //#[async_std::main]
 #[tokio::main]
@@ -25,8 +25,8 @@ async fn main() {
     let args = Cli::parse();
 
     log::debug!("Command: {:?}", args.command);
-
-    let app = pricedb::App::new();
+    let cfg = load_config();
+    let app = pricedb::App::new(cfg);
 
     // config
 
@@ -73,4 +73,11 @@ async fn main() {
     if let Some(Commands::Prune { symbol }) = &args.command {
         app.prune(symbol);
     }
+}
+
+fn load_config() -> PriceDbConfig {
+    let config: PriceDbConfig = confy::load(pricedb::APP_NAME, None)
+        .expect("valid config should be loaded");
+
+    config
 }
