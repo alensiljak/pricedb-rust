@@ -254,7 +254,7 @@ mod tests {
     // }
 
     #[test_log::test(tokio::test)]
-    async fn test_price_parsing_AUD() {
+    async fn test_price_parsing_aud() {
         let symbol = SecuritySymbol::parse("CURRENCY:AUD");
 
         let f = Fixerio::new();
@@ -271,7 +271,7 @@ mod tests {
     }
 
     #[test_log::test(tokio::test)]
-    async fn test_price_parsing_GBP() {
+    async fn test_price_parsing_gbp() {
         let symbol = SecuritySymbol::parse("CURRENCY:GBP");
 
         let f = Fixerio::new();
