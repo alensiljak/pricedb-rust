@@ -2,6 +2,7 @@
 //! API / business logic
 
 use config::PriceDbConfig;
+use once_cell::unsync::OnceCell;
 
 /*
  * Application
@@ -24,12 +25,14 @@ pub const APP_NAME: &str = "pricedb";
 pub struct App {
     config: PriceDbConfig,
     // dal: Option<Box<dyn Dal>>,
+    dal: OnceCell<Box<dyn Dal>>
 }
 
 impl App {
     pub fn new(config: PriceDbConfig) -> Self {
         App {
             config,
+            dal: OnceCell::new()
         }
     }
 
@@ -177,17 +180,6 @@ impl App {
         log::debug!("Downloaded {} prices", counter);
     }
 
-    fn get_prices(&self) -> Vec<Price> {
-        let dal = self.create_dal();
-        let prices = dal.get_prices(None);
-
-        // todo: sort by namespace/symbol?
-        // prices.sort_by(compare);
-        //prices.sort_by(|a, b| b.date.cmp(&a.date));
-
-        prices
-    }
-
     /// Load and display all prices.
     /// Also returns the list as a string, for testing.
     pub fn list_prices(
@@ -296,6 +288,29 @@ impl App {
         save_text_file(&output, target);
     }
 
+    // Private
+
+    fn create_dal(&self) -> impl Dal {
+        database::init_dal(&self.config.price_database_path)
+    }
+
+    // fn get_dal(&self) -> impl Dal {
+    //     self.dal.get_or_init(|| {
+    //         Box::new(self.create_dal())
+    //     })
+    // }
+
+    fn get_prices(&self) -> Vec<Price> {
+        let dal = self.create_dal();
+        let prices = dal.get_prices(None);
+
+        // todo: sort by namespace/symbol?
+        // prices.sort_by(compare);
+        //prices.sort_by(|a, b| b.date.cmp(&a.date));
+
+        prices
+    }
+
     /// Deletes price history for the given Security, leaving only the latest price.
     fn prune_for_sec(&self, security_id: i32) -> anyhow::Result<u16, Error> {
         log::trace!("pruning prices for security id: {:?}", security_id);
@@ -329,10 +344,6 @@ impl App {
         }
 
         Ok(count)
-    }
-
-    fn create_dal(&self) -> impl Dal {
-        database::init_dal(&self.config.price_database_path)
     }
 }
 
