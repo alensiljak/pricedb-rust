@@ -39,7 +39,7 @@ impl App {
     pub fn add_price(&self, new_price: Price) {
         log::debug!("Adding price {:?}", new_price);
 
-        let dal = self.create_dal();
+        let dal = self.get_dal();
 
         // Is there already a price with the same id, date, and time?
 
@@ -130,7 +130,7 @@ impl App {
     pub async fn download_prices(&self, filter: SecurityFilter) {
         log::debug!("download filter: {:?}", filter);
 
-        let dal = self.create_dal();
+        let dal = self.get_dal();
         let securities = dal.get_securities(filter);
 
         // Debug
@@ -188,7 +188,7 @@ impl App {
         _currency: &Option<String>,
         _last: &Option<String>,
     ) -> String {
-        let dal = self.create_dal();
+        let dal = self.get_dal();
         let prices = dal.get_prices(None);
 
         let mut output = String::new();
@@ -207,7 +207,7 @@ impl App {
     pub fn prune(&self, symbol: &Option<String>) -> u16 {
         log::trace!("Pruning symbol: {:?}", symbol);
 
-        let dal = self.create_dal();
+        let dal = self.get_dal();
         let mut security_ids = vec![];
 
         if symbol.is_some() {
@@ -267,7 +267,7 @@ impl App {
         // log::debug!("sorted: {prices:?}");
 
         // get all symbols with prices
-        let dal = self.create_dal();
+        let dal = self.get_dal();
         let securities = dal.get_securitiess_having_prices();
         // log::debug!("{securities:?}");
         // let mut sec_map: HashMap<i32, Security> = HashMap::new();
@@ -290,18 +290,15 @@ impl App {
 
     // Private
 
-    fn create_dal(&self) -> impl Dal {
-        database::init_dal(&self.config.price_database_path)
+    fn get_dal(&self) -> &Box<dyn Dal> {
+        self.dal.get_or_init(|| {
+            let dal = database::init_dal(&self.config.price_database_path);
+            Box::new(dal)
+        })
     }
 
-    // fn get_dal(&self) -> impl Dal {
-    //     self.dal.get_or_init(|| {
-    //         Box::new(self.create_dal())
-    //     })
-    // }
-
     fn get_prices(&self) -> Vec<Price> {
-        let dal = self.create_dal();
+        let dal = self.get_dal();
         let prices = dal.get_prices(None);
 
         // todo: sort by namespace/symbol?
@@ -317,7 +314,7 @@ impl App {
 
         let mut count = 0;
         // get prices for the given security
-        let dal = self.create_dal();
+        let dal = self.get_dal();
         let prices = dal
             .get_prices_for_security(security_id)
             .expect("Error fetching prices for security");
