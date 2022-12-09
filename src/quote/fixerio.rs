@@ -267,7 +267,6 @@ mod tests {
         println!("price value: {value:?}");
 
         assert!(price.value > 0);
-        assert!(false);
     }
 
     #[test_log::test(tokio::test)]
@@ -279,11 +278,10 @@ mod tests {
 
         let value = price.to_decimal();
         
-        println!("Parsing AUDEUR rate...");
+        println!("Parsing GBPEUR rate...");
         println!("parsed price: {price:?}");
         println!("price value: {value:?}");
 
         assert!(price.value > 0);
-        assert!(false);
     }
 }
