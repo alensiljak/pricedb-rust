@@ -20,15 +20,10 @@ pub(crate) enum Commands {
     // Add
 
     // Cfg
-    // #[command(subcommand)]
     #[command(about = "Configuration")]
     #[command(arg_required_else_help(true))]
-    // #[command(flatten)]
     #[clap(subcommand)]
     Config(ConfigCmd),
-    // {
-    //     pub(crate) Show
-    // },
 
     #[command(about = "Download prices")]
     Dl {
@@ -45,7 +40,6 @@ pub(crate) enum Commands {
         currency: Option<String>,
     },
 
-    // todo: export
     #[command(about = "Export prices in ledger format")]
     Export {},
 
@@ -53,12 +47,19 @@ pub(crate) enum Commands {
 
     // todo: last
 
-    // todo: list
+    #[command(about="Display all prices")]
+    List {
+        date: Option<String>,
+        currency: Option<String>,
+        last: Option<String>,
+    },
+
     #[command(about = "Prune old prices, leaving just the latest")]
     Prune {
         #[arg(short, long)]
         symbol: Option<String>,
     },
+
     // securities
 }
 

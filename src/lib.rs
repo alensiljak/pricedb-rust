@@ -117,8 +117,8 @@ impl App {
     }
 
     pub fn config_show(&self) {
-        let path = confy::get_configuration_file_path(APP_NAME, CFG_NAME)
-            .expect("configuration path");
+        let path =
+            confy::get_configuration_file_path(APP_NAME, CFG_NAME).expect("configuration path");
         let cfg = load_config().expect("configuration");
 
         println!("Configuration file: {path:?}");
@@ -187,6 +187,21 @@ impl App {
         //prices.sort_by(|a, b| b.date.cmp(&a.date));
 
         prices
+    }
+
+    pub fn list_prices(
+        &self,
+        date: &Option<String>,
+        currency: &Option<String>,
+        last: &Option<String>,
+    ) {
+        // load and show all prices
+        let prices = self.dal.get_prices(None);
+        for price in prices {
+            println!("{price:?}");
+        }
+        
+        todo!("complete")
     }
 
     /// Prune historical prices for the given symbol, leaving only the latest.

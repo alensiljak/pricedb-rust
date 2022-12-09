@@ -51,6 +51,16 @@ async fn main() {
         app.download_prices(filter).await;
     }
 
+    // list
+
+    if let Some(Commands::List {
+        date,
+        currency,
+        last,
+    }) = &args.command
+    {
+        app.list_prices(date, currency, last);
+    }
     // prune
 
     if let Some(Commands::Prune { symbol }) = &args.command {
