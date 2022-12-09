@@ -24,7 +24,7 @@ pub struct App {
 }
 
 const APP_NAME: &str = "pricedb";
-const CFG_NAME: &str = "config";
+// const CFG_NAME: &str = "config";
 
 impl App {
     pub fn new() -> App {
@@ -118,7 +118,7 @@ impl App {
 
     pub fn config_show(&self) {
         let path =
-            confy::get_configuration_file_path(APP_NAME, CFG_NAME).expect("configuration path");
+            confy::get_configuration_file_path(APP_NAME, None).expect("configuration path");
         let cfg = load_config().expect("configuration");
 
         println!("Configuration file: {path:?}");
@@ -344,7 +344,7 @@ async fn download_price(symbol: SecuritySymbol, currency: &str, agent: &str) -> 
 }
 
 fn load_config() -> Result<PriceDbConfig, anyhow::Error> {
-    let config: PriceDbConfig = confy::load(APP_NAME, CFG_NAME)?;
+    let config: PriceDbConfig = confy::load(APP_NAME, None)?;
 
     Ok(config)
 }

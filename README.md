@@ -1,5 +1,5 @@
 # pricedb-rust
-Fetching commodity prices and exporting in Ledger format
+Retrieving, storing, and exporting commodity prices in Ledger format
 
 # Introduction
 
