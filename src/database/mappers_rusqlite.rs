@@ -9,7 +9,7 @@ use sea_query_rusqlite::{RusqliteBinder, RusqliteValues};
 use crate::model::{Price, PriceIden, Security};
 
 pub(crate) fn map_row_to_price(row: &Row) -> Price {
-    let result = Price {
+    Price {
         id: row.get(0).expect("value"),
         security_id: row.get(1).expect("value"),
         date: row.get(2).expect("value"),
@@ -17,13 +17,11 @@ pub(crate) fn map_row_to_price(row: &Row) -> Price {
         value: row.get(4).expect("value"),
         denom: row.get(5).expect("value"),
         currency: row.get(6).expect("value"),
-    };
-
-    result
+    }
 }
 
 pub(crate) fn map_row_to_security(row: &Row) -> Security {
-    let sec = Security {
+    Security {
         id: row.get(0).expect("id"),
         namespace: row.get(1).expect("namespace"),
         symbol: row.get(2).expect("symbol"),
@@ -31,9 +29,7 @@ pub(crate) fn map_row_to_security(row: &Row) -> Security {
         currency: row.get(4).expect("currency"),
         ledger_symbol: row.get(5).expect("ledger symbol"),
         notes: row.get(6).expect("notes"),
-    };
-
-    sec
+    }
 }
 
 pub(crate) fn generate_insert_price(price: &Price) -> (String, RusqliteValues) {
@@ -109,8 +105,7 @@ pub(crate) fn generate_update_price(price: &Price) -> (String, RusqliteValues) {
             .to_owned();
     }
 
-    let result = stmt.build_rusqlite(SqliteQueryBuilder);
-    result
+    stmt.build_rusqlite(SqliteQueryBuilder)
 }
 
 pub(crate) fn generate_delete_price(id: i32) -> (String, RusqliteValues) {

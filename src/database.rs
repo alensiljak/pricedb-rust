@@ -23,9 +23,7 @@ pub(crate) fn init_dal(db_path: &String) -> impl Dal {
     // let dal = dal_diesel::DieselDal { db_path };
     // let dal = dal_sqlx::SqlxDal { db_path };
     //let dal = dal_sqlite::SqliteDal {db_path};
-    let dal = dal_rusqlite::RuSqliteDal::new(db_path.to_owned());
-
-    dal
+    dal_rusqlite::RuSqliteDal::new(db_path.to_owned())
 }
 
 fn validate_db_path(db_path: &String) {

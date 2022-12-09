@@ -138,10 +138,10 @@ impl SecuritySymbol {
             mnemonic = vec[1].to_string();
         }
 
-        return SecuritySymbol {
+        SecuritySymbol {
             namespace,
             mnemonic,
-        };
+        }
     }
 }
 

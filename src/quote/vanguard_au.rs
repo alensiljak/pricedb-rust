@@ -88,7 +88,7 @@ impl VanguardAuDownloader {
         //     mnemonic: symbol.mnemonic,
         // };
 
-        let value_str = fund_info.value.strip_prefix("$").unwrap();
+        let value_str = fund_info.value.strip_prefix('$').unwrap();
         let value = Decimal::from_str(value_str)?;
         price.value = value.mantissa().to_i32().unwrap();
         price.denom = value.scale() as i32;

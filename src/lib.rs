@@ -51,7 +51,7 @@ impl App {
         let existing_prices = dal.get_prices(Some(filter));
 
         // insert or update
-        if existing_prices.len() == 0 {
+        if existing_prices.is_empty() {
             // insert
             log::debug!("Inserting");
 
@@ -147,7 +147,7 @@ impl App {
             log::debug!("Securities to fetch the prices for: {:?}", symbols);
         }
 
-        if securities.len() == 0 {
+        if securities.is_empty() {
             println!("No Securities found for the given parameters.");
             return;
         }
@@ -182,8 +182,6 @@ impl App {
     fn get_prices(&self) -> Vec<Price> {
         let dal = self.create_dal();
         let prices = dal.get_prices(None);
-
-        // log::debug!("fetched prices: {prices:?}");
 
         // todo: sort by namespace/symbol?
         // prices.sort_by(compare);
@@ -258,7 +256,7 @@ impl App {
 
         println!("Processed {} records, deleted {}.", count, count_deleted);
 
-        return count;
+        count
     }
 
     /// Export prices in ledger format
@@ -333,7 +331,7 @@ impl App {
             count += 1;
         }
 
-        return Ok(count);
+        Ok(count)
     }
 
     fn create_dal(&self) -> impl Dal {
@@ -350,7 +348,7 @@ async fn download_price(symbol: SecuritySymbol, currency: &str, agent: &str) -> 
 
     let prices = dl.fetch(&symbol.namespace, vec![symbol.mnemonic]).await;
 
-    if prices.len() == 0 {
+    if prices.is_empty() {
         println!("Did not receive any prices");
         return None;
     }

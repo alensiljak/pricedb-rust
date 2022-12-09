@@ -160,13 +160,13 @@ impl Dal for RuSqliteDal {
 
                 log::debug!("row fetched: {:?}", result);
 
-                return Ok(result);
+                Ok(result)
             })
             .expect("Error fetching security");
 
         log::debug!("query result: {:?}", security);
 
-        return security;
+        security
     }
 
     fn update_price(&self, price: &Price) -> anyhow::Result<usize> {

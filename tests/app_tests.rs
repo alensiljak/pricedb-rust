@@ -14,8 +14,8 @@ fn app() -> App {
         fixerio_api_key: String::default(),
         price_database_path: ":memory:".to_owned(),
     };
-    let app = App::new(cfg);
-    app
+
+    App::new(cfg)
 }
 
 #[fixture]
@@ -32,7 +32,6 @@ fn new_price() -> Price {
  */
 #[rstest]
 fn test_prune(app: App) {
-
     let symbol = Some("IPRP".to_string());
     let actual = app.prune(&symbol);
 

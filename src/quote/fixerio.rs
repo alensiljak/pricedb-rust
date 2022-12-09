@@ -77,7 +77,7 @@ impl Downloader for Fixerio {
         let currency = currency.to_uppercase();
         let mnemonic = security_symbol.mnemonic.to_uppercase();
 
-        if mnemonic.contains(":") {
+        if mnemonic.contains(':') {
             panic!("Currency symbol should not contain namespace.");
         }
 

@@ -7,7 +7,7 @@ use crate::{
 };
 
 /// format a list of prices
-pub(crate) fn format_prices(prices: Vec<Price>, securities: &Vec<Security>) -> String {
+pub(crate) fn format_prices(prices: Vec<Price>, securities: &[Security]) -> String {
     let mut output = String::default();
 
     for price in prices {
@@ -20,7 +20,7 @@ pub(crate) fn format_prices(prices: Vec<Price>, securities: &Vec<Security>) -> S
             .expect("a matching security");
         // let sec = securities[&price.security_id];
 
-        output += format_price(&price, &sec).as_str();
+        output += format_price(&price, sec).as_str();
         output += "\n";
     }
     output
