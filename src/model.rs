@@ -51,7 +51,7 @@ impl Price {
     }
 }
 
-pub(crate) struct PriceFilter {
+pub struct PriceFilter {
     pub security_id: Option<i32>,
     pub date: Option<String>,
     pub time: Option<String>,

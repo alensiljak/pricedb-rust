@@ -244,6 +244,30 @@ impl Dal for RuSqliteDal {
 
         assert_eq!(0, result);
     }
+
+    fn get_tables(&self) -> Vec<String> {
+        let sql = r#"SELECT 
+        name
+    FROM 
+        sqlite_schema
+    WHERE 
+        type ='table' AND 
+        name NOT LIKE 'sqlite_%';"#;
+
+        let mut stmt = self.conn.prepare(sql).expect("list of tables received");
+        let res: Vec<String> = stmt
+            .query_map([], |row| {
+                let val = row.get(0).unwrap();
+                Ok(val)
+            })
+            .unwrap()
+            .flatten()
+            .collect();
+
+        // There should be 2 tables
+        // debug_assert_eq!(2, res.len());
+        res
+    }
 }
 
 /// rusqlite connection

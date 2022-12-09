@@ -24,7 +24,6 @@ pub const APP_NAME: &str = "pricedb";
 
 pub struct App {
     config: PriceDbConfig,
-    // dal: Option<Box<dyn Dal>>,
     dal: OnceCell<Box<dyn Dal>>
 }
 
@@ -191,14 +190,15 @@ impl App {
         let dal = self.get_dal();
         let prices = dal.get_prices(None);
 
-        let mut output = String::new();
+        let mut result = String::new();
 
         for price in prices {
-            println!("{price:?}");
-            output += "{price:?}";
+            let output = format!("{price:?}");
+            println!("{output}");
+            result += &output;
         }
 
-        output
+        result
     }
 
     /// Prune historical prices for the given symbol, leaving only the latest.
@@ -291,10 +291,19 @@ impl App {
     // Private
 
     fn get_dal(&self) -> &Box<dyn Dal> {
-        self.dal.get_or_init(|| {
+        let dal = self.dal.get_or_init(|| {
             let dal = database::init_dal(&self.config.price_database_path);
             Box::new(dal)
-        })
+        });
+        let tables= dal.get_tables();
+
+        if tables.is_empty() {
+            log::debug!("Creating tables...");
+
+            dal.create_tables();
+        }
+
+        dal
     }
 
     fn get_prices(&self) -> Vec<Price> {

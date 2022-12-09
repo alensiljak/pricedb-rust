@@ -45,7 +45,7 @@ fn validate_db_path(db_path: &String) -> String {
     }
 }
 
-pub(crate) trait Dal {
+pub trait Dal {
     /// Inserts a new price record.
     fn add_price(&self, new_price: &Price) -> usize;
 
@@ -73,4 +73,7 @@ pub(crate) trait Dal {
     //// Schema
 
     fn create_tables(&self);
+
+    /// List all the tables in the database.
+    fn get_tables(&self) -> Vec<String>;
 }

@@ -15,7 +15,10 @@ fn app() -> App {
         price_database_path: ":memory:".to_owned(),
     };
 
-    App::new(cfg)
+    let app = App::new(cfg);
+
+    // initialize database
+    app
 }
 
 #[fixture]
@@ -32,6 +35,7 @@ fn new_price() -> Price {
  */
 #[rstest]
 fn test_prune(app: App) {
+    //app.
     let symbol = Some("IPRP".to_string());
     let actual = app.prune(&symbol);
 
@@ -42,8 +46,13 @@ fn test_prune(app: App) {
 /// Try multiple actions
 #[rstest]
 fn roundtrip(app: App, new_price: Price) {
+    // add price
     app.add_price(new_price);
+
+    app.prune(&None);
+
+    // retrieve list
     let output = app.list_prices(&None, &None, &None);
 
-    assert_eq!("", output);
+    assert_eq!(r#"Price { id: 1, security_id: 0, date: "", time: None, value: 0, denom: 0, currency: "" }"#, output);
 }
