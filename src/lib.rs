@@ -288,9 +288,7 @@ impl App {
         save_text_file(&output, target);
     }
 
-    // Private
-
-    fn get_dal(&self) -> &Box<dyn Dal> {
+    pub fn get_dal(&self) -> &Box<dyn Dal> {
         let dal = self.dal.get_or_init(|| {
             let dal = database::init_dal(&self.config.price_database_path);
             Box::new(dal)
@@ -305,6 +303,8 @@ impl App {
 
         dal
     }
+
+    // Private
 
     fn get_prices(&self) -> Vec<Price> {
         let dal = self.get_dal();

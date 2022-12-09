@@ -4,7 +4,7 @@ use rstest::{fixture, rstest};
  */
 use test_log::test;
 
-use pricedb::{App, config::PriceDbConfig, model::Price};
+use pricedb::{App, config::PriceDbConfig, model::{Price, Security}};
 
 #[fixture]
 fn app() -> App {
@@ -26,6 +26,23 @@ fn new_price() -> Price {
     Price::default()
 }
 
+/// Populates the database
+#[fixture]
+fn app_with_data(app: App) -> App {
+    let sec = Security {
+        id: 1,
+        namespace: Some("AMS".to_owned()),
+        symbol: "IPRP".to_owned(),
+        currency: Some("EUR".to_owned()),
+        ledger_symbol: Some("IPRP_AS".to_owned()),
+        updater: Some("yahoo_finance".to_owned()),
+        notes: None
+    };
+    app.get_dal().add_security(&sec);
+
+    app
+}
+
 /**
  * Just a basic smoke test to see that the pruninng runs.
  * Tests the use of the database.
@@ -34,8 +51,9 @@ fn new_price() -> Price {
  * It expects 1 record to be processed.
  */
 #[rstest]
-fn test_prune(app: App) {
-    //app.
+fn test_prune(app_with_data: App) {
+    let app = app_with_data;
+
     let symbol = Some("IPRP".to_string());
     let actual = app.prune(&symbol);
 

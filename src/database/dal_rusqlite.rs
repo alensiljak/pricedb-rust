@@ -42,7 +42,14 @@ impl Dal for RuSqliteDal {
         result
     }
 
-    #[allow(unused_variables)]
+    fn add_security(&self, security: &Security) -> usize {
+        let (sql, values) = generate_insert_security(security);
+        self
+            .conn
+            .execute(sql.as_str(), &*values.as_params())
+            .expect("price inserted")
+    }
+
     fn delete_price(&self, id: i32) -> anyhow::Result<usize> {
         let (sql, values) = generate_delete_price(id);
         let result = self.conn.execute(&sql, &*values.as_params())?;
@@ -268,6 +275,7 @@ impl Dal for RuSqliteDal {
         // debug_assert_eq!(2, res.len());
         res
     }
+
 }
 
 /// rusqlite connection
@@ -327,30 +335,6 @@ fn generate_select_prices_symbols(order: PriceSymbolOrder) -> String {
     let result = sql.to_owned() + order_str;
 
     result
-}
-
-fn get_price_columns() -> Vec<(PriceIden, PriceIden)> {
-    vec![
-        (PriceIden::Table, PriceIden::Id),
-        (PriceIden::Table, PriceIden::SecurityId),
-        (PriceIden::Table, PriceIden::Date),
-        (PriceIden::Table, PriceIden::Time),
-        (PriceIden::Table, PriceIden::Value),
-        (PriceIden::Table, PriceIden::Denom),
-        (PriceIden::Table, PriceIden::Currency),
-    ]
-}
-
-fn get_security_columns() -> Vec<(SecurityIden, SecurityIden)> {
-    vec![
-        (SecurityIden::Table, SecurityIden::Id),
-        (SecurityIden::Table, SecurityIden::Namespace),
-        (SecurityIden::Table, SecurityIden::Symbol),
-        (SecurityIden::Table, SecurityIden::Updater),
-        (SecurityIden::Table, SecurityIden::Currency),
-        (SecurityIden::Table, SecurityIden::LedgerSymbol),
-        (SecurityIden::Table, SecurityIden::Notes),
-    ]
 }
 
 /// Generates SELECT statement with the given parameters/filters.

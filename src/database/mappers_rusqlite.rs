@@ -6,7 +6,43 @@ use rusqlite::Row;
 use sea_query::{Expr, Query, SqliteQueryBuilder};
 use sea_query_rusqlite::{RusqliteBinder, RusqliteValues};
 
-use crate::model::{Price, PriceIden, Security};
+use crate::model::{Price, PriceIden, Security, SecurityIden};
+
+pub fn get_price_columns() -> Vec<(PriceIden, PriceIden)> {
+    vec![
+        (PriceIden::Table, PriceIden::Id),
+        (PriceIden::Table, PriceIden::SecurityId),
+        (PriceIden::Table, PriceIden::Date),
+        (PriceIden::Table, PriceIden::Time),
+        (PriceIden::Table, PriceIden::Value),
+        (PriceIden::Table, PriceIden::Denom),
+        (PriceIden::Table, PriceIden::Currency),
+    ]
+}
+
+pub fn get_security_columns() -> Vec<(SecurityIden, SecurityIden)> {
+    vec![
+        (SecurityIden::Table, SecurityIden::Id),
+        (SecurityIden::Table, SecurityIden::Namespace),
+        (SecurityIden::Table, SecurityIden::Symbol),
+        (SecurityIden::Table, SecurityIden::Updater),
+        (SecurityIden::Table, SecurityIden::Currency),
+        (SecurityIden::Table, SecurityIden::LedgerSymbol),
+        (SecurityIden::Table, SecurityIden::Notes),
+    ]
+}
+
+pub fn get_security_columns_wo_table() -> Vec<SecurityIden> {
+    vec![
+        SecurityIden::Id,
+        SecurityIden::Namespace,
+        SecurityIden::Symbol,
+        SecurityIden::Updater,
+        SecurityIden::Currency,
+        SecurityIden::LedgerSymbol,
+        SecurityIden::Notes,
+    ]
+}
 
 pub(crate) fn map_row_to_price(row: &Row) -> Price {
     Price {
@@ -55,6 +91,24 @@ pub(crate) fn generate_insert_price(price: &Price) -> (String, RusqliteValues) {
     // .build(SqliteQueryBuilder);
     //.to_string(SqliteQueryBuilder);
     result
+}
+
+pub(crate) fn generate_insert_security(security: &Security) -> (String, RusqliteValues) {
+    let columns = get_security_columns_wo_table();
+
+    Query::insert()
+        .into_table(SecurityIden::Table)
+        .columns(columns)
+        .values_panic([
+            security.id.into(),
+            security.namespace.to_owned().into(),
+            security.symbol.to_owned().into(),
+            security.updater.to_owned().into(),
+            security.currency.to_owned().into(),
+            security.ledger_symbol.to_owned().into(),
+            security.notes.to_owned().into()
+        ])
+        .build_rusqlite(SqliteQueryBuilder)
 }
 
 pub(crate) fn generate_update_price(price: &Price) -> (String, RusqliteValues) {
