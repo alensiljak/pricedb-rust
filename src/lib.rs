@@ -95,7 +95,9 @@ impl App {
             return;
         }
 
-        let mut counter = 0;
+        let mut counter_total = 0;
+        let mut counter_updated = 0;
+
         for sec in securities {
             let symbol = SecuritySymbol {
                 namespace: sec.namespace.unwrap().to_owned(),
@@ -114,12 +116,17 @@ impl App {
 
             log::debug!("the fetched price for {:?} is {:?}", sec.symbol, price);
 
-            self.add_price(price);
+            let saved = self.add_price(price);
+            if saved > 0 {
+                counter_updated += 1;
+            }
 
-            counter += 1;
+            // show some progress during downloads, it is boring
+            print!(".");
+            counter_total += 1;
         }
 
-        log::debug!("Downloaded {} prices", counter);
+        println!("Downloaded {counter_total} prices, saved {counter_updated}.");
     }
 
     /// Load and display all prices.
