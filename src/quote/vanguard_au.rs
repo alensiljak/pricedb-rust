@@ -91,7 +91,7 @@ impl VanguardAuDownloader {
         let value_str = fund_info.value.strip_prefix('$').unwrap();
         let value = Decimal::from_str(value_str)?;
         price.value = value.mantissa().to_i32().unwrap();
-        price.denom = value.scale() as i32;
+        price.denom = 10_i32.pow(value.scale());         // in 10^3 = 1000, scale=3, denom=1000
 
         price.currency = "AUD".to_string();
 

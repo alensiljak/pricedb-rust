@@ -144,17 +144,21 @@ fn map_rates_to_price(rates: Value, symbol: &str) -> Price {
     let base = rates["base"].as_str().unwrap().to_string();
     let rates_dict = &rates["rates"];
     let rate_node = &rates_dict[symbol];
+    
     log::debug!("Rate located: {:?}", rate_node);
 
     let value_f = rate_node.as_f64().unwrap();
     let value = Decimal::from_f64(value_f).expect("Error parsing value");
     // The rate is inverse value.
     let rate = Decimal::ONE / value;
+    
     log::debug!("The inverse rate is {:?}", rate);
 
     // Round to 6 decimals max.
     let rounded_str = format!("{0:.6}", rate);
     let rounded = Decimal::from_str(&rounded_str).unwrap();
+    
+    log::debug!("Rounded rate: {rounded:?}");
 
     // result
 
@@ -164,7 +168,7 @@ fn map_rates_to_price(rates: Value, symbol: &str) -> Price {
         date: date_str,
         time: None,
         value: rounded.mantissa().to_i32().unwrap(),
-        denom: rounded.scale().to_i32().unwrap(),
+        denom: 10_i32.pow(rounded.scale()),         // in 10^3 = 1000, scale=3, denom=1000
         currency: base,
     }
 }
@@ -212,6 +216,8 @@ mod tests {
     fn test_cache_location() {
         let result = get_todays_file_path();
 
+        println!("Fixerio cache file: {result:?}");
+
         assert_ne!(result, String::default());
         // on linux: /tmp/fixerio_2022-12-06.json
         assert_eq!(28, result.len());
@@ -238,12 +244,46 @@ mod tests {
         // assert_eq!(expected, price);
     }
 
-    #[test_log::test(tokio::test)]
-    async fn test_dl_rates() {
-        let f = Fixerio::new();
-        let result = f.download_rates("EUR").await.expect("Error");
+    // Frequent downloads consume the API quota. Use the cached version.
+    // #[test_log::test(tokio::test)]
+    // async fn test_dl_rates() {
+    //     let f = Fixerio::new();
+    //     let result = f.download_rates("EUR").await.expect("Error");
+    //     assert_eq!(result["base"], "EUR");
+    //     assert_ne!(result["rates"]["BAM"], String::default());
+    // }
 
-        assert_eq!(result["base"], "EUR");
-        assert_ne!(result["rates"]["BAM"], String::default());
+    #[test_log::test(tokio::test)]
+    async fn test_price_parsing_AUD() {
+        let symbol = SecuritySymbol::parse("CURRENCY:AUD");
+
+        let f = Fixerio::new();
+        let price = f.download(symbol, "EUR").await.expect("Error");
+
+        let value = price.to_decimal();
+        
+        println!("Parsing AUDEUR rate...");
+        println!("parsed price: {price:?}");
+        println!("price value: {value:?}");
+
+        assert!(price.value > 0);
+        assert!(false);
+    }
+
+    #[test_log::test(tokio::test)]
+    async fn test_price_parsing_GBP() {
+        let symbol = SecuritySymbol::parse("CURRENCY:GBP");
+
+        let f = Fixerio::new();
+        let price = f.download(symbol, "EUR").await.expect("Error");
+
+        let value = price.to_decimal();
+        
+        println!("Parsing AUDEUR rate...");
+        println!("parsed price: {price:?}");
+        println!("price value: {value:?}");
+
+        assert!(price.value > 0);
+        assert!(false);
     }
 }
