@@ -289,19 +289,18 @@ impl App {
     }
 
     pub fn get_dal(&self) -> &Box<dyn Dal> {
-        let dal = self.dal.get_or_init(|| {
+        self.dal.get_or_init(|| {
             let dal = database::init_dal(&self.config.price_database_path);
+
+            // Create tables if needed.
+            let tables= dal.get_tables();
+            if tables.is_empty() {
+                log::debug!("Creating tables...");
+                dal.create_tables();
+            }
+    
             Box::new(dal)
-        });
-        let tables= dal.get_tables();
-
-        if tables.is_empty() {
-            log::debug!("Creating tables...");
-
-            dal.create_tables();
-        }
-
-        dal
+        })
     }
 
     // Private
