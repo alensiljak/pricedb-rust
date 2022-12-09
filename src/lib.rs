@@ -24,7 +24,6 @@ pub struct App {
 }
 
 const APP_NAME: &str = "pricedb";
-// const CFG_NAME: &str = "config";
 
 impl App {
     pub fn new() -> App {

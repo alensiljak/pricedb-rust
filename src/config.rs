@@ -1,18 +1,21 @@
 /*
- * Configuration reader
+ * Configuration definition
  */
 
 use serde_derive::{Deserialize, Serialize};
 
-#[derive(Debug, std::default::Default, Serialize, Deserialize)]
-pub(crate) struct PriceDbConfig {
-    pub(crate) price_database_path: String,
-    pub(crate) alphavantage_api_key: String,
-    pub(crate) fixerio_api_key: String,
-    pub(crate) export_destination: String,
+/// The configuration file schema
+#[derive(Debug, Default, Serialize, Deserialize)]
+pub struct PriceDbConfig {
+    /// The full path to the price database file.
+    pub price_database_path: String,
+    pub alphavantage_api_key: String,
+    pub fixerio_api_key: String,
+    /// The full path to the file where the prices will be exported.
+    pub export_destination: String,
 }
 
-//// `PriceDbConfig` implements `Default`
+// // `PriceDbConfig` implements `Default`
 // impl std::default::Default for PriceDbConfig {
 //     fn default() -> Self {
 //         Self {

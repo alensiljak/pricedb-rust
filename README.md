@@ -13,7 +13,12 @@ This is a continuation of the Price Database project. The [previous version](htt
 
 ## Configuration
 
-The configuration file is located in the user's config directory, i.e. ~/.config/pricedb.
+Before usage, you need to add the paths to the configuration file. Run `pricedb config show` to see the location of the file.
+
+It is located in the user's config directory, i.e. `~/.config/pricedb/default-config.toml` or `C:\Users\<user>\AppData\Roaming\pricedb\default-config.toml`.
+
+Populate the `price_database_path` with the full path to the db file, i.e. /my_files/prices.db.
+`export_destination` is the 
 
 ## Data Store
 

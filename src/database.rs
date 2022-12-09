@@ -14,7 +14,7 @@ use crate::model::{Price, PriceFilter, Security, SecurityFilter};
 
 /// Initialize database connection.
 pub(crate) fn init_dal() -> impl Dal {
-    // "sqlite::memory:"
+    // "sqlite::memory:" or ":memory:"
     let conn_str = load_db_path();
 
     // choose the dal implementation here.
@@ -35,6 +35,12 @@ fn load_db_path() -> String {
     let db_path = config.price_database_path;
 
     debug!("Db path: {:?}", db_path);
+
+    if db_path == String::default() {
+        panic!(r#"The database path has not been configured. 
+            Please edit the config file manually and add the database file path.
+            Run `pricedb config show` to display the exact location of the config file."#)
+    }
 
     return db_path;
 }
