@@ -45,7 +45,7 @@ impl App {
         let filter = PriceFilter {
             security_id: Some(new_price.security_id),
             date: Some(new_price.date.to_owned()),
-            time: new_price.time.to_owned(),
+            time: Some(new_price.time.to_owned()),
         };
         let existing_prices = dal.get_prices(Some(filter));
 
@@ -73,7 +73,7 @@ impl App {
         log::debug!("download filter: {:?}", filter);
 
         let dal = self.get_dal();
-        let securities = dal.get_securities(filter);
+        let securities = dal.get_securities(Some(filter));
 
         // Debug
         {
@@ -139,11 +139,27 @@ impl App {
     ) -> String {
         let dal = self.get_dal();
         let prices = dal.get_prices(None);
+        let securities = dal.get_securities(None);
 
         let mut result = String::new();
 
         for price in prices {
-            let output = format!("{price:?}");
+            let sec = securities
+                .iter()
+                .find(|sec| sec.id == price.security_id)
+                .expect("a related security");
+
+            // let output = format!("{price:?}");
+            println!("price: {price:?}");
+            let output = format!(
+                "{:?}:{} {} {} {:?} {}",
+                sec.namespace.as_ref().unwrap(),
+                sec.symbol,
+                price.date,
+                price.time,
+                price.to_decimal(),
+                price.currency
+            );
             println!("{output}");
             result += &output;
         }
@@ -205,15 +221,7 @@ impl App {
 
         // sort by date
         //prices.sort_by(|a, b| b.date.cmp(&a.date) && b.time.cmp(&a.time));
-        prices.sort_unstable_by_key(|price| {
-            (
-                price.date.to_owned(),
-                match price.time {
-                    Some(_) => price.time.to_owned().unwrap(),
-                    None => "".to_owned(),
-                },
-            )
-        });
+        prices.sort_unstable_by_key(|price| (price.date.to_owned(), price.time.to_owned()));
         // log::debug!("sorted: {prices:?}");
 
         // get all symbols with prices
@@ -255,8 +263,10 @@ impl App {
 
     // Private
 
+    //fn create_dict(securities_vec: Vec<Security>) -> HashMap<i32, Security>
+
     fn insert_price(&self, new_price: &Price) -> usize {
-        println!("Inserting {new_price:?}");
+        println!("\nInserting {new_price:?}");
 
         let dal = self.get_dal();
 

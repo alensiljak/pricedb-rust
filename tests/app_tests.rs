@@ -4,7 +4,11 @@ use rstest::{fixture, rstest};
  */
 use test_log::test;
 
-use pricedb::{App, config::PriceDbConfig, model::{Price, Security}};
+use pricedb::{
+    config::PriceDbConfig,
+    model::{Price, Security},
+    App,
+};
 
 #[fixture]
 fn app() -> App {
@@ -36,7 +40,7 @@ fn app_with_data(app: App) -> App {
         currency: Some("EUR".to_owned()),
         ledger_symbol: Some("IPRP_AS".to_owned()),
         updater: Some("yahoo_finance".to_owned()),
-        notes: None
+        notes: None,
     };
     app.get_dal().add_security(&sec);
 
@@ -72,5 +76,35 @@ fn roundtrip(app: App, new_price: Price) {
     // retrieve list
     let output = app.list_prices(&None, &None, &None);
 
-    assert_eq!(r#"Price { id: 1, security_id: 0, date: "", time: None, value: 0, denom: 0, currency: "" }"#, output);
+    assert_eq!(
+        r#"Price { id: 1, security_id: 0, date: "", time: None, value: 0, denom: 0, currency: "" }"#,
+        output
+    );
 }
+
+/*
+#[test]
+/// Displays the performance of finding an element in a vector, comparing
+/// find() and filter().
+fn test_indexing_performance() {
+    use std::time::Instant;
+
+    let tuples = vec![(1, "one"), (2, "two"), (3, "three")];
+
+    // Measure the time it takes to search the vector of tuples using the find() method
+    let start = Instant::now();
+    let _result = tuples.iter().find(|t| t.0 == 2);
+    let elapsed = start.elapsed();
+    println!("find() method: {:?}", elapsed);
+
+    // Measure the time it takes to search the vector of tuples using the filter() method
+    let start = Instant::now();
+    for tuple in tuples.iter().filter(|t| t.0 == 2) {
+        println!("{:?}", tuple);
+    }
+    let elapsed = start.elapsed();
+    println!("filter() method: {:?}", elapsed);
+
+    assert!(false);
+}
+*/

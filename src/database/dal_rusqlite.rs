@@ -131,10 +131,15 @@ impl Dal for RuSqliteDal {
     }
 
     /// Search for the securities with the given filter.
-    fn get_securities(&self, filter: SecurityFilter) -> Vec<Security> {
+    fn get_securities(&self, filter: Option<SecurityFilter>) -> Vec<Security> {
+        let filter_int = match filter {
+            Some(value) => value,
+            None => SecurityFilter::default(),
+        };
+
         // assemble the sql statement
         // let sql = "select * from security";
-        let (sql, values) = generate_select_security_with_filter(&filter);
+        let (sql, values) = generate_select_security_with_filter(&filter_int);
 
         log::debug!("securities sql: {:?}", sql);
 
@@ -445,7 +450,7 @@ mod tests {
             id: i32::default(),
             security_id,
             date,
-            time: None,
+            time: Price::default_time(),
             value,
             denom: match denom_opt {
                 Some(val) => val,
@@ -560,9 +565,7 @@ mod tests {
     fn test_get_securities_wo_filter() {
         let dal = get_test_dal();
 
-        let filter = SecurityFilter::new();
-
-        let securities = dal.get_securities(filter);
+        let securities = dal.get_securities(None);
 
         assert_ne!(securities.len(), 0);
         assert_eq!(securities.len(), 4);

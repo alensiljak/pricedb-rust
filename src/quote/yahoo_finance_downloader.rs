@@ -107,7 +107,7 @@ impl YahooFinanceDownloader {
 
         let time_str = dt_fo.time().to_string();
         // log::debug!("Parsed time is {:?}", time_str);
-        result.time = Some(time_str);
+        result.time = time_str;
 
         Ok(result)
     }

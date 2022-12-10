@@ -60,7 +60,7 @@ pub trait Dal {
 
     fn get_prices_with_symbols(&self) -> Vec<Price>;
 
-    fn get_securities(&self, filter: SecurityFilter) -> Vec<Security>;
+    fn get_securities(&self, filter: Option<SecurityFilter>) -> Vec<Security>;
 
     /// Returns all the ids of the symbols that have prices in the database.
     /// Used for pruning.

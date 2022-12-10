@@ -14,7 +14,7 @@ pub(crate) fn format_prices(prices: Vec<Price>, securities: &[Security]) -> Stri
         // log::debug!("fomatting {price:?}");
         // log::debug!("sec: {securities:?}");
 
-        // find the matching symbol
+        // find the matching security by id
         let sec = securities.iter()
             .find(|x| x.id == price.security_id)
             .expect("a matching security");
@@ -32,10 +32,7 @@ pub(crate) fn format_prices(prices: Vec<Price>, securities: &[Security]) -> Stri
  */
 fn format_price(price: &Price, sec: &Security) -> String {
     let date = price.date.to_owned();
-    let time = match &price.time {
-        Some(price_time) => price_time.to_owned(),
-        None => "00:00:00".to_owned(),
-    };
+    let time = price.time.to_owned();
     let date_time = format!("{date} {time}");
 
     let mnemonic = match sec.ledger_symbol {
@@ -63,7 +60,7 @@ mod tests {
             id: 113,
             security_id: 26,
             date: "2022-12-01".into(),
-            time: Some("12:25:34".into()),
+            time: "12:25:34".into(),
             value: 12534,
             denom: 100,
             currency: "EUR".into(),
@@ -85,7 +82,7 @@ mod tests {
             id: 113,
             security_id: 26,
             date: "2022-12-01".into(),
-            time: None,
+            time: Price::default_time(),
             value: 12534,
             denom: 100,
             currency: "AUD".into(),

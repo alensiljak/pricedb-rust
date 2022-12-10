@@ -106,7 +106,7 @@ pub(crate) fn generate_insert_security(security: &Security) -> (String, Rusqlite
             security.updater.to_owned().into(),
             security.currency.to_owned().into(),
             security.ledger_symbol.to_owned().into(),
-            security.notes.to_owned().into()
+            security.notes.to_owned().into(),
         ])
         .build_rusqlite(SqliteQueryBuilder)
 }
@@ -140,9 +140,10 @@ pub(crate) fn generate_update_price(price: &Price) -> (String, RusqliteValues) {
             .to_owned();
     }
 
-    if price.time.is_some() {
-        let value = price.time.to_owned().unwrap().as_str().to_owned();
-        stmt = stmt.value(PriceIden::Time, value).to_owned();
+    if price.time != String::default() {
+        stmt = stmt
+            .value(PriceIden::Time, price.time.to_owned())
+            .to_owned();
     }
 
     if price.value != i32::default() {
@@ -182,7 +183,7 @@ mod tests {
             id: 13,
             security_id: 155,
             date: "2022-12-07".to_owned(),
-            time: Some("12:00:01".to_owned()),
+            time: "12:00:01".to_owned(),
             value: 12345,
             denom: 100,
             currency: "EUR".to_owned(),
@@ -195,7 +196,7 @@ mod tests {
             id: i32::default(),
             security_id: 111,
             date: "2022-12-01".to_string(),
-            time: None,
+            time: Price::default_time(),
             value: 100,
             denom: 10,
             currency: "AUD".to_string(),
@@ -243,7 +244,7 @@ mod tests {
         let actual_time = &params.0[2].0;
         assert_eq!(
             *actual_time,
-            sea_query::Value::String(Some(Box::new(price.time.unwrap())))
+            sea_query::Value::String(Some(Box::new(price.time)))
         );
 
         // currency
