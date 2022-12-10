@@ -160,6 +160,7 @@ pub struct PriceWSymbol {
     pub id: i32,
     pub namespace: String,
     pub symbol: String,
+    pub ledger_symbol: String,
     pub date: String,
     pub time: String,
     pub value: Decimal,
@@ -170,11 +171,9 @@ impl PriceWSymbol {
     pub fn from(price: &Price, sec: &Security) -> Self {
         Self {
             id: price.id,
-            namespace: match &sec.namespace {
-                Some(ns) => ns.into(),
-                None => String::default(),
-            },
+            namespace: sec.namespace.to_owned().unwrap_or_default(),
             symbol: sec.symbol.to_owned(),
+            ledger_symbol: sec.ledger_symbol.to_owned().unwrap_or_default(),
             date: price.date.to_owned(),
             time: price.time.to_owned(),
             value: price.to_decimal(),

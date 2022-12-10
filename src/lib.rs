@@ -137,13 +137,12 @@ impl App {
         _currency: &Option<String>,
         _last: &Option<String>,
     ) -> String {
-        let mut result = String::new();
-
         let mut pwss = self.load_all_prices_with_symbols();
 
         // sort
         pwss.sort_unstable_by_key(|p| (p.namespace.to_owned(), p.symbol.to_owned()));
 
+        let mut result = String::new();
         for pws in pwss {
             let output = format!(
                 "{}:{} {} {} {:?} {}",
@@ -206,24 +205,30 @@ impl App {
     /// Export prices in ledger format
     pub fn export(&self) {
         // get prices
-        let mut prices = self.get_prices();
+        // let mut prices = self.get_prices();
 
-        // sort by date
-        //prices.sort_by(|a, b| b.date.cmp(&a.date) && b.time.cmp(&a.time));
-        prices.sort_unstable_by_key(|price| (price.date.to_owned(), price.time.to_owned()));
+        // sort by date/time
+        // prices.sort_unstable_by_key(|price| (price.date.to_owned(), price.time.to_owned()));
         // log::debug!("sorted: {prices:?}");
 
         // get all symbols with prices
-        let dal = self.get_dal();
-        let securities = dal.get_securitiess_having_prices();
+        // let dal = self.get_dal();
+        // let securities = dal.get_securitiess_having_prices();
         // log::debug!("{securities:?}");
-        // let mut sec_map: HashMap<i32, Security> = HashMap::new();
-        // for sec in securities {
-        //     sec_map.insert(sec.id, sec);
-        // }
+
+        let mut pwss = self.load_all_prices_with_symbols();
+
+        pwss.sort_unstable_by_key(|p| {
+            (
+                p.date.to_owned(),
+                p.time.to_owned(),
+                p.namespace.to_owned(),
+                p.symbol.to_owned(),
+            )
+        });
 
         // format in ledger format
-        let output = ledger_formatter::format_prices(prices, &securities);
+        let output = ledger_formatter::format_prices_w_symbols(pwss);
 
         // log::debug!("output: {output:?}");
 
@@ -258,17 +263,6 @@ impl App {
         let dal = self.get_dal();
 
         dal.add_price(&new_price)
-    }
-
-    fn get_prices(&self) -> Vec<Price> {
-        let dal = self.get_dal();
-        let prices = dal.get_prices(None);
-
-        // todo: sort by namespace/symbol?
-        // prices.sort_by(compare);
-        //prices.sort_by(|a, b| b.date.cmp(&a.date));
-
-        prices
     }
 
     fn load_all_prices_with_symbols(&self) -> Vec<PriceWSymbol> {

@@ -27,7 +27,15 @@ fn app() -> App {
 
 #[fixture]
 fn new_price() -> Price {
-    Price::default()
+    Price {
+        id: 0,
+        security_id: 1,
+        date: "2022-12-01".into(),
+        time: "13:25:44".into(),
+        value: 1033,
+        denom: 100,
+        currency: "EUR".into()
+    }
 }
 
 /// Populates the database
@@ -67,17 +75,17 @@ fn test_prune(app_with_data: App) {
 
 /// Try multiple actions
 #[rstest]
-fn roundtrip(app: App, new_price: Price) {
+fn roundtrip(app_with_data: App, new_price: Price) {
     // add price
-    app.add_price(new_price);
+    app_with_data.add_price(new_price);
 
-    app.prune(&None);
+    app_with_data.prune(&None);
 
     // retrieve list
-    let output = app.list_prices(&None, &None, &None);
+    let output = app_with_data.list_prices(&None, &None, &None);
 
     assert_eq!(
-        r#"Price { id: 1, security_id: 0, date: "", time: None, value: 0, denom: 0, currency: "" }"#,
+        "AMS:IPRP 2022-12-01 13:25:44 10.33 EUR",
         output
     );
 }

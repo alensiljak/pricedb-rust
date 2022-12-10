@@ -207,9 +207,10 @@ mod tests {
 
         println!("sql: {:?}, values: {:?}", sql, values);
 
-        //let expected = "INSERT INTO "price" ("security_id", "date", "time", "value", "denom", "currency") VALUES (111, '2022-12-01', NULL, 100, 0, 'AUD')";
         let expected = r#"INSERT INTO "price" ("security_id", "date", "time", "value", "denom", "currency") VALUES (?, ?, ?, ?, ?, ?)"#;
         assert_eq!(expected, sql);
+
+        // Assert parameters
 
         assert_eq!(values.0[0].0, sea_query::Value::Int(Some(111)));
         assert_eq!(
@@ -217,7 +218,7 @@ mod tests {
             sea_query::Value::String(Some(Box::new("2022-12-01".to_string())))
         );
 
-        assert_eq!(values.0[2].0, sea_query::Value::String(None));
+        assert_eq!(values.0[2].0, sea_query::Value::String(Some(Box::new("00:00:00".to_owned()))));
         assert_eq!(values.0[3].0, sea_query::Value::Int(Some(100)));
         assert_eq!(values.0[4].0, sea_query::Value::Int(Some(10)));
         assert_eq!(
