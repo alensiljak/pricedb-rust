@@ -156,6 +156,33 @@ impl Display for SecuritySymbol {
     }
 }
 
+pub struct PriceWSymbol {
+    pub id: i32,
+    pub namespace: String,
+    pub symbol: String,
+    pub date: String,
+    pub time: String,
+    pub value: Decimal,
+    pub currency: String,
+}
+
+impl PriceWSymbol {
+    pub fn from(price: &Price, sec: &Security) -> Self {
+        Self {
+            id: price.id,
+            namespace: match &sec.namespace {
+                Some(ns) => ns.into(),
+                None => String::default(),
+            },
+            symbol: sec.symbol.to_owned(),
+            date: price.date.to_owned(),
+            time: price.time.to_owned(),
+            value: price.to_decimal(),
+            currency: price.currency.to_owned(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

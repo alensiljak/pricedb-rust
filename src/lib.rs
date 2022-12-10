@@ -137,28 +137,17 @@ impl App {
         _currency: &Option<String>,
         _last: &Option<String>,
     ) -> String {
-        let dal = self.get_dal();
-        let prices = dal.get_prices(None);
-        let securities = dal.get_securities(None);
-
         let mut result = String::new();
 
-        for price in prices {
-            let sec = securities
-                .iter()
-                .find(|sec| sec.id == price.security_id)
-                .expect("a related security");
+        let mut pwss = self.load_all_prices_with_symbols();
 
-            // let output = format!("{price:?}");
-            println!("price: {price:?}");
+        // sort
+        pwss.sort_unstable_by_key(|p| (p.namespace.to_owned(), p.symbol.to_owned()));
+
+        for pws in pwss {
             let output = format!(
-                "{:?}:{} {} {} {:?} {}",
-                sec.namespace.as_ref().unwrap(),
-                sec.symbol,
-                price.date,
-                price.time,
-                price.to_decimal(),
-                price.currency
+                "{}:{} {} {} {:?} {}",
+                pws.namespace, pws.symbol, pws.date, pws.time, pws.value, pws.currency
             );
             println!("{output}");
             result += &output;
@@ -263,8 +252,6 @@ impl App {
 
     // Private
 
-    //fn create_dict(securities_vec: Vec<Security>) -> HashMap<i32, Security>
-
     fn insert_price(&self, new_price: &Price) -> usize {
         println!("\nInserting {new_price:?}");
 
@@ -282,6 +269,24 @@ impl App {
         //prices.sort_by(|a, b| b.date.cmp(&a.date));
 
         prices
+    }
+
+    fn load_all_prices_with_symbols(&self) -> Vec<PriceWSymbol> {
+        let dal = self.get_dal();
+        let prices = dal.get_prices(None);
+        let securities = dal.get_securities(None);
+
+        prices
+            .iter()
+            .map(|price| {
+                let sec = securities
+                    .iter()
+                    .find(|sec| sec.id == price.security_id)
+                    .expect("a related security");
+
+                PriceWSymbol::from(&price, sec)
+            })
+            .collect()
     }
 
     /// Deletes price history for the given Security, leaving only the latest price.
