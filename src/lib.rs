@@ -16,7 +16,7 @@ mod quote;
 
 use crate::{database::Dal, model::*, quote::Quote};
 
-use std::{fs, vec};
+use std::{fs, vec, io::Write};
 
 use anyhow::Error;
 
@@ -123,10 +123,12 @@ impl App {
 
             // show some progress during downloads, it is boring
             print!(".");
+            std::io::stdout().flush().unwrap();
+
             counter_total += 1;
         }
 
-        println!("Downloaded {counter_total} prices, saved {counter_updated}.");
+        println!("\nDownloaded {counter_total} prices, saved {counter_updated}.");
     }
 
     /// Load and display all prices.
@@ -204,18 +206,6 @@ impl App {
 
     /// Export prices in ledger format
     pub fn export(&self) {
-        // get prices
-        // let mut prices = self.get_prices();
-
-        // sort by date/time
-        // prices.sort_unstable_by_key(|price| (price.date.to_owned(), price.time.to_owned()));
-        // log::debug!("sorted: {prices:?}");
-
-        // get all symbols with prices
-        // let dal = self.get_dal();
-        // let securities = dal.get_securitiess_having_prices();
-        // log::debug!("{securities:?}");
-
         let mut pwss = self.load_all_prices_with_symbols();
 
         pwss.sort_unstable_by_key(|p| {
@@ -229,8 +219,6 @@ impl App {
 
         // format in ledger format
         let output = ledger_formatter::format_prices_w_symbols(pwss);
-
-        // log::debug!("output: {output:?}");
 
         // get export destination from configuration
         let target = &self.config.export_destination;
