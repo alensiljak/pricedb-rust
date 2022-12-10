@@ -161,7 +161,9 @@ impl App {
     /// If no symbol is given, it prunes all existing symbols.
     /// Returns the number of items removed.
     pub fn prune(&self, symbol: &Option<String>) -> u16 {
-        log::trace!("Pruning symbol: {:?}", symbol);
+        println!("Pruning prices...");
+
+        log::trace!("for symbol: {:?}", symbol);
 
         let dal = self.get_dal();
         let mut security_ids = vec![];
@@ -178,7 +180,6 @@ impl App {
                 .iter()
                 .map(|item| item.id)
                 .collect();
-            // log::debug!("symbol ids with prices: {:?}", security_ids);
         }
 
         let mut count = 0;
