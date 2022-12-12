@@ -343,15 +343,17 @@ impl App {
         // log::debug!("clone of the price to update: {:?}", for_update);
 
         if existing.value != new_price.value {
-            println!(
+            log::debug!(
                 "Updating value from {:?} to {}",
                 existing.value, new_price.value
             );
+            
             for_update.value = new_price.value;
             should_update = true;
         }
         if existing.denom != new_price.denom {
-            println!("Updating denom {} to {}", existing.denom, new_price.denom);
+            log::debug!("Updating denom {} to {}", existing.denom, new_price.denom);
+
             for_update.denom = new_price.denom;
             should_update = true;
         }
