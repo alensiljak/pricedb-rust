@@ -77,7 +77,7 @@ fn test_prune(app_with_data: App) {
 #[rstest]
 fn roundtrip(app_with_data: App, new_price: Price) {
     // add price
-    app_with_data.add_price(new_price);
+    app_with_data.add_price(&new_price);
 
     app_with_data.prune(&None);
 

@@ -3,6 +3,7 @@
 
 use config::PriceDbConfig;
 use once_cell::unsync::OnceCell;
+use rust_decimal::prelude::ToPrimitive;
 
 /*
  * Application
@@ -16,7 +17,7 @@ mod quote;
 
 use crate::{database::Dal, model::*, quote::Quote};
 
-use std::{fs, io::Write, vec};
+use std::{fs, vec};
 
 use anyhow::Error;
 
@@ -35,7 +36,7 @@ impl App {
         }
     }
 
-    pub fn add_price(&self, new_price: Price) -> usize {
+    pub fn add_price(&self, new_price: &Price) -> AdditionResult {
         log::debug!("Adding price {:?}", new_price);
 
         let dal = self.get_dal();
@@ -50,12 +51,13 @@ impl App {
         let existing_prices = dal.get_prices(Some(filter));
 
         // insert or update
-        let result = if existing_prices.is_empty() {
+        let mut result = AdditionResult::default();
+        if existing_prices.is_empty() {
             // insert
-            self.insert_price(&new_price)
+            result.inserted = self.insert_price(&new_price).to_u16().unwrap();
         } else {
             // update
-            self.update_price(existing_prices, &new_price)
+            result.updated = self.update_price(existing_prices, &new_price).to_u16().unwrap();
         };
         result
     }
@@ -95,8 +97,11 @@ impl App {
             return;
         }
 
-        let mut counter_total = 0;
+        // let mut counter_total = 0;
         let mut counter_updated = 0;
+        let sec_count = securities.iter().count().try_into().unwrap();
+        let pb = indicatif::ProgressBar::new(sec_count);
+        pb.set_style(indicatif::ProgressStyle::default_bar().progress_chars("=>-"));
 
         for sec in securities {
             let symbol = SecuritySymbol {
@@ -116,19 +121,23 @@ impl App {
 
             log::debug!("the fetched price for {:?} is {:?}", sec.symbol, price);
 
-            let saved = self.add_price(price);
-            if saved > 0 {
+            let saved = self.add_price(&price);
+            if saved.inserted > 0 {
+                let msg = format!("Added {} {} {} {} {}", sec.symbol, price.date, price.time, price.to_decimal(), price.currency);
+                pb.println(msg);
                 counter_updated += 1;
-            } else {
-                // show some progress during downloads
-                print!(".");
-                std::io::stdout().flush().unwrap();
             }
+            if saved.updated > 0  {
+                let msg = format!("Updated {} {} {} {} {}", sec.symbol, price.date, price.time, price.to_decimal(), price.currency);
+                pb.println(msg);
+                counter_updated += 1;
+            } 
 
-            counter_total += 1;
+            pb.inc(1);
         }
 
-        println!("\nDownloaded {counter_total} prices, saved {counter_updated}.");
+        pb.finish();
+        println!("Added/updated {counter_updated} prices.\n");
     }
 
     /// Load and display all prices.
@@ -247,7 +256,7 @@ impl App {
     // Private
 
     fn insert_price(&self, new_price: &Price) -> usize {
-        println!("\nInserting {new_price:?}");
+        // println!("\nInserting {new_price:?}");
 
         let dal = self.get_dal();
 
@@ -354,7 +363,7 @@ impl App {
         };
 
         //log::debug!("updating record {new_price:?}");
-        println!("for {new_price:?}");
+        // println!("for {new_price:?}");
 
         let update_result = dal.update_price(&for_update).unwrap();
         update_result
@@ -381,4 +390,10 @@ async fn download_price(symbol: SecuritySymbol, currency: &str, agent: &str) -> 
 
 fn save_text_file(contents: &String, location: &String) {
     fs::write(location, contents).expect("file saved");
+}
+
+#[derive(Default)]
+pub struct AdditionResult {
+    inserted: u16,
+    updated: u16
 }
