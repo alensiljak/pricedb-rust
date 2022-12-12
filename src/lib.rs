@@ -224,7 +224,7 @@ impl App {
         // get export destination from configuration
         let target = &self.config.export_destination;
 
-        println!("Prices exported to {target:?}");
+        println!("Prices exported to {target}");
 
         save_text_file(&output, target);
     }
