@@ -16,7 +16,7 @@ mod quote;
 
 use crate::{database::Dal, model::*, quote::Quote};
 
-use std::{fs, vec, io::Write};
+use std::{fs, io::Write, vec};
 
 use anyhow::Error;
 
@@ -119,11 +119,11 @@ impl App {
             let saved = self.add_price(price);
             if saved > 0 {
                 counter_updated += 1;
+            } else {
+                // show some progress during downloads
+                print!(".");
+                std::io::stdout().flush().unwrap();
             }
-
-            // show some progress during downloads, it is boring
-            print!(".");
-            std::io::stdout().flush().unwrap();
 
             counter_total += 1;
         }
