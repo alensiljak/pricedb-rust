@@ -1,14 +1,14 @@
-//! Price Database
-//! API / business logic
+/*!
+ * Price Database API
+ * 
+ * Price Database downloads prices for given securities, stores it in an sqlite database, 
+ * and exports in Ledger-cli format.
+ */
 
 use config::PriceDbConfig;
 use once_cell::unsync::OnceCell;
 use rust_decimal::prelude::ToPrimitive;
 
-/*
- * Application
- * Exposing the main app functionality as a library, for testing purposes.
- */
 pub mod config;
 mod database;
 mod ledger_formatter;
@@ -23,6 +23,11 @@ use anyhow::Error;
 
 pub const APP_NAME: &str = "pricedb";
 
+/**
+ * Application logic
+ * Exposing the main app functionality as a library. This is useful for testing purposes,
+ * as well as for utilization by external tools.
+ */
 pub struct App {
     config: PriceDbConfig,
     dal: OnceCell<Box<dyn Dal>>,
