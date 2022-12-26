@@ -9,5 +9,8 @@ fn read_securities() {
     let p = pricedb::App::new(cfg);
 
     let dal = p.get_dal();
-    //dal.get_securities(None).wh
+    let secs = dal.get_securities(None);
+
+    assert!(!secs.is_empty());
+    assert!(secs.len() > 1);
 }
