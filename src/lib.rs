@@ -402,6 +402,7 @@ fn save_text_file(contents: &String, location: &String) {
 }
 
 #[derive(Default)]
+/// The result of adding records (insert, update)
 pub struct AdditionResult {
     inserted: u16,
     updated: u16
