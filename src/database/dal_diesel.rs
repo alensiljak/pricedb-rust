@@ -1,4 +1,4 @@
-/*
+/*!
  * DAL with diesel
  * diesel.rs
  * See:

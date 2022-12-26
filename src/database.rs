@@ -1,5 +1,5 @@
-/*
- * trying to encapsulate database-specific code
+/*!
+ * Encapsulating database-specific code
  */
 // mod dal_diesel;            // requires schema; complex
 // pub(crate) mod schema;

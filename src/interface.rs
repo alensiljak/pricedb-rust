@@ -1,4 +1,4 @@
-/**
+/*!
  * CLI interface
  */
 #[derive(clap::Parser, Debug)]

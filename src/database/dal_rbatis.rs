@@ -1,4 +1,4 @@
-/*
+/*!
 Database implementation with rbatis
  */
 

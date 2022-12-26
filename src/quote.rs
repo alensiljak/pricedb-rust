@@ -1,6 +1,9 @@
-/**
- * Quote
- * Fetching prices
+/*!
+ * Quote implementation in Rust.
+ * Fetching prices.
+ * 
+ * Based on [Price Database](https://gitlab.com/alensiljak/price-database), 
+ * Python library.
  */
 mod fixerio;
 mod vanguard_au;

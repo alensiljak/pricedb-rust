@@ -1,4 +1,4 @@
-/*
+/*!
  * Formats prices for Ledger
  */
 

@@ -1,4 +1,4 @@
-/****
+/*!
 * DAL implemented with rusqlite
 * Using SeaQuery to generate queries with variable parameters for filtering.
 *

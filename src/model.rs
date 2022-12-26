@@ -1,8 +1,7 @@
-/*
+/*!
  * Model structs
  *
- * Diesel uses i32, others i64
- *
+ * Diesel uses i32 for int fields, others i64 (word?)
  */
 
 use std::fmt::Display;

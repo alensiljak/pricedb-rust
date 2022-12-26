@@ -1,4 +1,4 @@
-/**
+/*!
  * Price Database
  * 
  * Retrieving, storing, and exporting commodity prices in Ledger format

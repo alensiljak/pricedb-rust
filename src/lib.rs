@@ -3,6 +3,8 @@
  * 
  * Price Database downloads prices for given securities, stores it in an sqlite database, 
  * and exports in Ledger-cli format.
+ * 
+ * Project [Documentation](https://github.com/alensiljak/pricedb-rust).
  */
 
 use config::PriceDbConfig;
