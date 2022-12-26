@@ -404,8 +404,8 @@ fn generate_select_securities_having_prices() -> (String, RusqliteValues) {
         .from(SecurityIden::Table)
         .inner_join(
             PriceIden::Table,
-            Expr::tbl(SecurityIden::Table, SecurityIden::Id)
-                .equals(PriceIden::Table, PriceIden::SecurityId),
+            Expr::col(SecurityIden::Id)
+                .equals(PriceIden::SecurityId),
         )
         .order_by(
             (SecurityIden::Table, SecurityIden::Namespace),

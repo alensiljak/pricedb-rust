@@ -399,3 +399,10 @@ pub struct AdditionResult {
     inserted: u16,
     updated: u16
 }
+
+pub fn load_config() -> PriceDbConfig {
+    let config: PriceDbConfig = confy::load(APP_NAME, None)
+        .expect("valid config should be loaded");
+
+    config
+}
