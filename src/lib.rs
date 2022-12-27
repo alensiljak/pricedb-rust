@@ -64,7 +64,7 @@ impl App {
             result.inserted = self.insert_price(&new_price).to_u16().unwrap();
         } else {
             // update
-            result.updated = self.update_price(existing_prices, &new_price).to_u16().unwrap();
+            result.updated = self.update_price(existing_prices, new_price).to_u16().unwrap();
         };
         result
     }
