@@ -3,11 +3,12 @@
  */
 // mod dal_diesel;            // requires schema; complex
 // pub(crate) mod schema;
-// mod dal_sqlx;              // async-only
 // mod dal_sqlite;
+// mod dal_sqlx;              // async-only
 mod dal_rusqlite;
 mod mappers_rusqlite;
 
+use async_trait::async_trait;
 use log::debug;
 
 use crate::model::{Price, PriceFilter, Security, SecurityFilter};
@@ -45,6 +46,7 @@ fn validate_db_path(db_path: &String) -> String {
     }
 }
 
+#[async_trait]
 pub trait Dal {
     /// Inserts a new price record.
     fn add_price(&self, new_price: &Price) -> usize;

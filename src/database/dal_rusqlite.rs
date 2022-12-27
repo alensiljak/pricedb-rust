@@ -4,6 +4,7 @@
 *
 * Example for a query: https://stackoverflow.com/questions/67089430/how-do-we-use-select-query-with-an-external-where-parameter-in-rusqlite
 */
+use async_trait::async_trait;
 use rusqlite::{named_params, Connection};
 use sea_query::{ColumnDef, Expr, Query, SqliteQueryBuilder, Table};
 use sea_query_rusqlite::{RusqliteBinder, RusqliteValues};
@@ -25,6 +26,7 @@ impl RuSqliteDal {
     }
 }
 
+#[async_trait]
 impl Dal for RuSqliteDal {
     fn add_price(&self, new_price: &Price) -> usize {
         log::debug!("inserting {:?}", new_price);
