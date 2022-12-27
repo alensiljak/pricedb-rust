@@ -23,9 +23,11 @@ impl Dal for SqlxDal {
         todo!("complete");
     }
 
-    fn create_tables(&self) { todo!() }
+    fn create_tables(&self) {
+        todo!()
+    }
 
-    fn delete_price(&self, id: i32) -> anyhow::Result<usize> {
+    fn delete_price(&self, id: u32) -> anyhow::Result<usize> {
         todo!("complete")
     }
 
@@ -33,7 +35,7 @@ impl Dal for SqlxDal {
         todo!("complete")
     }
 
-    fn get_prices_for_security(&self, security_id: i32) -> anyhow::Result<Vec<Price>> {
+    fn get_prices_for_security(&self, security_id: i64) -> anyhow::Result<Vec<Price>> {
         async_std::task::block_on(async {
             let result = self.get_prices_for_security_async(security_id).await;
         });
@@ -42,13 +44,17 @@ impl Dal for SqlxDal {
         return Ok(result);
     }
 
-    fn get_prices_with_symbols(&self) -> Vec<Price> { todo!() }
+    fn get_prices_with_symbols(&self) -> Vec<Price> {
+        todo!()
+    }
 
     fn get_securities(&self, filter: Option<SecurityFilter>) -> Vec<Security> {
         todo!("implement");
     }
 
-    fn get_securitiess_having_prices(&self) -> Vec<Security> { todo!() }
+    fn get_securitiess_having_prices(&self) -> Vec<Security> {
+        todo!()
+    }
 
     fn get_security_by_symbol(&self, symbol: &str) -> Security {
         async_std::task::block_on(async {
@@ -58,17 +64,20 @@ impl Dal for SqlxDal {
         todo!("complete")
     }
 
-    fn get_tables(&self) -> Vec<std::string::String> { todo!() }
+    fn get_tables(&self) -> Vec<std::string::String> {
+        todo!()
+    }
 
     fn update_price(&self, price: &Price) -> anyhow::Result<usize> {
         todo!("complete")
     }
-
 }
 
 impl SqlxDal {
     fn new(conn_str: &String) -> Self {
-        Self { conn_str: conn_str.to_string() }
+        Self {
+            conn_str: conn_str.to_string(),
+        }
     }
 
     async fn get_connection(&self) -> SqliteConnection {
@@ -81,9 +90,9 @@ impl SqlxDal {
 
     async fn get_ids_of_symbols_with_prices(&self) -> anyhow::Result<Vec<i64>> {
         let mut result: Vec<i64> = vec![];
-    
+
         let mut conn = self.get_connection().await;
-    
+
         let rows = sqlx::query("select security_id from price")
             .fetch_all(&mut conn)
             .await
@@ -94,7 +103,7 @@ impl SqlxDal {
             // row.try_get("security_id");
             result.push(row.get(0));
         }
-    
+
         return Ok(result);
     }
 
@@ -111,21 +120,22 @@ impl SqlxDal {
     }
 
     async fn get_security_by_symbol_async(&self, symbol: &str) -> Security {
-        // let mut conn = self.get_connection().await;
+        let mut conn = self.get_connection().await;
 
-        // let result = sqlx::query_as!(Security, "select * from security where symbol=?", symbol)
-        //     .fetch_one(&mut conn)
-        //     .await
-        //     .expect("Error getting Security by symbol");
+        let result = sqlx::query_as!(Security, 
+            r#"select * from security where symbol=?"#,
+            symbol)
+            .fetch_one(&mut conn)
+            .await
+            .expect("Error getting Security by symbol");
 
-        // return result;
+        return result;
         todo!("complete")
     }
 
-    async fn get_prices_for_security_async(&self, security_id: i32) {
-
+    async fn get_prices_for_security_async(&self, security_id: i64) {
         let conn = self.get_connection().await;
-    
+
         // let result = sqlx::query_as!(
         //     Price,
         //     "select * from price where security_id=? order by date desc, time desc;",
@@ -134,7 +144,7 @@ impl SqlxDal {
         // .fetch_all(&mut conn)
         // .await
         // .expect("Error fetching prices");
-    
+
         // let stream =
         //     sqlx::query("select * from price where security_id=? order by date desc, time desc;")
         //         .bind(security_id)
@@ -142,7 +152,7 @@ impl SqlxDal {
         //         //     log::debug!("row: {:?}", row.column(0));
         //         // })
         //         .fetch(&mut conn);
-    
+
         // let recs = sqlx::query!(
         //     r#"select * from price where security_id=? order by date desc, time desc;"#,
         // );
@@ -151,7 +161,6 @@ impl SqlxDal {
         todo!("complete")
     }
 }
-
 
 // Tests
 

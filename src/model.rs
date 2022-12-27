@@ -13,8 +13,8 @@ use sea_query::enum_def;
 #[derive(Debug, Default, Clone, Eq, PartialEq, PartialOrd, Ord)]
 #[enum_def]
 pub struct Price {
-    pub id: u32,
-    pub security_id: u32,
+    pub id: i64,
+    pub security_id: i64,
     pub date: String,
     pub time: String,
     pub value: i32,
@@ -55,7 +55,7 @@ impl Price {
 }
 
 pub struct PriceFilter {
-    pub security_id: Option<u32>,
+    pub security_id: Option<i64>,
     pub date: Option<String>,
     pub time: Option<String>,
 }
@@ -73,7 +73,7 @@ impl PriceFilter {
 #[derive(Debug, Default)]
 #[enum_def]
 pub struct Security {
-    pub id: u32,
+    pub id: i64,
     pub namespace: Option<String>,
     pub symbol: String,
     pub updater: Option<String>,
@@ -156,7 +156,7 @@ impl Display for SecuritySymbol {
 }
 
 pub struct PriceWSymbol {
-    pub id: u32,
+    pub id: i64,
     pub namespace: String,
     pub symbol: String,
     pub ledger_symbol: String,

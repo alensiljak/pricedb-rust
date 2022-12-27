@@ -54,11 +54,11 @@ pub trait Dal {
     fn add_security(&self, security: &Security) -> usize;
 
     /// Deletes a price record.
-    fn delete_price(&self, id: u32) -> anyhow::Result<usize>;
+    fn delete_price(&self, id: i64) -> anyhow::Result<usize>;
 
     fn get_prices(&self, filter: Option<PriceFilter>) -> Vec<Price>;
 
-    fn get_prices_for_security(&self, security_id: u32) -> anyhow::Result<Vec<Price>>;
+    fn get_prices_for_security(&self, security_id: i64) -> anyhow::Result<Vec<Price>>;
 
     fn get_prices_with_symbols(&self) -> Vec<Price>;
 

@@ -128,7 +128,7 @@ pub(crate) fn generate_update_price(price: &Price) -> (String, RusqliteValues) {
 
     // Values
 
-    if price.security_id != u32::default() {
+    if price.security_id != i64::default() {
         stmt = stmt
             .value(PriceIden::SecurityId, price.security_id)
             .to_owned();
@@ -163,7 +163,7 @@ pub(crate) fn generate_update_price(price: &Price) -> (String, RusqliteValues) {
     stmt.build_rusqlite(SqliteQueryBuilder)
 }
 
-pub(crate) fn generate_delete_price(id: u32) -> (String, RusqliteValues) {
+pub(crate) fn generate_delete_price(id: i64) -> (String, RusqliteValues) {
     Query::delete()
         .from_table(PriceIden::Table)
         .and_where(Expr::col(PriceIden::Id).eq(id))
@@ -193,7 +193,7 @@ mod tests {
     #[test]
     fn test_price_insert_statement() {
         let new_price = Price {
-            id: u32::default(),
+            id: i64::default(),
             security_id: 111,
             date: "2022-12-01".to_string(),
             time: Price::default_time(),
@@ -205,14 +205,14 @@ mod tests {
         // let sql = dal.add_price(&new_price);
         let (sql, values) = generate_insert_price(&new_price);
 
-        println!("sql: {:?}, values: {:?}", sql, values);
+        // println!("sql: {:?}, values: {:?}", sql, values);
 
         let expected = r#"INSERT INTO "price" ("security_id", "date", "time", "value", "denom", "currency") VALUES (?, ?, ?, ?, ?, ?)"#;
         assert_eq!(expected, sql);
 
         // Assert parameters
 
-        assert_eq!(values.0[0].0, sea_query::Value::Int(Some(111)));
+        assert_eq!(values.0[0].0, sea_query::Value::BigInt(Some(111)));
         assert_eq!(
             values.0[1].0,
             sea_query::Value::String(Some(Box::new("2022-12-01".to_string())))
@@ -220,7 +220,7 @@ mod tests {
 
         assert_eq!(values.0[2].0, sea_query::Value::String(Some(Box::new("00:00:00".to_owned()))));
         assert_eq!(values.0[3].0, sea_query::Value::Int(Some(100)));
-        assert_eq!(values.0[4].0, sea_query::Value::Int(Some(10)));
+        assert_eq!(values.0[4].0, sea_query::Value::Unsigned(Some(10)));
         assert_eq!(
             values.0[5].0,
             sea_query::Value::String(Some(Box::new("AUD".to_string())))
@@ -263,7 +263,7 @@ mod tests {
 
         assert!(values.0.len() == 1);
 
-        let actual_id: i32 = values.0[0].0.to_owned().unwrap();
+        let actual_id: i64 = values.0[0].0.to_owned().unwrap();
         // println!("actual id = {actual_id:?}");
         assert_eq!(actual_id, 13);
     }

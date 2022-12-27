@@ -289,7 +289,7 @@ impl App {
     }
 
     /// Deletes price history for the given Security, leaving only the latest price.
-    fn prune_for_sec(&self, security_id: u32) -> anyhow::Result<u16, Error> {
+    fn prune_for_sec(&self, security_id: i64) -> anyhow::Result<u16, Error> {
         log::trace!("pruning prices for security id: {:?}", security_id);
 
         let mut count = 0;

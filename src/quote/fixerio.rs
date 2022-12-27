@@ -122,7 +122,8 @@ fn get_cache_path() -> String {
 fn get_rate_file_path(today_iso_str: &str) -> String {
     let cache_path = get_cache_path();
     let filename = today_iso_str;
-    format!("{cache_path}/fixerio_{filename}.json")
+    // todo: check the separators on Linux. On windows, it is double.
+    format!("{cache_path}{}fixerio_{filename}.json", std::path::MAIN_SEPARATOR)
 }
 
 fn get_todays_file_path() -> String {
@@ -163,8 +164,8 @@ fn map_rates_to_price(rates: Value, symbol: &str) -> Price {
     // result
 
     Price {
-        id: u32::default(),
-        security_id: u32::default(),
+        id: i64::default(),
+        security_id: i64::default(),
         date: date_str,
         time: Price::default_time(),
         value: rounded.mantissa().to_i32().unwrap(),
@@ -191,6 +192,8 @@ fn read_rates_from_cache() -> Value {
 /// Unit tests
 #[cfg(test)]
 mod tests {
+    use chrono::Local;
+
     use super::*;
 
     /// This test depends on having a value 
@@ -214,13 +217,16 @@ mod tests {
 
     #[test]
     fn test_cache_location() {
+        let year = Local::now().date_naive().format("%Y").to_string();
+        // println!("year: {:?}", year);
         let result = get_todays_file_path();
 
         println!("Fixerio cache file: {result:?}");
 
         assert_ne!(result, String::default());
         // on linux: /tmp/fixerio_2022-12-06.json
-        assert_eq!(28, result.len());
+        //assert_eq!(28, result.len());
+        assert!(result.contains(&year));
     }
 
     #[test_log::test(tokio::test)]
