@@ -52,7 +52,7 @@ impl Dal for RuSqliteDal {
             .expect("price inserted")
     }
 
-    fn delete_price(&self, id: i32) -> anyhow::Result<usize> {
+    fn delete_price(&self, id: u32) -> anyhow::Result<usize> {
         let (sql, values) = generate_delete_price(id);
         let result = self.conn.execute(&sql, &*values.as_params())?;
         Ok(result)
@@ -99,7 +99,7 @@ impl Dal for RuSqliteDal {
         prices
     }
 
-    fn get_prices_for_security(&self, security_id: i32) -> anyhow::Result<Vec<Price>> {
+    fn get_prices_for_security(&self, security_id: u32) -> anyhow::Result<Vec<Price>> {
         let sql = "select * from price where security_id=? order by date desc, time desc;";
         let mut stmt = self.conn.prepare(sql).expect("Error");
 
@@ -446,10 +446,10 @@ mod tests {
         dal
     }
 
-    fn create_dummy_price(security_id: i32, value: i32, denom_opt: Option<i32>) -> Price {
+    fn create_dummy_price(security_id: u32, value: i32, denom_opt: Option<u32>) -> Price {
         let date: String = chrono::Local::now().date_naive().to_string();
         Price {
-            id: i32::default(),
+            id: u32::default(),
             security_id,
             date,
             time: Price::default_time(),

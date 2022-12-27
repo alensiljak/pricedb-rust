@@ -128,7 +128,7 @@ pub(crate) fn generate_update_price(price: &Price) -> (String, RusqliteValues) {
 
     // Values
 
-    if price.security_id != i32::default() {
+    if price.security_id != u32::default() {
         stmt = stmt
             .value(PriceIden::SecurityId, price.security_id)
             .to_owned();
@@ -150,7 +150,7 @@ pub(crate) fn generate_update_price(price: &Price) -> (String, RusqliteValues) {
         stmt = stmt.value(PriceIden::Value, price.value).to_owned();
     }
 
-    if price.denom != i32::default() {
+    if price.denom != u32::default() {
         stmt = stmt.value(PriceIden::Denom, price.denom).to_owned();
     }
 
@@ -163,7 +163,7 @@ pub(crate) fn generate_update_price(price: &Price) -> (String, RusqliteValues) {
     stmt.build_rusqlite(SqliteQueryBuilder)
 }
 
-pub(crate) fn generate_delete_price(id: i32) -> (String, RusqliteValues) {
+pub(crate) fn generate_delete_price(id: u32) -> (String, RusqliteValues) {
     Query::delete()
         .from_table(PriceIden::Table)
         .and_where(Expr::col(PriceIden::Id).eq(id))
@@ -193,7 +193,7 @@ mod tests {
     #[test]
     fn test_price_insert_statement() {
         let new_price = Price {
-            id: i32::default(),
+            id: u32::default(),
             security_id: 111,
             date: "2022-12-01".to_string(),
             time: Price::default_time(),
