@@ -27,7 +27,7 @@ impl Dal for SqlxDal {
         todo!()
     }
 
-    fn delete_price(&self, id: u32) -> anyhow::Result<usize> {
+    fn delete_price(&self, id: i64) -> anyhow::Result<usize> {
         todo!("complete")
     }
 
@@ -57,11 +57,12 @@ impl Dal for SqlxDal {
     }
 
     fn get_security_by_symbol(&self, symbol: &str) -> Security {
+        let mut result = Security::default();
         async_std::task::block_on(async {
-            let result = self.get_security_by_symbol_async(symbol).await;
+            result = self.get_security_by_symbol_async(symbol).await;
         });
 
-        todo!("complete")
+        result
     }
 
     fn get_tables(&self) -> Vec<std::string::String> {
@@ -74,7 +75,7 @@ impl Dal for SqlxDal {
 }
 
 impl SqlxDal {
-    fn new(conn_str: &String) -> Self {
+    fn new(conn_str: &str) -> Self {
         Self {
             conn_str: conn_str.to_string(),
         }
@@ -130,7 +131,6 @@ impl SqlxDal {
             .expect("Error getting Security by symbol");
 
         return result;
-        todo!("complete")
     }
 
     async fn get_prices_for_security_async(&self, security_id: i64) {
@@ -166,13 +166,27 @@ impl SqlxDal {
 
 #[cfg(test)]
 mod tests {
-    use super::SqlxDal;
+    use super::{Dal, SqlxDal};
+    
+    const CONN_STR: &str = ":memory:";
 
     #[test]
     fn instantiation_test() {
-        let conn_str = ":memory:".to_string();
-        let actual = SqlxDal::new(&conn_str);
+        let actual = SqlxDal::new(CONN_STR);
 
-        assert_eq!(actual.conn_str, conn_str);
+        assert_eq!(actual.conn_str, CONN_STR);
+    }
+
+    #[test]
+    fn get_sec_by_symbol_test() {
+        let conn_str = crate::load_config().price_database_path;
+        let dal = SqlxDal::new(&conn_str);
+        let symbol = "TCBT";
+        let actual = dal.get_security_by_symbol(symbol);
+
+        println!("symbol: {:?}", actual);
+
+        assert_ne!(actual.id, 0);
+        assert_eq!(actual.symbol, symbol);
     }
 }

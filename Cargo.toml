@@ -13,7 +13,7 @@ categories = ["command-line-utilities"]
 
 [dependencies]
 anyhow = "1.0.68"
-# async-std = "1.12.0"
+async-std = "1.12.0"
 async-trait = "0.1.60"
 chrono = "0.4.23"
 clap = { version = "4.0.32", features = ["cargo", "derive"] }
@@ -33,11 +33,11 @@ serde = "1.0.152"
 serde_derive = "1.0.152"
 serde_json = "1.0.91"
 # sqlx = { version = "0.6.2", features = ["sqlite", "runtime-tokio-rustls"] }
-# sqlx = { git = "https://github.com/launchbadge/sqlx", branch = "0.7-dev", features = [
-#     "offline",
-#     "sqlite",
-#     "runtime-tokio-rustls",
-# ] }
+sqlx = { git = "https://github.com/launchbadge/sqlx", branch = "0.7-dev", features = [
+    "offline",
+    "sqlite",
+    "runtime-tokio-rustls",
+] }
 tempfile = "3.3.0"
 test-log = "0.2.11"
 #sqlite = "0.30.1"

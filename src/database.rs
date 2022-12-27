@@ -4,7 +4,7 @@
 // mod dal_diesel;            // requires schema; complex
 // pub(crate) mod schema;
 // mod dal_sqlite;
-// mod dal_sqlx;              // async-only
+mod dal_sqlx;
 mod dal_rusqlite;
 mod mappers_rusqlite;
 
