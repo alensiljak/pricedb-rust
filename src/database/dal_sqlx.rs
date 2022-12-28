@@ -108,24 +108,20 @@ impl SqlxDal {
         return Ok(result);
     }
 
-    async fn get_symbols(&self) -> Vec<SecuritySymbol> {
-        // async {
-        // let conn = self.get_connection().into();
-        // let mut symbols = query_as!(SecuritySymbol,
-        //     "select namespace, mnemonic from symbols")
-        // .fetch_all(&mut conn).await;
-        // };
-
-        //return vec![];
-        todo!("complete");
-    }
+    // async fn get_symbols(&self) -> Vec<SecuritySymbol> {
+    //     async {
+    //         let conn = self.get_connection().into();
+    //         let mut symbols = query_as!(SecuritySymbol, "select namespace, mnemonic from symbols")
+    //             .fetch_all(&mut conn)
+    //             .await;
+    //     };
+    //     return vec![];
+    // }
 
     async fn get_security_by_symbol_async(&self, symbol: &str) -> Security {
         let mut conn = self.get_connection().await;
 
-        let result = sqlx::query_as!(Security, 
-            r#"select * from security where symbol=?"#,
-            symbol)
+        let result = sqlx::query_as!(Security, r#"select * from security where symbol=?"#, symbol)
             .fetch_one(&mut conn)
             .await
             .expect("Error getting Security by symbol");
@@ -136,14 +132,14 @@ impl SqlxDal {
     async fn get_prices_for_security_async(&self, security_id: i64) {
         let conn = self.get_connection().await;
 
-        // let result = sqlx::query_as!(
-        //     Price,
-        //     "select * from price where security_id=? order by date desc, time desc;",
-        //     security_id
-        // )
-        // .fetch_all(&mut conn)
-        // .await
-        // .expect("Error fetching prices");
+        let result = sqlx::query_as!(
+            Price,
+            "select * from price where security_id=? order by date desc, time desc;",
+            security_id
+        )
+        .fetch_all(&mut conn)
+        .await
+        .expect("Error fetching prices");
 
         // let stream =
         //     sqlx::query("select * from price where security_id=? order by date desc, time desc;")
@@ -167,7 +163,7 @@ impl SqlxDal {
 #[cfg(test)]
 mod tests {
     use super::{Dal, SqlxDal};
-    
+
     const CONN_STR: &str = ":memory:";
 
     #[test]
@@ -188,5 +184,9 @@ mod tests {
 
         assert_ne!(actual.id, 0);
         assert_eq!(actual.symbol, symbol);
+    }
+
+    fn get_prices_for_sec_test() {
+        
     }
 }
