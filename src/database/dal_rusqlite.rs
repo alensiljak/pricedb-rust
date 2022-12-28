@@ -6,7 +6,7 @@
 */
 use async_trait::async_trait;
 use rusqlite::{named_params, Connection};
-use sea_query::{ColumnDef, Expr, Query, SqliteQueryBuilder, Table};
+use sea_query::{Expr, Query, SqliteQueryBuilder};
 use sea_query_rusqlite::{RusqliteBinder, RusqliteValues};
 
 use crate::{database::mappers_rusqlite::*, model::*};
