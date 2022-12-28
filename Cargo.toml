@@ -33,11 +33,11 @@ serde = "1.0.152"
 serde_derive = "1.0.152"
 serde_json = "1.0.91"
 # sqlx = { version = "0.6.2", features = ["sqlite", "runtime-tokio-rustls"] }
-sqlx = { version = "0.6.2", git = "https://github.com/launchbadge/sqlx", branch = "0.7-dev", features = [
-    "offline",
-    "sqlite",
-    "runtime-tokio-rustls",
-] }
+# sqlx = { git = "https://github.com/launchbadge/sqlx", branch = "0.7-dev", features = [
+#     "offline",
+#     "sqlite",
+#     "runtime-tokio-rustls",
+# ] }
 tempfile = "3.3.0"
 test-log = "0.2.11"
 #sqlite = "0.30.1"
