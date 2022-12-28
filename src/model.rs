@@ -1,7 +1,5 @@
 /*!
- * Model structs
- *
- * Diesel uses i32 for int fields, others i64
+ * Model definitions
  */
 
 use std::fmt::Display;

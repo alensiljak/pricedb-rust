@@ -1,6 +1,7 @@
 /*!
  * Encapsulating database-specific code
  */
+mod db_schema;
 // mod dal_diesel;            // requires schema; complex
 // pub(crate) mod schema;
 // mod dal_sqlite;

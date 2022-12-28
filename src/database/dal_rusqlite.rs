@@ -198,61 +198,23 @@ impl Dal for RuSqliteDal {
     fn create_tables(&self) {
         // drop Security table, if exists
 
-        let sql = Table::drop()
-            .table(SecurityIden::Table)
-            .if_exists()
-            .build(SqliteQueryBuilder);
+        let sql = crate::database::db_schema::get_drop_security();
         self.conn.execute(&sql, []).expect("result");
 
-        // create Prices table
+        // create Security table
 
-        let sql = Table::create()
-            .table(SecurityIden::Table)
-            .if_not_exists()
-            .col(
-                ColumnDef::new(SecurityIden::Id)
-                    .integer()
-                    .not_null()
-                    .auto_increment()
-                    .primary_key(),
-            )
-            .col(ColumnDef::new(SecurityIden::Namespace).string().null())
-            .col(ColumnDef::new(SecurityIden::Symbol).string())
-            .col(ColumnDef::new(SecurityIden::Updater).string().null())
-            .col(ColumnDef::new(SecurityIden::Currency).string().null())
-            .col(ColumnDef::new(SecurityIden::LedgerSymbol).string().null())
-            .col(ColumnDef::new(SecurityIden::Notes).string().null())
-            .build(SqliteQueryBuilder);
+        let sql = crate::database::db_schema::create_security();
 
         self.conn.execute(&sql, []).expect("result");
 
         // drop Prices table, if exists
 
-        let sql = Table::drop()
-            .table(PriceIden::Table)
-            .if_exists()
-            .build(SqliteQueryBuilder);
+        let sql = crate::database::db_schema::get_drop_price();
         self.conn.execute(&sql, []).expect("result");
 
         // create Prices table
 
-        let sql = Table::create()
-            .table(PriceIden::Table)
-            .if_not_exists()
-            .col(
-                ColumnDef::new(PriceIden::Id)
-                    .integer()
-                    .not_null()
-                    .auto_increment()
-                    .primary_key(),
-            )
-            .col(ColumnDef::new(PriceIden::SecurityId).integer())
-            .col(ColumnDef::new(PriceIden::Date).string())
-            .col(ColumnDef::new(PriceIden::Time).string().null())
-            .col(ColumnDef::new(PriceIden::Value).integer())
-            .col(ColumnDef::new(PriceIden::Denom).integer())
-            .col(ColumnDef::new(PriceIden::Currency).string())
-            .build(SqliteQueryBuilder);
+        let sql = crate::database::db_schema::create_price();
 
         let result = self.conn.execute(&sql, []).expect("result");
 
@@ -462,7 +424,7 @@ mod tests {
         }
     }
 
-    fn insert_dummy_prices(dal: &RuSqliteDal) {
+    fn insert_dummy_prices(dal: &dyn Dal) {
         dal.add_price(&create_dummy_price(1, 12345, None));
         dal.add_price(&create_dummy_price(1, 10101, None));
         dal.add_price(&create_dummy_price(2, 1234, None));

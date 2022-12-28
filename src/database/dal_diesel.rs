@@ -13,6 +13,9 @@
  *
  * Examples
  * - https://stackoverflow.com/questions/65039754/rust-diesel-conditionally-filter-a-query
+ * 
+ * Notes:
+ * Diesel uses i32 for int fields, others i64
  */
 
 use diesel::prelude::*;

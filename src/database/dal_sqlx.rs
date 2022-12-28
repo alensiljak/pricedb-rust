@@ -10,7 +10,8 @@ use crate::model::{Price, PriceFilter, Security, SecurityFilter, SecuritySymbol}
 use super::Dal;
 
 pub struct SqlxDal {
-    pub(crate) conn_str: String,
+    // pub(crate) conn_str: String,
+    conn: SqliteConnection,
 }
 
 #[async_trait]
@@ -24,7 +25,7 @@ impl Dal for SqlxDal {
     }
 
     fn create_tables(&self) {
-        todo!()
+        let sql = crate::database::db_schema::get_drop_security();
     }
 
     fn delete_price(&self, id: i64) -> anyhow::Result<usize> {
@@ -76,26 +77,20 @@ impl Dal for SqlxDal {
 
 impl SqlxDal {
     fn new(conn_str: &str) -> Self {
+        let conn: SqliteConnection =
+            async_std::task::block_on(async { open_connection(conn_str).await });
+
         Self {
-            conn_str: conn_str.to_string(),
+            //conn_str: conn_str.to_string(),
+            conn,
         }
     }
 
-    async fn get_connection(&self) -> SqliteConnection {
-        // anyhow::Result<>
-        let conn = SqliteConnection::connect(&self.conn_str)
-            .await
-            .expect("sqlite connection");
-        conn
-    }
-
-    async fn get_ids_of_symbols_with_prices(&self) -> anyhow::Result<Vec<i64>> {
+    async fn get_ids_of_symbols_with_prices(&mut self) -> anyhow::Result<Vec<i64>> {
         let mut result: Vec<i64> = vec![];
 
-        let mut conn = self.get_connection().await;
-
         let rows = sqlx::query("select security_id from price")
-            .fetch_all(&mut conn)
+            .fetch_all(&mut self.conn)
             .await
             .expect("Error fetching prices");
         //symbol_ids
@@ -118,26 +113,22 @@ impl SqlxDal {
     //     return vec![];
     // }
 
-    async fn get_security_by_symbol_async(&self, symbol: &str) -> Security {
-        let mut conn = self.get_connection().await;
-
+    async fn get_security_by_symbol_async(&mut self, symbol: &str) -> Security {
         let result = sqlx::query_as!(Security, r#"select * from security where symbol=?"#, symbol)
-            .fetch_one(&mut conn)
+            .fetch_one(&mut self.conn)
             .await
             .expect("Error getting Security by symbol");
 
         return result;
     }
 
-    async fn get_prices_for_security_async(&self, security_id: i64) {
-        let mut conn = self.get_connection().await;
-
+    async fn get_prices_for_security_async(&mut self, security_id: i64) -> Vec<Price> {
         let result = sqlx::query_as!(
             Price,
             "select * from price where security_id=? order by date desc, time desc;",
             security_id
         )
-        .fetch_all(&mut conn)
+        .fetch_all(&mut self.conn)
         .await
         .expect("Error fetching prices");
 
@@ -154,8 +145,15 @@ impl SqlxDal {
         // );
         // log::debug!("stream: {:?}", stream);
 
-        todo!("complete")
+        result
     }
+}
+
+async fn open_connection(conn_str: &str) -> SqliteConnection {
+    let conn = SqliteConnection::connect(conn_str)
+        .await
+        .expect("sqlite connection");
+    conn
 }
 
 // Tests
@@ -166,13 +164,19 @@ mod tests {
 
     const CONN_STR: &str = ":memory:";
 
-    #[test]
-    fn instantiation_test() {
-        let actual = SqlxDal::new(CONN_STR);
+    #[rstest::fixture]
+    fn dal() -> SqlxDal {
+        let dal = SqlxDal::new(CONN_STR);
 
-        assert_eq!(actual.conn_str, CONN_STR);
+        // set-up schema
+        dal.create_tables();
+
+        // populate dummy data
+
+        dal
     }
 
+    /// Uses actual database file.
     #[test]
     fn get_sec_by_symbol_test() {
         let conn_str = crate::load_config().price_database_path;
@@ -186,7 +190,8 @@ mod tests {
         assert_eq!(actual.symbol, symbol);
     }
 
-    fn get_prices_for_sec_test() {
-
+    #[rstest::rstest]
+    fn get_prices_for_sec_test(dal: SqlxDal) {
+        // dal.get_prices_for_security(security_id)
     }
 }
