@@ -37,7 +37,7 @@ pub struct App {
 
 impl App {
     pub fn new(config: PriceDbConfig) -> Self {
-        App {
+        Self {
             config,
             dal: OnceCell::new(),
         }
@@ -61,7 +61,7 @@ impl App {
         let mut result = AdditionResult::default();
         if existing_prices.is_empty() {
             // insert
-            result.inserted = self.insert_price(&new_price).to_u16().unwrap();
+            result.inserted = self.insert_price(new_price).to_u16().unwrap();
         } else {
             // update
             result.updated = self.update_price(existing_prices, new_price).to_u16().unwrap();
@@ -106,7 +106,7 @@ impl App {
 
         // let mut counter_total = 0;
         let mut counter_updated = 0;
-        let sec_count = securities.iter().count().try_into().unwrap();
+        let sec_count = securities.len().try_into().unwrap();
         let pb = indicatif::ProgressBar::new(sec_count);
         pb.set_style(indicatif::ProgressStyle::default_bar().progress_chars("=>-"));
 
@@ -267,7 +267,7 @@ impl App {
 
         let dal = self.get_dal();
 
-        dal.add_price(&new_price)
+        dal.add_price(new_price)
     }
 
     fn load_all_prices_with_symbols(&self) -> Vec<PriceWSymbol> {
@@ -283,7 +283,7 @@ impl App {
                     .find(|sec| sec.id == price.security_id)
                     .expect("a related security");
 
-                PriceWSymbol::from(&price, sec)
+                PriceWSymbol::from(price, sec)
             })
             .collect()
     }
@@ -374,8 +374,7 @@ impl App {
         //log::debug!("updating record {new_price:?}");
         // println!("for {new_price:?}");
 
-        let update_result = dal.update_price(&for_update).unwrap();
-        update_result
+        dal.update_price(&for_update).unwrap()
     }
 }
 

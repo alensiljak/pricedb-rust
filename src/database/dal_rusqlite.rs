@@ -13,7 +13,6 @@ use crate::{database::mappers_rusqlite::*, model::*};
 
 use super::Dal;
 
-#[allow(unused)]
 pub struct RuSqliteDal {
     pub(crate) conn: Connection,
 }
@@ -301,9 +300,7 @@ fn generate_select_prices_symbols(order: PriceSymbolOrder) -> String {
         PriceSymbolOrder::DateTime => "ORDER BY date, time",
     };
 
-    let result = sql.to_owned() + order_str;
-
-    result
+    sql.to_owned() + order_str
 }
 
 /// Generates SELECT statement with the given parameters/filters.

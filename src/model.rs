@@ -37,7 +37,7 @@ impl Price {
     pub fn to_decimal(&self) -> Decimal {
         let scale = self.scale();
 
-        Decimal::new(self.value.into(), scale)
+        Decimal::new(self.value, scale)
     }
 
     pub fn scale(&self) -> u32 {
@@ -52,6 +52,7 @@ impl Price {
     }
 }
 
+#[derive(Default)]
 pub struct PriceFilter {
     pub security_id: Option<i64>,
     pub date: Option<String>,
@@ -60,11 +61,7 @@ pub struct PriceFilter {
 
 impl PriceFilter {
     pub fn new() -> Self {
-        Self {
-            security_id: None,
-            date: None,
-            time: None,
-        }
+        Self::default()
     }
 }
 
@@ -83,17 +80,8 @@ pub struct Security {
 
 impl Security {
     /// Creates a new instance
-    #[allow(unused)]
     pub fn new() -> Self {
-        Self {
-            id: 0,
-            namespace: Some("".to_string()),
-            symbol: "".to_string(),
-            currency: Some("".to_string()),
-            updater: Some("".to_string()),
-            ledger_symbol: Some("".to_string()),
-            notes: Some("".to_string()),
-        }
+        Self::default()
     }
 }
 
@@ -128,7 +116,7 @@ impl SecuritySymbol {
         let mut namespace = String::default();
         let mut mnemonic = symbol.to_owned();
 
-        let parts = symbol.split(":");
+        let parts = symbol.split(':');
 
         log::debug!("parts: {:?}", &parts);
 

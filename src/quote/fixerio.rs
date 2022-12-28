@@ -71,7 +71,6 @@ impl Fixerio {
 #[async_trait]
 impl Downloader for Fixerio {
     /// Download latest rates. Caches the (daily) prices into a temp directory.
-    #[allow(unused_variables)]
     async fn download(&self, security_symbol: SecuritySymbol, currency: &str) -> Result<Price> {
         //let namespace = security_symbol.namespace.to_uppercase();
         let currency = currency.to_uppercase();
@@ -114,10 +113,9 @@ fn get_fixerio_api_key() -> String {
 }
 
 fn get_cache_path() -> String {
-    let cache_path = temp_dir().into_os_string().into_string().expect("Error");
-
-    cache_path
+    temp_dir().into_os_string().into_string().expect("Error")
 }
+
 /// Assemble the full file path for the given name (date).
 fn get_rate_file_path(today_iso_str: &str) -> String {
     let cache_path = get_cache_path();
@@ -130,9 +128,7 @@ fn get_todays_file_path() -> String {
     let today = chrono::offset::Local::now();
     let today_str = today.date_naive().format("%Y-%m-%d").to_string();
 
-    let result = get_rate_file_path(&today_str);
-
-    result
+    get_rate_file_path(&today_str)
 }
 
 /// Read and map a single currency rate
@@ -181,10 +177,8 @@ fn read_rates_from_cache() -> Value {
 
     let content = fs::read_to_string(file_path).expect("Error reading rates file");
 
-    let result = serde_json::from_str(&content).expect("Error parsing rates JSON");
-    // log::debug!("parsed rates: {:?}", result);
-
-    result
+    serde_json::from_str(&content)
+        .expect("Error parsing rates JSON")
 }
 
 // Tests

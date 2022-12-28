@@ -52,7 +52,7 @@ impl YahooFinanceDownloader {
 
         let mut url = format!("{}{}", self.url, symbol.mnemonic);
 
-        if local_namespace != "" {
+        if !local_namespace.is_empty() {
             url = format!("{}.{}", url, local_namespace);
         }
 
@@ -140,7 +140,6 @@ mod tests {
     use chrono::{NaiveDateTime, TimeZone, FixedOffset};
 
     use crate::quote::Downloader;
-    #[allow(unused_imports)]
     use crate::{model::SecuritySymbol, quote::yahoo_finance_downloader::YahooFinanceDownloader};
 
     #[test]

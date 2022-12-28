@@ -34,24 +34,20 @@ impl VanguardAuDownloader {
         let response = reqwest::get(url).await?;
 
         let content = response.text().await?;
-        // log::debug!("Vanguard response: {:?}", content);
 
         // clean-up the response
-        let content_json: Value;
-        if content.starts_with("callback(") {
+        let content_json: Value = if content.starts_with("callback(") {
             log::trace!("cleaning up callback!");
 
             let length = content.len() - 1;
             let new_content = &content[9..length];
 
-            content_json = serde_json::from_str(new_content)?;
+            serde_json::from_str(new_content)?
         } else {
-            content_json = serde_json::from_str(content.as_str())?;
-        }
+            serde_json::from_str(content.as_str())?
+        };
 
         let data = content_json["fundData"].to_string();
-
-        // log::debug!("The thing is {:?}", data);
 
         Ok(data)
     }
@@ -74,7 +70,7 @@ impl VanguardAuDownloader {
         // Currency?
         // fund_info.currency = info_json["currency"]["currencyCode"].as_str().unwrap().to_string();
 
-        return fund_info;
+        fund_info
     }
 
     fn parse_price(&self, fund_info: &FundInfo) -> Result<Price> {
@@ -91,7 +87,7 @@ impl VanguardAuDownloader {
         let value_str = fund_info.value.strip_prefix('$').unwrap();
         let value = Decimal::from_str(value_str)?;
         price.value = value.mantissa().to_i64().unwrap();
-        price.denom = 10_i64.pow(value.scale());         // in 10^3 = 1000, scale=3, denom=1000
+        price.denom = 10_i64.pow(value.scale()); // in 10^3 = 1000, scale=3, denom=1000
 
         price.currency = "AUD".to_string();
 

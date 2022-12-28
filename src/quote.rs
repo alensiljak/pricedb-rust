@@ -92,15 +92,15 @@ impl Quote {
         match self.source.as_ref().unwrap().as_str() {
             "yahoo_finance" => {
                 log::trace!("using yahoo finance");
-                return Box::new(YahooFinanceDownloader::new());
+                Box::new(YahooFinanceDownloader::new())
             }
             "fixerio" => {
                 log::trace!("using fixerio");
-                return Box::new(Fixerio::new());
+                Box::new(Fixerio::new())
             }
             "vanguard_au" => {
                 log::trace!("using vanguard");
-                return Box::new(VanguardAuDownloader::new());
+                Box::new(VanguardAuDownloader::new())
             }
             _ => {
                 panic!("unknown downloader: {}", self.source.as_ref().unwrap());
