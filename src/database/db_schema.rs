@@ -6,8 +6,6 @@ use sea_query::{SqliteQueryBuilder, Table, ColumnDef};
 
 use crate::model::{SecurityIden, PriceIden};
 
-pub(crate) const DROP_TABLES: &str = r#""#;
-
 pub(crate) fn get_drop_security() -> String {
     Table::drop()
         .table(SecurityIden::Table)
