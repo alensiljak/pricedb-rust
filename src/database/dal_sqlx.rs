@@ -130,7 +130,7 @@ impl SqlxDal {
     }
 
     async fn get_prices_for_security_async(&self, security_id: i64) {
-        let conn = self.get_connection().await;
+        let mut conn = self.get_connection().await;
 
         let result = sqlx::query_as!(
             Price,
@@ -187,6 +187,6 @@ mod tests {
     }
 
     fn get_prices_for_sec_test() {
-        
+
     }
 }

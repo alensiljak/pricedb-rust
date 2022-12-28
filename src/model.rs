@@ -17,8 +17,8 @@ pub struct Price {
     pub security_id: i64,
     pub date: String,
     pub time: String,
-    pub value: i32,
-    pub denom: u32,
+    pub value: i64,
+    pub denom: i64,
     pub currency: String,
 }
 

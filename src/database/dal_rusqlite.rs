@@ -446,7 +446,7 @@ mod tests {
         dal
     }
 
-    fn create_dummy_price(security_id: i64, value: i32, denom_opt: Option<u32>) -> Price {
+    fn create_dummy_price(security_id: i64, value: i64, denom_opt: Option<i64>) -> Price {
         let date: String = chrono::Local::now().date_naive().to_string();
         Price {
             id: i64::default(),

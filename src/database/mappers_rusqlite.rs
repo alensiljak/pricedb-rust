@@ -146,11 +146,11 @@ pub(crate) fn generate_update_price(price: &Price) -> (String, RusqliteValues) {
             .to_owned();
     }
 
-    if price.value != i32::default() {
+    if price.value != i64::default() {
         stmt = stmt.value(PriceIden::Value, price.value).to_owned();
     }
 
-    if price.denom != u32::default() {
+    if price.denom != i64::default() {
         stmt = stmt.value(PriceIden::Denom, price.denom).to_owned();
     }
 

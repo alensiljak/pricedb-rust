@@ -168,8 +168,8 @@ fn map_rates_to_price(rates: Value, symbol: &str) -> Price {
         security_id: i64::default(),
         date: date_str,
         time: Price::default_time(),
-        value: rounded.mantissa().to_i32().unwrap(),
-        denom: 10_u32.pow(rounded.scale()),         // in 10^3 = 1000, scale=3, denom=1000
+        value: rounded.mantissa().to_i64().unwrap(),
+        denom: 10_i64.pow(rounded.scale()),         // in 10^3 = 1000, scale=3, denom=1000
         currency: base,
     }
 }
