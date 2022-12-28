@@ -46,9 +46,9 @@ pub fn get_security_columns_wo_table() -> Vec<SecurityIden> {
 
 pub(crate) fn map_row_to_price(row: &Row) -> Price {
     Price {
-        id: row.get(0).expect("value"),
-        security_id: row.get(1).expect("value"),
-        date: row.get(2).expect("value"),
+        id: row.get_unwrap(0),
+        security_id: row.get_unwrap(1),
+        date: row.get_unwrap(2),
         time: row.get(3).expect("value"),
         value: row.get(4).expect("value"),
         denom: row.get(5).expect("value"),
@@ -58,13 +58,13 @@ pub(crate) fn map_row_to_price(row: &Row) -> Price {
 
 pub(crate) fn map_row_to_security(row: &Row) -> Security {
     Security {
-        id: row.get(0).expect("id"),
-        namespace: row.get(1).expect("namespace"),
-        symbol: row.get(2).expect("symbol"),
-        updater: row.get(3).expect("updater"),
-        currency: row.get(4).expect("currency"),
-        ledger_symbol: row.get(5).expect("ledger symbol"),
-        notes: row.get(6).expect("notes"),
+        id: row.get_unwrap(0),
+        namespace: row.get_unwrap(1),
+        symbol: row.get_unwrap(2),
+        updater: row.get_unwrap(3),
+        currency: row.get_unwrap(4),
+        ledger_symbol: row.get_unwrap(5),
+        notes: row.get_unwrap(6),
     }
 }
 
