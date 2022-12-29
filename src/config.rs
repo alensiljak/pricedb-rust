@@ -14,15 +14,3 @@ pub struct PriceDbConfig {
     /// The full path to the file where the prices will be exported.
     pub export_destination: String,
 }
-
-// // `PriceDbConfig` implements `Default`
-// impl std::default::Default for PriceDbConfig {
-//     fn default() -> Self {
-//         Self {
-//             price_database_path: "/home/user/pricedb/prices.db".to_string(),
-//             alphavantage_api_key: "".to_string(),
-//             fixerio_api_key: "".to_string(),
-//             export_destination: "/home/user/pricedb/export.txt".to_string(),
-//         }
-//     }
-// }

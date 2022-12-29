@@ -105,7 +105,7 @@ impl Downloader for Fixerio {
 /// Loads Fixerio API key from the config.
 /// Panics if not found.
 fn get_fixerio_api_key() -> String {
-    let config_result: Result<PriceDbConfig, ConfyError> = confy::load(APP_NAME, None);
+    let config_result: Result<PriceDbConfig, ConfyError> = confy::load(APP_NAME, APP_NAME);
     match config_result {
         Ok(config) => config.fixerio_api_key,
         Err(e) => panic!("Fixerio API key not loaded: {}", e),

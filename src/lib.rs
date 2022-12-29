@@ -70,11 +70,11 @@ impl App {
     }
 
     pub fn config_show(&self) {
-        let path = confy::get_configuration_file_path(APP_NAME, None).expect("configuration path");
-        // let cfg = load_config().expect("configuration");
+        let path = confy::get_configuration_file_path(APP_NAME, APP_NAME)
+            .expect("configuration path");
         let cfg = &self.config;
 
-        println!("Configuration file: {path:?}");
+        println!("Configuration file: {}", path.display());
         println!("{cfg:?}");
     }
 
@@ -408,7 +408,7 @@ pub struct AdditionResult {
 }
 
 pub fn load_config() -> PriceDbConfig {
-    let config: PriceDbConfig = confy::load(APP_NAME, None)
+    let config: PriceDbConfig = confy::load(APP_NAME, APP_NAME)
         .expect("valid config should be loaded");
 
     config
