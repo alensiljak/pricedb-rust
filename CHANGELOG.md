@@ -7,9 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.7] - 2023-01-06
+
 ### Changed
 
-- using `rusttls` in `reqwests` to test segfault in Alpine
+- using `rusttls` in `reqwests` to fix segfault in Alpine Linux
 
 ## [1.3.6] - 2023-01-06
 
