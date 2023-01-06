@@ -37,6 +37,10 @@ pricedb prune
 pricedb export
 ```
 
+# Change Log
+
+See [here](CHANGELOG.md).
+
 # Development
 
 ## SQLite
