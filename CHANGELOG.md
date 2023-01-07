@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.8] - 2023-01-06
+
+### Changed
+
+- back to default `native-tls` for `reqwest` as establishing a connection to Vanguard fails
+
 ## [1.3.7] - 2023-01-06
 
 ### Changed
