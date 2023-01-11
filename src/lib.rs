@@ -218,8 +218,13 @@ impl App {
                 .collect();
         }
 
-        let mut count = 0;
+        let mut count: u16 = 0;
         let mut count_deleted = 0;
+        
+        // init progress bar
+        let pb = indicatif::ProgressBar::new(count.into());
+        // pb.set_style(indicatif::ProgressStyle::default_bar().progress_chars("=>-"));
+
         // Send the symbols to the individual prune.
         for security_id in security_ids {
             if let Result::Ok(i) = self.prune_for_sec(security_id) {
@@ -234,6 +239,9 @@ impl App {
             }
 
             count += 1;
+            
+            // move progress bar
+            pb.inc(1);
         }
 
         println!("Processed {} records, deleted {}.", count, count_deleted);
