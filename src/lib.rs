@@ -222,7 +222,7 @@ impl App {
         let mut count_deleted = 0;
         
         // init progress bar
-        let pb = indicatif::ProgressBar::new(count.into());
+        let pb = indicatif::ProgressBar::new(security_ids.len().to_u64().unwrap());
         // pb.set_style(indicatif::ProgressStyle::default_bar().progress_chars("=>-"));
 
         // Send the symbols to the individual prune.
