@@ -1,10 +1,7 @@
 /*!
- * DAL with sqlite
- *
- * Pros:
- *   - does not use libsqlite3-sys (build issues on NTFS)
- *
- */
+DAL with sqlite
+https://crates.io/crates/sqlite
+*/
 
 use sqlite::{Connection, Error, Row, Statement};
 
@@ -13,7 +10,16 @@ use crate::model::{Price, Security};
 use super::Dal;
 
 pub struct SqliteDal {
-    pub(crate) conn_str: String,
+    // pub(crate) conn_str: String,
+    pub(crate) conn: Connection,
+}
+
+impl SqliteDal {
+    pub(crate) fn new(conn_str: String) -> Self {
+        Self {
+            conn: open_connection(&conn_str),
+        }
+    }
 }
 
 impl Dal for SqliteDal {
@@ -49,8 +55,8 @@ impl Dal for SqliteDal {
 
         let mut result: Security = Security::new();
 
-        let conn = open_connection(&self.conn_str);
-        let rows = conn
+        // let conn = open_connection(&self.conn_str);
+        let rows = self.conn
             .prepare("select * from security where symbol=?")
             .unwrap()
             .into_iter()
@@ -70,10 +76,10 @@ impl Dal for SqliteDal {
 
     fn get_prices_for_security(&self, security_id: i64) -> anyhow::Result<Vec<Price>> {
         let mut result: Vec<Price> = vec![];
-        let conn = open_connection(&self.conn_str);
+        // let conn = open_connection(&self.conn_str);
         let sql = "select * from price where security_id=? order by date desc, time desc;";
 
-        let cursor = conn
+        let cursor = self.conn
             .prepare(sql)
             .unwrap()
             .into_iter()
@@ -102,14 +108,46 @@ impl Dal for SqliteDal {
             let symbol = row.read::<&str, _>(1);
             result.push((id, symbol.to_string()));
         }
-        return Ok(result);
+        Ok(result)
     }
 
-    fn delete_price(&self, id: i64) -> Result<(), anyhow::Error> {
-        let conn = open_connection(&self.conn_str);
+    fn delete_price(&self, id: i64) -> Result<usize, anyhow::Error> {
+        // let conn = open_connection(&self.conn_str);
         let sql = format!("delete from price where id={}", id);
-        let result = conn.execute(sql).unwrap();
-        return Ok(result);
+        let result = self.conn.execute(sql).unwrap();
+        Ok(result)
+    }
+
+    fn add_price(&self,new_price: &Price) -> usize {
+        todo!()
+    }
+
+    fn add_security(&self,security: &Security) -> usize {
+        todo!()
+    }
+
+    fn get_prices(&self,filter:Option<crate::model::PriceFilter>) -> Vec<Price>  {
+        todo!()
+    }
+
+    fn get_prices_with_symbols(&self) -> Vec<Price>  {
+        todo!()
+    }
+
+    fn get_securitiess_having_prices(&self) -> Vec<Security>  {
+        todo!()
+    }
+
+    fn update_price(&self,price: &Price) -> anyhow::Result<usize>  {
+        todo!()
+    }
+
+    fn create_tables(&self) {
+        todo!()
+    }
+
+    fn get_tables(&self) -> Vec<String>  {
+        todo!()
     }
 }
 

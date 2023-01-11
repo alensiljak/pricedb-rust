@@ -1,11 +1,11 @@
 /*!
- * Price Database API
- *
- * Price Database downloads prices for given securities, stores it in an sqlite database,
- * and exports in Ledger-cli format.
- *
- * Project [Documentation](https://github.com/alensiljak/pricedb-rust).
- */
+Price Database API
+
+Price Database downloads prices for given securities, stores it in an sqlite database,
+and exports in Ledger-cli format.
+
+Project [Documentation](https://github.com/alensiljak/pricedb-rust).
+*/
 
 use config::PriceDbConfig;
 use once_cell::unsync::OnceCell;

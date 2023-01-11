@@ -18,8 +18,8 @@ pub struct RuSqliteDal {
 }
 
 impl RuSqliteDal {
-    pub(crate) fn new(conn_str: String) -> RuSqliteDal {
-        RuSqliteDal {
+    pub(crate) fn new(conn_str: String) -> Self {
+        Self {
             conn: open_connection(&conn_str),
         }
     }
