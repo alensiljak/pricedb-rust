@@ -1,9 +1,9 @@
 /*!
  * Price Database API
- * 
- * Price Database downloads prices for given securities, stores it in an sqlite database, 
+ *
+ * Price Database downloads prices for given securities, stores it in an sqlite database,
  * and exports in Ledger-cli format.
- * 
+ *
  * Project [Documentation](https://github.com/alensiljak/pricedb-rust).
  */
 
@@ -64,14 +64,17 @@ impl App {
             result.inserted = self.insert_price(new_price).to_u16().unwrap();
         } else {
             // update
-            result.updated = self.update_price(existing_prices, new_price).to_u16().unwrap();
+            result.updated = self
+                .update_price(existing_prices, new_price)
+                .to_u16()
+                .unwrap();
         };
         result
     }
 
     pub fn config_show(&self) {
-        let path = confy::get_configuration_file_path(APP_NAME, APP_NAME)
-            .expect("configuration path");
+        let path =
+            confy::get_configuration_file_path(APP_NAME, APP_NAME).expect("configuration path");
         let cfg = &self.config;
 
         println!("Configuration file: {}", path.display());
@@ -104,7 +107,6 @@ impl App {
             return;
         }
 
-        // let mut counter_total = 0;
         let mut counter_updated = 0;
         let sec_count = securities.len().try_into().unwrap();
         let pb = indicatif::ProgressBar::new(sec_count);
@@ -129,16 +131,34 @@ impl App {
             log::debug!("the fetched price for {:?} is {:?}", sec.symbol, price);
 
             let saved = self.add_price(&price);
+            let symbol = match sec.ledger_symbol {
+                Some(ledger_symbol) => ledger_symbol,
+                None => sec.symbol,
+            };
             if saved.inserted > 0 {
-                let msg = format!("Added {} {} {} {} {}", sec.symbol, price.date, price.time, price.to_decimal(), price.currency);
+                let msg = format!(
+                    "Added {} {} {} {} {}",
+                    symbol,
+                    price.date,
+                    price.time,
+                    price.to_decimal(),
+                    price.currency
+                );
                 pb.println(msg);
                 counter_updated += 1;
             }
-            if saved.updated > 0  {
-                let msg = format!("Updated {} {} {} {} {}", sec.symbol, price.date, price.time, price.to_decimal(), price.currency);
+            if saved.updated > 0 {
+                let msg = format!(
+                    "Updated {} {} {} {} {}",
+                    symbol,
+                    price.date,
+                    price.time,
+                    price.to_decimal(),
+                    price.currency
+                );
                 pb.println(msg);
                 counter_updated += 1;
-            } 
+            }
 
             pb.inc(1);
         }
@@ -352,9 +372,10 @@ impl App {
         if existing.value != new_price.value {
             log::debug!(
                 "Updating value from {:?} to {}",
-                existing.value, new_price.value
+                existing.value,
+                new_price.value
             );
-            
+
             for_update.value = new_price.value;
             should_update = true;
         }
@@ -404,12 +425,12 @@ fn save_text_file(contents: &String, location: &String) {
 /// The result of adding records (insert, update)
 pub struct AdditionResult {
     inserted: u16,
-    updated: u16
+    updated: u16,
 }
 
 pub fn load_config() -> PriceDbConfig {
-    let config: PriceDbConfig = confy::load(APP_NAME, APP_NAME)
-        .expect("valid config should be loaded");
+    let config: PriceDbConfig =
+        confy::load(APP_NAME, APP_NAME).expect("valid config should be loaded");
 
     config
 }
