@@ -227,6 +227,9 @@ impl App {
 
         // Send the symbols to the individual prune.
         for security_id in security_ids {
+            // move progress bar
+            pb.inc(1);
+
             if let Result::Ok(i) = self.prune_for_sec(security_id) {
                 // success. Log only if something was deleted.
                 if i > 0 {
@@ -239,9 +242,6 @@ impl App {
             }
 
             count += 1;
-            
-            // move progress bar
-            pb.inc(1);
         }
 
         println!("Processed {} records, deleted {}.", count, count_deleted);
