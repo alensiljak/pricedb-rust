@@ -13,4 +13,5 @@ pub struct PriceDbConfig {
     pub fixerio_api_key: String,
     /// The full path to the file where the prices will be exported.
     pub export_destination: String,
+    pub symbols_path: String,
 }
