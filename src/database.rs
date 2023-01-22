@@ -59,7 +59,7 @@ pub trait Dal {
 
     fn get_prices(&self, filter: Option<PriceFilter>) -> Vec<Price>;
 
-    fn get_prices_for_security(&self, security_id: i64) -> anyhow::Result<Vec<Price>>;
+    fn get_prices_for_security(&self, symbol: &str) -> anyhow::Result<Vec<Price>>;
 
     fn get_prices_with_symbols(&self) -> Vec<Price>;
 

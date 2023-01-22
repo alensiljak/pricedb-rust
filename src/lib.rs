@@ -197,14 +197,16 @@ impl App {
         if symbol.is_some() {
             // get id
             let symb = symbol.as_ref().unwrap().as_str();
-            let security = dal.get_security_by_symbol(symb);
-            security_ids.push(security.id);
+            // let security = dal.get_security_by_symbol(symb);
+            //security_ids.push(security.id);
+            let full_symbol = SecuritySymbol::parse(symb);
+            security_ids.push(full_symbol.to_string());
         } else {
             // load all symbols
             security_ids = dal
                 .get_securitiess_having_prices()
                 .iter()
-                .map(|item| item.id)
+                .map(|item| item.symbol.to_owned())
                 .collect();
         }
 
@@ -220,7 +222,7 @@ impl App {
             // move progress bar
             pb.inc(1);
 
-            if let Result::Ok(i) = self.prune_for_sec(security_id) {
+            if let Result::Ok(i) = self.prune_for_sec(&security_id) {
                 // success. Log only if something was deleted.
                 if i > 0 {
                     log::debug!("deleted {:?} records for {:?}", i, security_id);
@@ -307,14 +309,14 @@ impl App {
     }
 
     /// Deletes price history for the given Security, leaving only the latest price.
-    fn prune_for_sec(&self, security_id: i64) -> anyhow::Result<u16, Error> {
-        log::trace!("pruning prices for security id: {:?}", security_id);
+    fn prune_for_sec(&self, symbol: &str) -> anyhow::Result<u16, Error> {
+        log::trace!("pruning prices for security: {:?}", symbol);
 
         let mut count = 0;
         // get prices for the given security
         let dal = self.get_dal();
         let prices = dal
-            .get_prices_for_security(security_id)
+            .get_prices_for_security(symbol)
             .expect("Error fetching prices for security");
 
         // log::debug!("prices for {:?} - {:?}", security_id, prices);
@@ -323,7 +325,7 @@ impl App {
         let size = prices.len();
         if size <= 1 {
             // nothing to delete
-            log::debug!("Nothing to prune for {:?}", security_id);
+            log::debug!("Nothing to prune for {:?}", symbol);
             return Ok(0);
         }
 

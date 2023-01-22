@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2023-01-22
+
 ### Added
 
 - the `symbol` field in the `price` table, containing NAMESPACE:MNEMONIC
@@ -15,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Using `as-symbols` for reading symbols from a CSV file
+
+### Security
+
+- Updated dependencies
 
 ## [1.4.1] - 2023-01-12
 
@@ -46,6 +52,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.3.6] - 2023-01-06
 
-### Changed
+### Security
 
 - Updated dependencies

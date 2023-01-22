@@ -107,19 +107,17 @@ pub struct SecuritySymbol {
 impl SecuritySymbol {
     /// Parse symbol syntax, i.e. "XETRA:EL4X"
     pub fn parse(symbol: &str) -> SecuritySymbol {
+        // Create default values
         let mut namespace = String::default();
         let mut mnemonic = symbol.to_owned();
 
-        let parts = symbol.split(':');
-
-        log::debug!("parts: {:?}", &parts);
-
-        let vec: Vec<&str> = parts.collect();
-        log::debug!("parts vector = {:?}", vec);
-        if vec.len() > 1 {
-            namespace = vec[0].to_string();
-            mnemonic = vec[1].to_string();
+        // Try simple parsing.
+        let parts: Vec<&str> = symbol.split(':').collect();
+        if parts.len() > 1 {
+            namespace = parts[0].to_string();
+            mnemonic = parts[1].to_string();
         }
+        log::debug!("parts: {:?}", &parts);
 
         SecuritySymbol {
             namespace,

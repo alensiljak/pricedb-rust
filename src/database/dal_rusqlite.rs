@@ -98,12 +98,12 @@ impl Dal for RuSqliteDal {
         prices
     }
 
-    fn get_prices_for_security(&self, security_id: i64) -> anyhow::Result<Vec<Price>> {
-        let sql = "select * from price where security_id=? order by date desc, time desc;";
+    fn get_prices_for_security(&self, symbol: &str) -> anyhow::Result<Vec<Price>> {
+        let sql = "select * from price where symbol=? order by date desc, time desc;";
         let mut stmt = self.conn.prepare(sql).expect("Error");
 
         let prices = stmt
-            .query_map([security_id], |row| {
+            .query_map([symbol], |row| {
                 let price = map_row_to_price(row);
                 Ok(price)
             })
