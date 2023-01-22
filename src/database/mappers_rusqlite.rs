@@ -10,8 +10,9 @@ use crate::model::{Price, PriceIden, Security, SecurityIden};
 
 pub fn get_price_columns() -> Vec<(PriceIden, PriceIden)> {
     vec![
-        (PriceIden::Table, PriceIden::Id),
-        (PriceIden::Table, PriceIden::SecurityId),
+        (PriceIden::Table, PriceIden::Symbol),
+        // (PriceIden::Table, PriceIden::Id),
+        // (PriceIden::Table, PriceIden::SecurityId),
         (PriceIden::Table, PriceIden::Date),
         (PriceIden::Table, PriceIden::Time),
         (PriceIden::Table, PriceIden::Value),
@@ -46,13 +47,14 @@ pub fn get_security_columns_wo_table() -> Vec<SecurityIden> {
 
 pub(crate) fn map_row_to_price(row: &Row) -> Price {
     Price {
-        id: row.get_unwrap(0),
-        security_id: row.get_unwrap(1),
-        date: row.get_unwrap(2),
-        time: row.get(3).expect("value"),
-        value: row.get(4).expect("value"),
-        denom: row.get(5).expect("value"),
-        currency: row.get(6).expect("value"),
+        symbol: row.get_unwrap(0),
+        id: row.get_unwrap(1),
+        security_id: row.get_unwrap(2),
+        date: row.get_unwrap(3),
+        time: row.get(4).expect("value"),
+        value: row.get(5).expect("value"),
+        denom: row.get(6).expect("value"),
+        currency: row.get(7).expect("value"),
     }
 }
 
@@ -180,7 +182,8 @@ mod tests {
 
     fn create_dummy_price() -> Price {
         Price {
-            id: 13,
+            symbol: "".to_owned(),
+            id: 0,
             security_id: 155,
             date: "2022-12-07".to_owned(),
             time: "12:00:01".to_owned(),
@@ -193,6 +196,7 @@ mod tests {
     #[test]
     fn test_price_insert_statement() {
         let new_price = Price {
+            symbol: "".to_owned(),
             id: i64::default(),
             security_id: 111,
             date: "2022-12-01".to_string(),

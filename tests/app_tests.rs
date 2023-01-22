@@ -23,6 +23,7 @@ fn app() -> App {
 #[fixture]
 fn new_price() -> Price {
     Price {
+        symbol: "VTI".to_owned(),
         id: 0,
         security_id: 1,
         date: "2022-12-01".into(),

@@ -11,6 +11,8 @@ use sea_query::enum_def;
 #[derive(Debug, Default, Clone, Eq, PartialEq, PartialOrd, Ord)]
 #[enum_def]
 pub struct Price {
+    /// Symbol in format NAMESPACE:SYMBOL
+    pub symbol: String,
     pub id: i64,
     pub security_id: i64,
     pub date: String,
@@ -22,16 +24,7 @@ pub struct Price {
 
 impl Price {
     pub fn new() -> Self {
-        Self {
-            id: 0,
-            security_id: 0,
-            date: String::default(),
-            time: Price::default_time(),
-            value: 0,
-            denom: 0,
-            currency: String::default(),
-            // value_dec: dec!(0),
-        }
+        Self::default()
     }
 
     pub fn to_decimal(&self) -> Decimal {
@@ -54,7 +47,8 @@ impl Price {
 
 #[derive(Default)]
 pub struct PriceFilter {
-    pub security_id: Option<i64>,
+    // pub security_id: Option<i64>,
+    pub symbol: Option<String>,
     pub date: Option<String>,
     pub time: Option<String>,
 }

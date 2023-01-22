@@ -197,14 +197,12 @@ impl Dal for RuSqliteDal {
     fn create_tables(&self) {
         // drop Security table, if exists
 
-        let sql = crate::database::db_schema::get_drop_security();
-        self.conn.execute(&sql, []).expect("result");
+        // let sql = crate::database::db_schema::get_drop_security();
+        // self.conn.execute(&sql, []).expect("result");
 
         // create Security table
-
-        let sql = crate::database::db_schema::create_security();
-
-        self.conn.execute(&sql, []).expect("result");
+        // let sql = crate::database::db_schema::create_security();
+        // self.conn.execute(&sql, []).expect("result");
 
         // drop Prices table, if exists
 
@@ -256,10 +254,10 @@ fn generate_select_price_with_filter(filter: &PriceFilter) -> (String, RusqliteV
         .columns(get_price_columns())
         .from(PriceIden::Table)
         .conditions(
-            filter.security_id.is_some(),
+            filter.symbol.is_some(),
             |q| {
-                if let Some(val) = filter.security_id {
-                    q.and_where(Expr::col(PriceIden::SecurityId).eq(val));
+                if let Some(val) = filter.symbol.to_owned() {
+                    q.and_where(Expr::col(PriceIden::Symbol).like(val));
                 }
             },
             |_q| {},
@@ -363,11 +361,11 @@ fn generate_select_securities_having_prices() -> (String, RusqliteValues) {
     Query::select()
         .columns(get_security_columns())
         .from(SecurityIden::Table)
-        .inner_join(
-            PriceIden::Table,
-            Expr::col((SecurityIden::Table, SecurityIden::Id))
-                .equals((PriceIden::Table, PriceIden::SecurityId)),
-        )
+        // .inner_join(
+        //     PriceIden::Table,
+        //     Expr::col((SecurityIden::Table, SecurityIden::Id))
+        //         .equals((PriceIden::Table, PriceIden::SecurityId)),
+        // )
         .order_by(
             (SecurityIden::Table, SecurityIden::Namespace),
             sea_query::Order::Asc,
@@ -400,16 +398,17 @@ mod tests {
         dal.create_tables();
 
         insert_dummy_prices(&dal);
-        insert_dummy_securities(&dal);
+        // insert_dummy_securities(&dal);
 
         dal
     }
 
-    fn create_dummy_price(security_id: i64, value: i64, denom_opt: Option<i64>) -> Price {
+    fn create_dummy_price(symbol: &str, value: i64, denom_opt: Option<i64>) -> Price {
         let date: String = chrono::Local::now().date_naive().to_string();
         Price {
+            symbol: symbol.to_owned(),
             id: i64::default(),
-            security_id,
+            security_id: 0,
             date,
             time: Price::default_time(),
             value,
@@ -422,28 +421,28 @@ mod tests {
     }
 
     fn insert_dummy_prices(dal: &dyn Dal) {
-        dal.add_price(&create_dummy_price(1, 12345, None));
-        dal.add_price(&create_dummy_price(1, 10101, None));
-        dal.add_price(&create_dummy_price(2, 1234, None));
-        dal.add_price(&create_dummy_price(3, 123456789, Some(10000)));
-        dal.add_price(&create_dummy_price(4, 123456, Some(1000)));
+        dal.add_price(&create_dummy_price("VTI", 12345, None));
+        dal.add_price(&create_dummy_price("VTI", 10101, None));
+        dal.add_price(&create_dummy_price("XETRA:EL49", 1234, None));
+        dal.add_price(&create_dummy_price("ASX:VAS", 123456789, Some(10000)));
+        dal.add_price(&create_dummy_price("LSE:VHYL", 123456, Some(1000)));
     }
 
-    fn insert_dummy_securities(dal: &RuSqliteDal) {
-        let sql = "INSERT INTO Security (id, namespace, symbol, currency) VALUES (?1, ?2, ?3, ?4)";
-        dal.conn
-            .execute(sql, (1, "NULL", "VTI", "USD"))
-            .expect("inserted record");
-        dal.conn
-            .execute(sql, (2, "XETRA", "EL49", "EUR"))
-            .expect("inserted record");
-        dal.conn
-            .execute(sql, (3, "ASX", "VAS", "AUD"))
-            .expect("inserted record");
-        dal.conn
-            .execute(sql, (4, "LSE", "VHYL", "GBP"))
-            .expect("inserted record");
-    }
+    // fn insert_dummy_securities(dal: &RuSqliteDal) {
+    //     let sql = "INSERT INTO Security (id, namespace, symbol, currency) VALUES (?1, ?2, ?3, ?4)";
+    //     dal.conn
+    //         .execute(sql, (1, "NULL", "VTI", "USD"))
+    //         .expect("inserted record");
+    //     dal.conn
+    //         .execute(sql, (2, "XETRA", "EL49", "EUR"))
+    //         .expect("inserted record");
+    //     dal.conn
+    //         .execute(sql, (3, "ASX", "VAS", "AUD"))
+    //         .expect("inserted record");
+    //     dal.conn
+    //         .execute(sql, (4, "LSE", "VHYL", "GBP"))
+    //         .expect("inserted record");
+    // }
 
     #[test]
     fn test_sec_query_wo_params() {
@@ -494,7 +493,7 @@ mod tests {
         let dal = get_test_dal();
 
         let filter = PriceFilter {
-            security_id: None,
+            symbol: None,
             date: None,
             time: None,
         };
@@ -511,7 +510,7 @@ mod tests {
         let dal = get_test_dal();
 
         let filter = PriceFilter {
-            security_id: Some(1),
+            symbol: Some("VTI".to_owned()),
             date: None,
             time: None,
         };

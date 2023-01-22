@@ -51,7 +51,8 @@ impl App {
         // Is there already a price with the same id, date, and time?
 
         let filter = PriceFilter {
-            security_id: Some(new_price.security_id),
+            // security_id: Some(new_price.security_id),
+            symbol: Some(new_price.symbol.to_owned()),
             date: Some(new_price.date.to_owned()),
             time: Some(new_price.time.to_owned()),
         };
@@ -88,19 +89,7 @@ impl App {
         let securities = dal.get_securities(Some(filter));
 
         // Debug
-        {
-            let symbols: Vec<String> = securities
-                .iter()
-                .map(|sec| {
-                    format!(
-                        "{}:{}",
-                        sec.namespace.as_ref().unwrap().as_str(),
-                        sec.symbol.as_str()
-                    ) as String
-                })
-                .collect();
-            log::debug!("Securities to fetch the prices for: {:?}", symbols);
-        }
+        log_securities(&securities);
 
         if securities.is_empty() {
             println!("No Securities found for the given parameters.");
@@ -131,6 +120,7 @@ impl App {
             log::debug!("the fetched price for {:?} is {:?}", sec.symbol, price);
 
             let saved = self.add_price(&price);
+            
             let symbol = match sec.ledger_symbol {
                 Some(ledger_symbol) => ledger_symbol,
                 None => sec.symbol,
@@ -220,7 +210,7 @@ impl App {
 
         let mut count: u16 = 0;
         let mut count_deleted = 0;
-        
+
         // init progress bar
         let pb = indicatif::ProgressBar::new(security_ids.len().to_u64().unwrap());
         // pb.set_style(indicatif::ProgressStyle::default_bar().progress_chars("=>-"));
@@ -405,6 +395,20 @@ impl App {
 
         dal.update_price(&for_update).unwrap()
     }
+}
+
+fn log_securities(securities: &Vec<Security>) {
+    let symbols: Vec<String> = securities
+        .iter()
+        .map(|sec| {
+            format!(
+                "{}:{}",
+                sec.namespace.as_ref().unwrap().as_str(),
+                sec.symbol.as_str()
+            ) as String
+        })
+        .collect();
+    log::debug!("Securities to fetch the prices for: {:?}", symbols);
 }
 
 async fn download_price(symbol: SecuritySymbol, currency: &str, agent: &str) -> Option<Price> {

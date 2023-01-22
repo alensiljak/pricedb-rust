@@ -115,7 +115,7 @@ impl YahooFinanceDownloader {
 
 #[async_trait]
 impl Downloader for YahooFinanceDownloader {
-    async fn download(&self, security_symbol: SecuritySymbol, _currency: &str) -> Result<Price> {
+    async fn download(&self, security_symbol: &SecuritySymbol, _currency: &str) -> Result<Price> {
         let url = self.assemble_url(&security_symbol);
 
         log::debug!("fetching from {:?}", url);
@@ -181,7 +181,7 @@ mod tests {
         };
         let currency = "EUR";
 
-        let result = o.download(symbol, currency).await.expect("Huston?");
+        let result = o.download(&symbol, currency).await.expect("Huston?");
 
         log::debug!("downloaded {:?}", result);
 
@@ -198,7 +198,7 @@ mod tests {
         };
         let currency = "USD";
 
-        let result = o.download(symbol, currency).await.expect("Huston?");
+        let result = o.download(&symbol, currency).await.expect("Huston?");
 
         log::debug!("downloaded {:?}", result);
 

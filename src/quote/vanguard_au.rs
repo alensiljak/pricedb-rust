@@ -97,7 +97,7 @@ impl VanguardAuDownloader {
 
 #[async_trait]
 impl Downloader for VanguardAuDownloader {
-    async fn download(&self, security_symbol: SecuritySymbol, _currency: &str) -> Result<Price> {
+    async fn download(&self, security_symbol: &SecuritySymbol, _currency: &str) -> Result<Price> {
         if security_symbol
             .namespace
             .ne("VANGUARD".to_uppercase().as_str())

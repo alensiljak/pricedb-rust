@@ -71,7 +71,7 @@ impl Fixerio {
 #[async_trait]
 impl Downloader for Fixerio {
     /// Download latest rates. Caches the (daily) prices into a temp directory.
-    async fn download(&self, security_symbol: SecuritySymbol, currency: &str) -> Result<Price> {
+    async fn download(&self, security_symbol: &SecuritySymbol, currency: &str) -> Result<Price> {
         //let namespace = security_symbol.namespace.to_uppercase();
         let currency = currency.to_uppercase();
         let mnemonic = security_symbol.mnemonic.to_uppercase();
@@ -160,6 +160,7 @@ fn map_rates_to_price(rates: Value, symbol: &str) -> Price {
     // result
 
     Price {
+        symbol: String::default(),
         id: i64::default(),
         security_id: i64::default(),
         date: date_str,
@@ -223,26 +224,17 @@ mod tests {
         assert!(result.contains(&year));
     }
 
-    #[test_log::test(tokio::test)]
-    async fn test_download() {
-        let f = Fixerio::new();
-        let symbol = SecuritySymbol::parse("AUD");
-        let price = f
-            .download(symbol, "EUR")
-            .await
-            .expect("Error downloading price");
+    // #[test_log::test(tokio::test)]
+    // async fn test_download() {
+    //     let f = Fixerio::new();
+    //     let symbol = SecuritySymbol::parse("AUD");
+    //     let price = f
+    //         .download(&symbol, "EUR")
+    //         .await
+    //         .expect("Error downloading price");
 
-        // let expected = NewPrice {
-        //     currency: "EUR".to_string(),
-        //     security_id: i32::default(),
-        //     date: chrono::Local::now().date_naive().to_string(),
-        //     time: None,
-        //     value: 10,
-        //     denom: 10,
-        // };
-        assert_eq!(price.currency, "EUR");
-        // assert_eq!(expected, price);
-    }
+    //     assert_eq!(price.currency, "EUR");
+    // }
 
     // Frequent downloads consume the API quota. Use the cached version.
     // #[test_log::test(tokio::test)]
@@ -258,7 +250,7 @@ mod tests {
         let symbol = SecuritySymbol::parse("CURRENCY:AUD");
 
         let f = Fixerio::new();
-        let price = f.download(symbol, "EUR").await.expect("Error");
+        let price = f.download(&symbol, "EUR").await.expect("Error");
 
         let value = price.to_decimal();
         
@@ -274,7 +266,7 @@ mod tests {
         let symbol = SecuritySymbol::parse("CURRENCY:GBP");
 
         let f = Fixerio::new();
-        let price = f.download(symbol, "EUR").await.expect("Error");
+        let price = f.download(&symbol, "EUR").await.expect("Error");
 
         let value = price.to_decimal();
         

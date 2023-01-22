@@ -1,8 +1,8 @@
 /*!
  * Quote implementation in Rust.
  * Fetching prices.
- * 
- * Based on [Price Database](https://gitlab.com/alensiljak/price-database), 
+ *
+ * Based on [Price Database](https://gitlab.com/alensiljak/price-database),
  * Python library.
  */
 mod fixerio;
@@ -13,7 +13,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 
 use crate::{
-    model::{SecuritySymbol, Price},
+    model::{Price, SecuritySymbol},
     quote::{
         fixerio::Fixerio, vanguard_au::VanguardAuDownloader,
         yahoo_finance_downloader::YahooFinanceDownloader,
@@ -82,8 +82,13 @@ impl Quote {
             currency
         );
 
-        let price = actor.download(sec_symbol, currency).await
+        let mut price = actor
+            .download(&sec_symbol, currency)
+            .await
             .expect("downloaded price");
+
+        // Set the symbol here.
+        price.symbol = format!("{}:{}", sec_symbol.namespace, sec_symbol.mnemonic);
 
         Some(price)
     }
@@ -121,5 +126,5 @@ impl Quote {
 
 #[async_trait]
 trait Downloader {
-    async fn download(&self, security_symbol: SecuritySymbol, currency: &str) -> Result<Price>;
+    async fn download(&self, security_symbol: &SecuritySymbol, currency: &str) -> Result<Price>;
 }
