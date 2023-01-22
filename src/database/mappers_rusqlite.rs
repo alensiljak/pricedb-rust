@@ -11,8 +11,8 @@ use crate::model::{Price, PriceIden, Security, SecurityIden};
 pub fn get_price_columns() -> Vec<(PriceIden, PriceIden)> {
     vec![
         (PriceIden::Table, PriceIden::Symbol),
-        // (PriceIden::Table, PriceIden::Id),
-        // (PriceIden::Table, PriceIden::SecurityId),
+        (PriceIden::Table, PriceIden::Id),
+        (PriceIden::Table, PriceIden::SecurityId),
         (PriceIden::Table, PriceIden::Date),
         (PriceIden::Table, PriceIden::Time),
         (PriceIden::Table, PriceIden::Value),
@@ -33,17 +33,17 @@ pub fn get_security_columns() -> Vec<(SecurityIden, SecurityIden)> {
     ]
 }
 
-pub fn get_security_columns_wo_table() -> Vec<SecurityIden> {
-    vec![
-        SecurityIden::Id,
-        SecurityIden::Namespace,
-        SecurityIden::Symbol,
-        SecurityIden::Updater,
-        SecurityIden::Currency,
-        SecurityIden::LedgerSymbol,
-        SecurityIden::Notes,
-    ]
-}
+// pub fn get_security_columns_wo_table() -> Vec<SecurityIden> {
+//     vec![
+//         SecurityIden::Id,
+//         SecurityIden::Namespace,
+//         SecurityIden::Symbol,
+//         SecurityIden::Updater,
+//         SecurityIden::Currency,
+//         SecurityIden::LedgerSymbol,
+//         SecurityIden::Notes,
+//     ]
+// }
 
 pub(crate) fn map_row_to_price(row: &Row) -> Price {
     Price {
@@ -74,6 +74,7 @@ pub(crate) fn generate_insert_price(price: &Price) -> (String, RusqliteValues) {
     let result = Query::insert()
         .into_table(PriceIden::Table)
         .columns([
+            PriceIden::Symbol,
             PriceIden::SecurityId,
             PriceIden::Date,
             PriceIden::Time,
@@ -82,6 +83,7 @@ pub(crate) fn generate_insert_price(price: &Price) -> (String, RusqliteValues) {
             PriceIden::Currency,
         ])
         .values_panic([
+            price.symbol.to_owned().into(),
             price.security_id.into(),
             price.date.to_owned().into(),
             price.time.to_owned().into(),
@@ -95,23 +97,23 @@ pub(crate) fn generate_insert_price(price: &Price) -> (String, RusqliteValues) {
     result
 }
 
-pub(crate) fn generate_insert_security(security: &Security) -> (String, RusqliteValues) {
-    let columns = get_security_columns_wo_table();
+// pub(crate) fn generate_insert_security(security: &Security) -> (String, RusqliteValues) {
+//     let columns = get_security_columns_wo_table();
 
-    Query::insert()
-        .into_table(SecurityIden::Table)
-        .columns(columns)
-        .values_panic([
-            security.id.into(),
-            security.namespace.to_owned().into(),
-            security.symbol.to_owned().into(),
-            security.updater.to_owned().into(),
-            security.currency.to_owned().into(),
-            security.ledger_symbol.to_owned().into(),
-            security.notes.to_owned().into(),
-        ])
-        .build_rusqlite(SqliteQueryBuilder)
-}
+//     Query::insert()
+//         .into_table(SecurityIden::Table)
+//         .columns(columns)
+//         .values_panic([
+//             security.id.into(),
+//             security.namespace.to_owned().into(),
+//             security.symbol.to_owned().into(),
+//             security.updater.to_owned().into(),
+//             security.currency.to_owned().into(),
+//             security.ledger_symbol.to_owned().into(),
+//             security.notes.to_owned().into(),
+//         ])
+//         .build_rusqlite(SqliteQueryBuilder)
+// }
 
 pub(crate) fn generate_update_price(price: &Price) -> (String, RusqliteValues) {
     let mut stmt = Query::update()
@@ -129,6 +131,12 @@ pub(crate) fn generate_update_price(price: &Price) -> (String, RusqliteValues) {
         .to_owned();
 
     // Values
+
+    if price.symbol != String::default() {
+        stmt = stmt
+            .value(PriceIden::Symbol, price.symbol.to_owned())
+            .to_owned();
+    }
 
     if price.security_id != i64::default() {
         stmt = stmt
@@ -222,7 +230,10 @@ mod tests {
             sea_query::Value::String(Some(Box::new("2022-12-01".to_string())))
         );
 
-        assert_eq!(values.0[2].0, sea_query::Value::String(Some(Box::new("00:00:00".to_owned()))));
+        assert_eq!(
+            values.0[2].0,
+            sea_query::Value::String(Some(Box::new("00:00:00".to_owned())))
+        );
         assert_eq!(values.0[3].0, sea_query::Value::Int(Some(100)));
         assert_eq!(values.0[4].0, sea_query::Value::Unsigned(Some(10)));
         assert_eq!(

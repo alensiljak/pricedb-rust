@@ -43,13 +43,13 @@ impl Dal for RuSqliteDal {
         result
     }
 
-    fn add_security(&self, security: &Security) -> usize {
-        let (sql, values) = generate_insert_security(security);
-        self
-            .conn
-            .execute(sql.as_str(), &*values.as_params())
-            .expect("price inserted")
-    }
+    // fn add_security(&self, security: &Security) -> usize {
+    //     let (sql, values) = generate_insert_security(security);
+    //     self
+    //         .conn
+    //         .execute(sql.as_str(), &*values.as_params())
+    //         .expect("price inserted")
+    // }
 
     fn delete_price(&self, id: i64) -> anyhow::Result<usize> {
         let (sql, values) = generate_delete_price(id);

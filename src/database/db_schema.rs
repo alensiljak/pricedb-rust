@@ -51,9 +51,9 @@ pub(crate) fn create_price() -> String {
             //         .auto_increment()
             //         .primary_key(),
             // )
+            .col(ColumnDef::new(PriceIden::Symbol).string())
             .col(ColumnDef::new(PriceIden::Id).integer())
             .col(ColumnDef::new(PriceIden::SecurityId).integer())
-            .col(ColumnDef::new(PriceIden::Symbol).string())
             .col(ColumnDef::new(PriceIden::Date).string())
             .col(ColumnDef::new(PriceIden::Time).string().null())
             .col(ColumnDef::new(PriceIden::Value).integer())

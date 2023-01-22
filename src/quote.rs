@@ -55,6 +55,8 @@ impl Quote {
         result
     }
 
+    // Private
+
     async fn download(&self, exchange: &str, symbol: &str) -> Option<Price> {
         if exchange != exchange.to_uppercase() {
             panic!("handle this case!");

@@ -52,7 +52,7 @@ pub trait Dal {
     /// Inserts a new price record.
     fn add_price(&self, new_price: &Price) -> usize;
 
-    fn add_security(&self, security: &Security) -> usize;
+    // fn add_security(&self, security: &Security) -> usize;
 
     /// Deletes a price record.
     fn delete_price(&self, id: i64) -> anyhow::Result<usize>;

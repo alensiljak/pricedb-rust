@@ -120,7 +120,7 @@ impl App {
             log::debug!("the fetched price for {:?} is {:?}", sec.symbol, price);
 
             let saved = self.add_price(&price);
-            
+
             let symbol = match sec.ledger_symbol {
                 Some(ledger_symbol) => ledger_symbol,
                 None => sec.symbol,
@@ -281,7 +281,7 @@ impl App {
     // Private
 
     fn insert_price(&self, new_price: &Price) -> usize {
-        // println!("\nInserting {new_price:?}");
+        // log::debug!("\nInserting {new_price:?}");
 
         let dal = self.get_dal();
 

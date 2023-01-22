@@ -6,7 +6,7 @@ use test_log::test;
 
 use pricedb::{
     config::PriceDbConfig,
-    model::{Price, Security},
+    model::Price,
     App,
 };
 
@@ -35,21 +35,20 @@ fn new_price() -> Price {
 }
 
 /// Populates the database
-#[fixture]
-fn app_with_data(app: App) -> App {
-    let sec = Security {
-        id: 1,
-        namespace: Some("AMS".to_owned()),
-        symbol: "IPRP".to_owned(),
-        currency: Some("EUR".to_owned()),
-        ledger_symbol: Some("IPRP_AS".to_owned()),
-        updater: Some("yahoo_finance".to_owned()),
-        notes: None,
-    };
-    app.get_dal().add_security(&sec);
-
-    app
-}
+// #[fixture]
+// fn app_with_data(app: App) -> App {
+//     let sec = Security {
+//         id: 1,
+//         namespace: Some("AMS".to_owned()),
+//         symbol: "IPRP".to_owned(),
+//         currency: Some("EUR".to_owned()),
+//         ledger_symbol: Some("IPRP_AS".to_owned()),
+//         updater: Some("yahoo_finance".to_owned()),
+//         notes: None,
+//     };
+//     app.get_dal().add_security(&sec);
+//     app
+// }
 
 /**
  * Just a basic smoke test to see that the pruninng runs.
@@ -59,9 +58,7 @@ fn app_with_data(app: App) -> App {
  * It expects 1 record to be processed.
  */
 #[rstest]
-fn test_prune(app_with_data: App) {
-    let app = app_with_data;
-
+fn test_prune(app: App) {
     let symbol = Some("IPRP".to_string());
     let actual = app.prune(&symbol);
 
@@ -71,14 +68,14 @@ fn test_prune(app_with_data: App) {
 
 /// Try multiple actions
 #[rstest]
-fn roundtrip(app_with_data: App, new_price: Price) {
+fn roundtrip(app: App, new_price: Price) {
     // add price
-    app_with_data.add_price(&new_price);
+    app.add_price(&new_price);
 
-    app_with_data.prune(&None);
+    app.prune(&None);
 
     // retrieve list
-    let output = app_with_data.list_prices(&None, &None, &None);
+    let output = app.list_prices(&None, &None, &None);
 
     assert_eq!(
         "AMS:IPRP 2022-12-01 13:25:44 10.33 EUR",
