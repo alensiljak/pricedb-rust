@@ -69,7 +69,7 @@ pub trait Dal {
     /// Used for pruning.
     fn get_securitiess_having_prices(&self) -> Vec<Security>;
 
-    fn get_security_by_symbol(&self, symbol: &str) -> Security;
+    // fn get_security_by_symbol(&self, symbol: &str) -> Security;
 
     // fn get_symbols(&self) -> Vec<SecuritySymbol>;
 

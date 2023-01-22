@@ -282,6 +282,24 @@ impl App {
 
     // Private
 
+    // fn get_security_by_symbol(&self, symbol: &str) -> Option<SecuritySymbol> {
+    // use std::{fs, path::PathBuf, vec};
+    //     // load all symbols
+    //     let path = PathBuf::from(&self.config.symbols_path);
+    //     let symbols = as_symbols::read_symbols(&path).expect("symbols parsed");
+
+    //     symbols.iter().find_map(|sym| {
+    //         let s = SecuritySymbol::new_separated(
+    //             &sym.namespace.as_ref().unwrap(),
+    //             &sym.symbol,
+    //         );
+    //         match s.to_string() == symbol || s.mnemonic == symbol {
+    //             true => Some(s),
+    //             false => None
+    //         }
+    //     })
+    // }
+
     fn insert_price(&self, new_price: &Price) -> usize {
         // log::debug!("\nInserting {new_price:?}");
 
@@ -399,20 +417,6 @@ impl App {
     }
 }
 
-fn log_securities(securities: &Vec<Security>) {
-    let symbols: Vec<String> = securities
-        .iter()
-        .map(|sec| {
-            format!(
-                "{}:{}",
-                sec.namespace.as_ref().unwrap().as_str(),
-                sec.symbol.as_str()
-            ) as String
-        })
-        .collect();
-    log::debug!("Securities to fetch the prices for: {:?}", symbols);
-}
-
 async fn download_price(symbol: SecuritySymbol, currency: &str, agent: &str) -> Option<Price> {
     // todo: there must be a symbol
     let mut dl = Quote::new();
@@ -429,6 +433,20 @@ async fn download_price(symbol: SecuritySymbol, currency: &str, agent: &str) -> 
 
     let price = prices[0].to_owned();
     Some(price)
+}
+
+fn log_securities(securities: &Vec<Security>) {
+    let symbols: Vec<String> = securities
+        .iter()
+        .map(|sec| {
+            format!(
+                "{}:{}",
+                sec.namespace.as_ref().unwrap().as_str(),
+                sec.symbol.as_str()
+            ) as String
+        })
+        .collect();
+    log::debug!("Securities to fetch the prices for: {:?}", symbols);
 }
 
 fn save_text_file(contents: &String, location: &String) {

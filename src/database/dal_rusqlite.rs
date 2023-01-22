@@ -5,7 +5,7 @@
 * Example for a query: https://stackoverflow.com/questions/67089430/how-do-we-use-select-query-with-an-external-where-parameter-in-rusqlite
 */
 use async_trait::async_trait;
-use rusqlite::{named_params, Connection};
+use rusqlite::Connection;
 use sea_query::{Expr, Query, SqliteQueryBuilder};
 use sea_query_rusqlite::{RusqliteBinder, RusqliteValues};
 
@@ -160,27 +160,27 @@ impl Dal for RuSqliteDal {
         result
     }
 
-    fn get_security_by_symbol(&self, symbol: &str) -> Security {
-        log::trace!("fetching security by symbol {:?}", symbol);
+    // fn get_security_by_symbol(&self, symbol: &str) -> Security {
+    //     log::trace!("fetching security by symbol {:?}", symbol);
 
-        let sql = "select * from security where symbol = :symbol";
-        let mut stmt = self.conn.prepare(sql).expect("Statement");
-        // let params = (1, symbol);
-        let params = named_params! { ":symbol": symbol.to_uppercase() };
-        let security = stmt
-            .query_row(params, |r| {
-                let result = map_row_to_security(r);
+    //     let sql = "select * from security where symbol = :symbol";
+    //     let mut stmt = self.conn.prepare(sql).expect("Statement");
+    //     // let params = (1, symbol);
+    //     let params = named_params! { ":symbol": symbol.to_uppercase() };
+    //     let security = stmt
+    //         .query_row(params, |r| {
+    //             let result = map_row_to_security(r);
 
-                log::debug!("row fetched: {:?}", result);
+    //             log::debug!("row fetched: {:?}", result);
 
-                Ok(result)
-            })
-            .expect("Error fetching security");
+    //             Ok(result)
+    //         })
+    //         .expect("Error fetching security");
 
-        log::debug!("query result: {:?}", security);
+    //     log::debug!("query result: {:?}", security);
 
-        security
-    }
+    //     security
+    // }
 
     fn update_price(&self, price: &Price) -> anyhow::Result<usize> {
         let (sql, params) = generate_update_price(price);
@@ -531,17 +531,17 @@ mod tests {
         assert_eq!(securities.len(), 4);
     }
 
-    #[test]
-    fn test_get_security_by_symbol() {
-        let dal = get_test_dal();
+    // #[test]
+    // fn test_get_security_by_symbol() {
+    //     let dal = get_test_dal();
 
-        let symbol = "EL49";
+    //     let symbol = "EL49";
 
-        let actual = dal.get_security_by_symbol(symbol);
+    //     let actual = dal.get_security_by_symbol(symbol);
 
-        assert_eq!(actual.currency, Some("EUR".to_string()));
-        assert_eq!(actual.namespace, Some("XETRA".to_string()));
-    }
+    //     assert_eq!(actual.currency, Some("EUR".to_string()));
+    //     assert_eq!(actual.namespace, Some("XETRA".to_string()));
+    // }
 
     #[test]
     fn test_select_securities_having_prices() {
