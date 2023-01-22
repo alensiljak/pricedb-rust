@@ -199,7 +199,7 @@ impl App {
             let symb = symbol.as_ref().unwrap().as_str();
             // let security = dal.get_security_by_symbol(symb);
             //security_ids.push(security.id);
-            let full_symbol = SecuritySymbol::parse(symb);
+            let full_symbol = SecuritySymbol::new(symb);
             security_ids.push(full_symbol.to_string());
         } else {
             // load all symbols

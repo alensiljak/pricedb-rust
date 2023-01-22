@@ -247,7 +247,7 @@ mod tests {
 
     #[test_log::test(tokio::test)]
     async fn test_price_parsing_aud() {
-        let symbol = SecuritySymbol::parse("CURRENCY:AUD");
+        let symbol = SecuritySymbol::new("CURRENCY:AUD");
 
         let f = Fixerio::new();
         let price = f.download(&symbol, "EUR").await.expect("Error");
@@ -263,7 +263,7 @@ mod tests {
 
     #[test_log::test(tokio::test)]
     async fn test_price_parsing_gbp() {
-        let symbol = SecuritySymbol::parse("CURRENCY:GBP");
+        let symbol = SecuritySymbol::new("CURRENCY:GBP");
 
         let f = Fixerio::new();
         let price = f.download(&symbol, "EUR").await.expect("Error");

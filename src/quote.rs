@@ -44,9 +44,10 @@ impl Quote {
 
         for symbol in symbols {
             // log::debug!("Downloading price for {:?}", symbol);
-
+            let sec_sym = SecuritySymbol::new_separated(&exchange, &symbol);
+            
             let price = self
-                .download(exchange, &symbol)
+                .download(&sec_sym)
                 .await
                 .expect("Did not receive price");
             result.push(price);
@@ -57,10 +58,10 @@ impl Quote {
 
     // Private
 
-    async fn download(&self, exchange: &str, symbol: &str) -> Option<Price> {
-        if exchange != exchange.to_uppercase() {
-            panic!("handle this case!");
-        }
+    async fn download(&self, security_symbol: &SecuritySymbol) -> Option<Price> {
+        // if exchange != exchange.to_uppercase() {
+        //     panic!("handle this case!");
+        // }
 
         if self.currency.is_some() {
             let currency_val = self.currency.clone().unwrap();
@@ -69,10 +70,10 @@ impl Quote {
             }
         }
 
-        let sec_symbol = SecuritySymbol {
-            namespace: exchange.to_owned(),
-            mnemonic: symbol.to_owned(),
-        };
+        // let sec_symbol = SecuritySymbol {
+        //     namespace: exchange.to_owned(),
+        //     mnemonic: symbol.to_owned(),
+        // };
         // todo: parse symbol
 
         let actor = self.get_downloader();
@@ -80,17 +81,17 @@ impl Quote {
 
         log::debug!(
             "Calling download with symbol {} and currency {}",
-            sec_symbol,
+            security_symbol,
             currency
         );
 
         let mut price = actor
-            .download(&sec_symbol, currency)
+            .download(security_symbol, currency)
             .await
             .expect("downloaded price");
 
         // Set the symbol here.
-        price.symbol = format!("{}:{}", sec_symbol.namespace, sec_symbol.mnemonic);
+        price.symbol = security_symbol.to_string();
 
         Some(price)
     }

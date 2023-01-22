@@ -106,22 +106,29 @@ pub struct SecuritySymbol {
 
 impl SecuritySymbol {
     /// Parse symbol syntax, i.e. "XETRA:EL4X"
-    pub fn parse(symbol: &str) -> SecuritySymbol {
+    pub fn new(symbol: &str) -> SecuritySymbol {
         // Create default values
         let mut namespace = String::default();
-        let mut mnemonic = symbol.to_owned();
+        let mut mnemonic = symbol.to_uppercase();
 
         // Try simple parsing.
         let parts: Vec<&str> = symbol.split(':').collect();
         if parts.len() > 1 {
-            namespace = parts[0].to_string();
-            mnemonic = parts[1].to_string();
+            namespace = parts[0].to_uppercase();
+            mnemonic = parts[1].to_uppercase();
         }
         log::debug!("parts: {:?}", &parts);
 
         SecuritySymbol {
             namespace,
             mnemonic,
+        }
+    }
+
+    pub fn new_separated(exchange: &str, symbol: &str) -> Self {
+        Self {
+            namespace: exchange.to_uppercase(),
+            mnemonic: symbol.to_uppercase()
         }
     }
 }
@@ -165,7 +172,7 @@ mod tests {
 
     #[test]
     fn test_parse() {
-        let s = SecuritySymbol::parse("XETRA:EL4X");
+        let s = SecuritySymbol::new("XETRA:EL4X");
 
         assert_eq!(s.namespace, "XETRA");
         assert_eq!(s.mnemonic, "EL4X");
@@ -173,7 +180,7 @@ mod tests {
 
     #[test]
     fn test_parse_currency() {
-        let s = SecuritySymbol::parse("AUD");
+        let s = SecuritySymbol::new("AUD");
 
         assert_eq!(s.namespace, "");
         assert_eq!(s.mnemonic, "AUD");
