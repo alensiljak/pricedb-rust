@@ -1,8 +1,8 @@
 /*!
  * Price Database
- * 
+ *
  * Retrieving, storing, and exporting commodity prices in Ledger format
- * 
+ *
  * See [Documentation](https://github.com/alensiljak/pricedb-rust).
  */
 
@@ -28,49 +28,43 @@ async fn main() {
     let cfg = pricedb::load_config();
     let app = pricedb::App::new(cfg);
 
-    // config
-
-    if let Some(Commands::Config(interface::ConfigCmd::Show)) = &args.command {
-        app.config_show();
-    }
-
-    // export
-
-    if let Some(Commands::Export {}) = &args.command {
-        app.export();
-    }
-
-    // download
-
-    if let Some(Commands::Dl {
-        currency,
-        agent,
-        exchange,
-        symbol,
-    }) = &args.command
-    {
-        let filter = SecurityFilter {
-            currency: currency.clone(),
-            agent: agent.clone(),
-            exchange: exchange.clone(),
-            symbol: symbol.clone(),
-        };
-        app.download_prices(filter).await;
-    }
-
-    // list
-
-    if let Some(Commands::List {
-        date,
-        currency,
-        last,
-    }) = &args.command
-    {
-        app.list_prices(date, currency, last);
-    }
-    // prune
-
-    if let Some(Commands::Prune { symbol }) = &args.command {
-        app.prune(symbol);
+    match &args.command {
+        // config
+        Some(Commands::Config(interface::ConfigCmd::Show)) => app.config_show(),
+        
+        // export
+        Some(Commands::Export {}) => app.export(),
+        
+        // download
+        Some(Commands::Dl {
+            currency,
+            agent,
+            exchange,
+            symbol,
+        }) => {
+            let filter = SecurityFilter {
+                currency: currency.clone(),
+                agent: agent.clone(),
+                exchange: exchange.clone(),
+                symbol: symbol.clone(),
+            };
+            app.download_prices(filter).await;
+        }
+        
+        // list
+        Some(Commands::List {
+            date,
+            currency,
+            last,
+        }) => {
+            app.list_prices(date, currency, last);
+        }
+        
+        // prune
+        Some(Commands::Prune { symbol }) => {
+            app.prune(symbol);
+        }
+        
+        None => println!("No command issued."),
     }
 }

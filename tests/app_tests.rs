@@ -12,16 +12,11 @@ use pricedb::{
 
 #[fixture]
 fn app() -> App {
-    let cfg = PriceDbConfig {
-        alphavantage_api_key: String::default(),
-        export_destination: String::default(),
-        fixerio_api_key: String::default(),
-        price_database_path: ":memory:".to_owned(),
-    };
-
-    let app = App::new(cfg);
+    let cfg = PriceDbConfig::default();
 
     // initialize database
+    let app = App::new(cfg);
+
     app
 }
 

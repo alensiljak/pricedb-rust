@@ -5,7 +5,7 @@
 use serde_derive::{Deserialize, Serialize};
 
 /// The configuration file schema
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct PriceDbConfig {
     /// The full path to the price database file.
     pub price_database_path: String,
@@ -14,4 +14,16 @@ pub struct PriceDbConfig {
     /// The full path to the file where the prices will be exported.
     pub export_destination: String,
     pub symbols_path: String,
+}
+
+impl Default for PriceDbConfig {
+    fn default() -> Self {
+        Self {
+            price_database_path: ":memory:".to_owned(),
+            alphavantage_api_key: Default::default(),
+            fixerio_api_key: Default::default(),
+            export_destination: Default::default(),
+            symbols_path: Default::default(),
+        }
+    }
 }
