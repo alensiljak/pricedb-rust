@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- removed the dependency on Security table for export
+- removed the PriceWSymbol struct
+
+### Fixed
+
+- all tests pass
+
 ## [1.5.1] - 2023-01-22
 
 ### Changed

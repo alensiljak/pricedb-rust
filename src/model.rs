@@ -140,31 +140,31 @@ impl Display for SecuritySymbol {
     }
 }
 
-pub struct PriceWSymbol {
-    pub id: i64,
-    pub namespace: String,
-    pub symbol: String,
-    pub ledger_symbol: String,
-    pub date: String,
-    pub time: String,
-    pub value: Decimal,
-    pub currency: String,
-}
+// pub struct PriceWSymbol {
+//     pub id: i64,
+//     pub namespace: String,
+//     pub symbol: String,
+//     pub ledger_symbol: String,
+//     pub date: String,
+//     pub time: String,
+//     pub value: Decimal,
+//     pub currency: String,
+// }
 
-impl PriceWSymbol {
-    pub fn from(price: &Price, sec: &Security) -> Self {
-        Self {
-            id: price.id,
-            namespace: sec.namespace.to_owned().unwrap_or_default(),
-            symbol: sec.symbol.to_owned(),
-            ledger_symbol: sec.ledger_symbol.to_owned().unwrap_or_default(),
-            date: price.date.to_owned(),
-            time: price.time.to_owned(),
-            value: price.to_decimal(),
-            currency: price.currency.to_owned(),
-        }
-    }
-}
+// impl PriceWSymbol {
+//     pub fn from(price: &Price, sec: &Security) -> Self {
+//         Self {
+//             id: price.id,
+//             namespace: sec.namespace.to_owned().unwrap_or_default(),
+//             symbol: sec.symbol.to_owned(),
+//             ledger_symbol: sec.ledger_symbol.to_owned().unwrap_or_default(),
+//             date: price.date.to_owned(),
+//             time: price.time.to_owned(),
+//             value: price.to_decimal(),
+//             currency: price.currency.to_owned(),
+//         }
+//     }
+// }
 
 #[cfg(test)]
 mod tests {

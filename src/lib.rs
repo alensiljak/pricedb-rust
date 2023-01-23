@@ -7,6 +7,7 @@ and exports in Ledger-cli format.
 Project [Documentation](https://github.com/alensiljak/pricedb-rust).
 */
 
+use as_symbols::SymbolMetadata;
 use config::PriceDbConfig;
 use once_cell::unsync::OnceCell;
 use rust_decimal::prelude::ToPrimitive;
@@ -19,7 +20,7 @@ mod quote;
 
 use crate::{database::Dal, model::*, quote::Quote};
 
-use std::{fs, vec};
+use std::{fs, vec, path::PathBuf};
 
 use anyhow::Error;
 
@@ -165,16 +166,16 @@ impl App {
         _currency: &Option<String>,
         _last: &Option<String>,
     ) -> String {
-        let mut pwss = self.load_all_prices_with_symbols();
+        let mut prices = self.get_dal().get_prices(None);
 
-        // sort
-        pwss.sort_unstable_by_key(|p| (p.namespace.to_owned(), p.symbol.to_owned()));
+        // sort by symbol
+        prices.sort_unstable_by_key(|p| p.symbol.to_owned());
 
         let mut result = String::new();
-        for pws in pwss {
+        for pws in prices {
             let output = format!(
-                "{}:{} {} {} {:?} {}",
-                pws.namespace, pws.symbol, pws.date, pws.time, pws.value, pws.currency
+                "{} {} {} {:?} {}",
+                pws.symbol, pws.date, pws.time, pws.to_decimal(), pws.currency
             );
             println!("{output}");
             result += &output;
@@ -243,19 +244,21 @@ impl App {
 
     /// Export prices in ledger format
     pub fn export(&self) {
-        let mut pwss = self.load_all_prices_with_symbols();
+        let mut prices = self.get_dal().get_prices(None);
 
-        pwss.sort_unstable_by_key(|p| {
+        prices.sort_unstable_by_key(|p| {
             (
                 p.date.to_owned(),
                 p.time.to_owned(),
-                p.namespace.to_owned(),
                 p.symbol.to_owned(),
             )
         });
 
+        let symbols = self.load_symbols()
+            .expect("symbols loaded");
+
         // format in ledger format
-        let output = ledger_formatter::format_prices_w_symbols(pwss);
+        let output = ledger_formatter::format_prices(prices, symbols);
 
         // get export destination from configuration
         let target = &self.config.export_destination;
@@ -308,22 +311,27 @@ impl App {
         dal.add_price(new_price)
     }
 
-    fn load_all_prices_with_symbols(&self) -> Vec<PriceWSymbol> {
-        let dal = self.get_dal();
-        let prices = dal.get_prices(None);
-        let securities = dal.get_securities(None);
+    // fn load_all_prices_with_symbols(&self) -> Vec<PriceWSymbol> {
+    //     let dal = self.get_dal();
+    //     let prices = dal.get_prices(None);
+    //     let securities = dal.get_securities(None);
 
-        prices
-            .iter()
-            .map(|price| {
-                let sec = securities
-                    .iter()
-                    .find(|sec| sec.id == price.security_id)
-                    .expect("a related security");
+    //     prices
+    //         .iter()
+    //         .map(|price| {
+    //             let sec = securities
+    //                 .iter()
+    //                 .find(|sec| sec.id == price.security_id)
+    //                 .expect("a related security");
 
-                PriceWSymbol::from(price, sec)
-            })
-            .collect()
+    //             PriceWSymbol::from(price, sec)
+    //         })
+    //         .collect()
+    // }
+
+    fn load_symbols(&self) -> Result<Vec<SymbolMetadata>, Error> {
+        let path = PathBuf::from(&self.config.symbols_path);
+        as_symbols::read_symbols(&path)
     }
 
     /// Deletes price history for the given Security, leaving only the latest price.

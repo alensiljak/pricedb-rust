@@ -13,9 +13,9 @@ categories = ["command-line-utilities", "finance"]
 
 [dependencies]
 anyhow = "1.0.68"
-# async-std = "1.12.0"
-as-symbols = "0.2.1"
-async-trait = "0.1.62"
+# as-symbols = "0.4.2"
+as-symbols = { git="https://github.com/alensiljak/as-symbols", tag="v0.4.2"}
+async-trait = "0.1.63"
 chrono = "0.4.23"
 clap = { version = "4.1.1", features = ["cargo", "derive"] }
 confy = "0.5.1"

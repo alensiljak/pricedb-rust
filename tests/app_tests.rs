@@ -78,7 +78,7 @@ fn roundtrip(app: App, new_price: Price) {
     let output = app.list_prices(&None, &None, &None);
 
     assert_eq!(
-        "AMS:IPRP 2022-12-01 13:25:44 10.33 EUR",
+        "VTI 2022-12-01 13:25:44 10.33 EUR",
         output
     );
 }
