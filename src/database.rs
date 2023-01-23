@@ -12,7 +12,7 @@ mod mappers_rusqlite;
 use async_trait::async_trait;
 use log::debug;
 
-use crate::model::{Price, PriceFilter, Security, SecurityFilter};
+use crate::model::{Price, PriceFilter, Security, SecurityFilter, SecuritySymbol};
 
 /// Initialize database connection.
 /// `db_path` is the path to the file.
@@ -67,7 +67,7 @@ pub trait Dal {
 
     /// Returns all the ids of the symbols that have prices in the database.
     /// Used for pruning.
-    fn get_securitiess_having_prices(&self) -> Vec<Security>;
+    fn get_securitiess_having_prices(&self) -> Vec<SecuritySymbol>;
 
     // fn get_security_by_symbol(&self, symbol: &str) -> Security;
 

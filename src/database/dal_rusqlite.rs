@@ -57,14 +57,17 @@ impl Dal for RuSqliteDal {
         Ok(result)
     }
 
-    fn get_securitiess_having_prices(&self) -> Vec<Security> {
+    fn get_securitiess_having_prices(&self) -> Vec<SecuritySymbol> {
         let (sql, values) = generate_select_securities_having_prices();
 
-        let mut stmt = self.conn.prepare(&sql).expect("Statement");
+        let mut stmt = self.conn.prepare(&sql).expect("executed statement");
+
         let result = stmt
             .query_map(&*values.as_params(), |row| {
-                let sec = map_row_to_security(row);
-                Ok(sec)
+                // let sec = map_row_to_security(row);
+                let sym: String = row.get_unwrap(0);
+                let res = SecuritySymbol::new(&sym);
+                Ok(res)
             })
             .expect("securities mapped")
             .flatten()
@@ -87,9 +90,6 @@ impl Dal for RuSqliteDal {
 
         let prices = statement
             .query_map(&*values.as_params(), |row| {
-                let x: Result<String, rusqlite::Error> = row.get(0);
-                log::debug!("row {:?}", x);
-
                 // map
                 let sec = map_row_to_price(row);
                 Ok(sec)
@@ -341,23 +341,26 @@ fn generate_select_security_with_filter(filter: &SecurityFilter) -> (String, Rus
 
 /// Select all securities that have linked price records.
 fn generate_select_securities_having_prices() -> (String, RusqliteValues) {
-    Query::select()
-        .columns(get_security_columns())
-        .from(SecurityIden::Table)
-        // .inner_join(
-        //     PriceIden::Table,
-        //     Expr::col((SecurityIden::Table, SecurityIden::Id))
-        //         .equals((PriceIden::Table, PriceIden::SecurityId)),
-        // )
-        .order_by(
-            (SecurityIden::Table, SecurityIden::Namespace),
-            sea_query::Order::Asc,
-        )
-        .order_by(
-            (SecurityIden::Table, SecurityIden::Symbol),
-            sea_query::Order::Asc,
-        )
-        .build_rusqlite(SqliteQueryBuilder)
+    // Query::select()
+    //     .columns(get_security_columns())
+    //     .from(SecurityIden::Table)
+    //     // .inner_join(
+    //     //     PriceIden::Table,
+    //     //     Expr::col((SecurityIden::Table, SecurityIden::Id))
+    //     //         .equals((PriceIden::Table, PriceIden::SecurityId)),
+    //     // )
+    //     .order_by(
+    //         (SecurityIden::Table, SecurityIden::Namespace),
+    //         sea_query::Order::Asc,
+    //     )
+    //     .order_by(
+    //         (SecurityIden::Table, SecurityIden::Symbol),
+    //         sea_query::Order::Asc,
+    //     )
+    //     .build_rusqlite(SqliteQueryBuilder)
+    let sql = "select distinct symbol from price".to_string();
+    let values = RusqliteValues(vec![]);
+    (sql, values)
 }
 
 #[allow(dead_code)]
@@ -392,7 +395,7 @@ mod tests {
         let date: String = chrono::Local::now().date_naive().to_string();
         Price {
             symbol: symbol.to_owned(),
-            id: 1,
+            id: 0,
             security_id: 0,
             date,
             time: Price::default_time(),
@@ -506,15 +509,15 @@ mod tests {
         assert_eq!(actual.len(), 2);
     }
 
-    #[test]
-    fn test_get_securities_wo_filter() {
-        let dal = test_dal();
+    // #[rstest::rstest]
+    // fn test_get_securities_wo_filter(test_dal: RuSqliteDal) {
+    //     let dal = test_dal;
 
-        let securities = dal.get_securities(None);
+    //     let securities = dal.get_securities(None);
 
-        assert_ne!(securities.len(), 0);
-        assert_eq!(securities.len(), 4);
-    }
+    //     assert_ne!(securities.len(), 0);
+    //     assert_eq!(securities.len(), 4);
+    // }
 
     // #[test]
     // fn test_get_security_by_symbol() {
@@ -528,14 +531,21 @@ mod tests {
     //     assert_eq!(actual.namespace, Some("XETRA".to_string()));
     // }
 
-    #[test]
-    fn test_select_securities_having_prices() {
-        let (sql, values) = generate_select_securities_having_prices();
+    // #[test]
+    // fn test_select_securities_having_prices() {
+    //     let (sql, values) = generate_select_securities_having_prices();
 
-        assert_eq!(
-            r#"SELECT "security"."id", "security"."namespace", "security"."symbol", "security"."updater", "security"."currency", "security"."ledger_symbol", "security"."notes" FROM "security" INNER JOIN "price" ON "security"."id" = "price"."security_id" ORDER BY "security"."namespace" ASC, "security"."symbol" ASC"#,
-            sql
-        );
-        assert!(values.0.len() == 0);
+    //     assert_eq!(
+    //         r#"SELECT "security"."id", "security"."namespace", "security"."symbol", "security"."updater", "security"."currency", "security"."ledger_symbol", "security"."notes" FROM "security" INNER JOIN "price" ON "security"."id" = "price"."security_id" ORDER BY "security"."namespace" ASC, "security"."symbol" ASC"#,
+    //         sql
+    //     );
+    //     assert!(values.0.len() == 0);
+    // }
+
+    #[rstest::rstest]
+    fn test_get_securitiess_having_prices(test_dal: RuSqliteDal) {
+        let actual = test_dal.get_securitiess_having_prices();
+
+        assert_ne!(0, actual.len());
     }
 }

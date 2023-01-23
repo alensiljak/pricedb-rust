@@ -206,7 +206,7 @@ impl App {
             security_ids = dal
                 .get_securitiess_having_prices()
                 .iter()
-                .map(|item| item.symbol.to_owned())
+                .map(|item| item.to_string())
                 .collect();
         }
 
