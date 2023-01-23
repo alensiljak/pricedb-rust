@@ -4,14 +4,14 @@
 
 use sea_query::{SqliteQueryBuilder, Table, ColumnDef};
 
-use crate::model::PriceIden;
+use crate::model::{PriceIden, SecurityIden};
 
-// pub(crate) fn get_drop_security() -> String {
-//     Table::drop()
-//         .table(SecurityIden::Table)
-//         .if_exists()
-//         .build(SqliteQueryBuilder)
-// }
+pub(crate) fn get_drop_security() -> String {
+    Table::drop()
+        .table(SecurityIden::Table)
+        .if_exists()
+        .build(SqliteQueryBuilder)
+}
 
 pub(crate) fn get_drop_price() -> String {
     Table::drop()
@@ -20,25 +20,25 @@ pub(crate) fn get_drop_price() -> String {
             .build(SqliteQueryBuilder)
 }
 
-// pub(crate) fn create_security() -> String {
-//     Table::create()
-//             .table(SecurityIden::Table)
-//             .if_not_exists()
-//             .col(
-//                 ColumnDef::new(SecurityIden::Id)
-//                     .integer()
-//                     .not_null()
-//                     .auto_increment()
-//                     .primary_key(),
-//             )
-//             .col(ColumnDef::new(SecurityIden::Namespace).string().null())
-//             .col(ColumnDef::new(SecurityIden::Symbol).string())
-//             .col(ColumnDef::new(SecurityIden::Updater).string().null())
-//             .col(ColumnDef::new(SecurityIden::Currency).string().null())
-//             .col(ColumnDef::new(SecurityIden::LedgerSymbol).string().null())
-//             .col(ColumnDef::new(SecurityIden::Notes).string().null())
-//             .build(SqliteQueryBuilder)
-// }
+pub(crate) fn create_security() -> String {
+    Table::create()
+            .table(SecurityIden::Table)
+            .if_not_exists()
+            .col(
+                ColumnDef::new(SecurityIden::Id)
+                    .integer()
+                    .not_null()
+                    .auto_increment()
+                    .primary_key(),
+            )
+            .col(ColumnDef::new(SecurityIden::Namespace).string().null())
+            .col(ColumnDef::new(SecurityIden::Symbol).string())
+            .col(ColumnDef::new(SecurityIden::Updater).string().null())
+            .col(ColumnDef::new(SecurityIden::Currency).string().null())
+            .col(ColumnDef::new(SecurityIden::LedgerSymbol).string().null())
+            .col(ColumnDef::new(SecurityIden::Notes).string().null())
+            .build(SqliteQueryBuilder)
+}
 
 pub(crate) fn create_price() -> String {
     Table::create()

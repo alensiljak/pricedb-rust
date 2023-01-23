@@ -47,11 +47,11 @@ pub fn get_security_columns() -> Vec<(SecurityIden, SecurityIden)> {
 
 pub(crate) fn map_row_to_price(row: &Row) -> Price {
     Price {
-        symbol: row.get_unwrap(0),
-        id: row.get_unwrap(1),
+        symbol: row.get(0).expect("symbol string"),
+        id: row.get(1).expect("int id"),
         security_id: row.get_unwrap(2),
         date: row.get_unwrap(3),
-        time: row.get(4).expect("value"),
+        time: row.get_unwrap(4),
         value: row.get(5).expect("value"),
         denom: row.get(6).expect("value"),
         currency: row.get(7).expect("value"),
@@ -99,7 +99,6 @@ pub(crate) fn generate_insert_price(price: &Price) -> (String, RusqliteValues) {
 
 // pub(crate) fn generate_insert_security(security: &Security) -> (String, RusqliteValues) {
 //     let columns = get_security_columns_wo_table();
-
 //     Query::insert()
 //         .into_table(SecurityIden::Table)
 //         .columns(columns)

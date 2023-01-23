@@ -32,7 +32,7 @@ impl Dal for RuSqliteDal {
 
         let (sql, values) = generate_insert_price(new_price);
 
-        log::debug!("inserting price: {:?}", sql);
+        log::debug!("inserting price: {}", sql);
         log::debug!("values: {:?}", values);
 
         let result = self
@@ -75,15 +75,15 @@ impl Dal for RuSqliteDal {
 
     fn get_prices(&self, filter: Option<PriceFilter>) -> Vec<Price> {
         let filter_internal: PriceFilter = match filter {
-            Some(_) => filter.unwrap(),
+            Some(unwrapped) => unwrapped,
             None => PriceFilter::new(), // empty filter required
         };
 
-        let (sql, values) = generate_select_price_with_filter(&filter_internal);
+        let (sql, values) = generate_select_price_w_filter(&filter_internal);
 
-        log::debug!("get prices, sql: {:?}", sql);
+        log::debug!("get prices sql: {}", sql);
 
-        let mut statement = self.conn.prepare(&sql).unwrap();
+        let mut statement = self.conn.prepare(&sql).expect("executed statement");
 
         let prices = statement
             .query_map(&*values.as_params(), |row| {
@@ -160,28 +160,6 @@ impl Dal for RuSqliteDal {
         result
     }
 
-    // fn get_security_by_symbol(&self, symbol: &str) -> Security {
-    //     log::trace!("fetching security by symbol {:?}", symbol);
-
-    //     let sql = "select * from security where symbol = :symbol";
-    //     let mut stmt = self.conn.prepare(sql).expect("Statement");
-    //     // let params = (1, symbol);
-    //     let params = named_params! { ":symbol": symbol.to_uppercase() };
-    //     let security = stmt
-    //         .query_row(params, |r| {
-    //             let result = map_row_to_security(r);
-
-    //             log::debug!("row fetched: {:?}", result);
-
-    //             Ok(result)
-    //         })
-    //         .expect("Error fetching security");
-
-    //     log::debug!("query result: {:?}", security);
-
-    //     security
-    // }
-
     fn update_price(&self, price: &Price) -> anyhow::Result<usize> {
         let (sql, params) = generate_update_price(price);
 
@@ -197,12 +175,12 @@ impl Dal for RuSqliteDal {
     fn create_tables(&self) {
         // drop Security table, if exists
 
-        // let sql = crate::database::db_schema::get_drop_security();
-        // self.conn.execute(&sql, []).expect("result");
+        let sql = crate::database::db_schema::get_drop_security();
+        self.conn.execute(&sql, []).expect("result");
 
         // create Security table
-        // let sql = crate::database::db_schema::create_security();
-        // self.conn.execute(&sql, []).expect("result");
+        let sql = crate::database::db_schema::create_security();
+        self.conn.execute(&sql, []).expect("result");
 
         // drop Prices table, if exists
 
@@ -241,15 +219,17 @@ impl Dal for RuSqliteDal {
         // debug_assert_eq!(2, res.len());
         res
     }
-
 }
 
 /// rusqlite connection
 fn open_connection(conn_str: &String) -> Connection {
+    //Connection::open_in_memory()
     Connection::open(conn_str).expect("open sqlite connection")
 }
 
-fn generate_select_price_with_filter(filter: &PriceFilter) -> (String, RusqliteValues) {
+fn generate_select_price_w_filter(filter: &PriceFilter) -> (String, RusqliteValues) {
+    log::debug!("Generating select statement for filter: {:?}", filter);
+
     Query::select()
         .columns(get_price_columns())
         .from(PriceIden::Table)
@@ -385,6 +365,7 @@ enum PriceSymbolOrder {
 
 #[cfg(test)]
 mod tests {
+    use rstest::fixture;
     use sea_query_rusqlite::RusqliteValue;
     use test_log::test;
 
@@ -392,8 +373,9 @@ mod tests {
 
     use super::*;
 
+    #[fixture]
     /// Creates a dummy dal and prepares an in-memory test database.
-    fn get_test_dal() -> RuSqliteDal {
+    fn test_dal() -> RuSqliteDal {
         let dal = RuSqliteDal::new(":memory:".to_string());
         dal.create_tables();
 
@@ -407,7 +389,7 @@ mod tests {
         let date: String = chrono::Local::now().date_naive().to_string();
         Price {
             symbol: symbol.to_owned(),
-            id: i64::default(),
+            id: 0,
             security_id: 0,
             date,
             time: Price::default_time(),
@@ -486,11 +468,11 @@ mod tests {
     //     WHERE @parameter IS NULL OR NAME = @parameter;"#;
     // }
 
-    #[test]
+    #[rstest::rstest]
     /// Test loading prices with an empty filter.
     /// Loads all prices
-    fn test_get_prices_w_empty_filter() {
-        let dal = get_test_dal();
+    fn test_get_prices_w_empty_filter(test_dal: RuSqliteDal) {
+        let dal = test_dal;
 
         let filter = PriceFilter {
             symbol: None,
@@ -507,7 +489,7 @@ mod tests {
     #[test]
     /// Test loading prices with a security id.
     fn test_get_prices_w_filter() {
-        let dal = get_test_dal();
+        let dal = test_dal();
 
         let filter = PriceFilter {
             symbol: Some("VTI".to_owned()),
@@ -523,7 +505,7 @@ mod tests {
 
     #[test]
     fn test_get_securities_wo_filter() {
-        let dal = get_test_dal();
+        let dal = test_dal();
 
         let securities = dal.get_securities(None);
 

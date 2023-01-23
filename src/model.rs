@@ -45,7 +45,7 @@ impl Price {
     }
 }
 
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct PriceFilter {
     // pub security_id: Option<i64>,
     pub symbol: Option<String>,
