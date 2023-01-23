@@ -10,6 +10,7 @@ use pricedb::{
     App,
 };
 
+/// Sets up an in-memory database.
 #[fixture]
 fn app() -> App {
     let cfg = PriceDbConfig::default();
@@ -35,20 +36,26 @@ fn new_price() -> Price {
 }
 
 /// Populates the database
-// #[fixture]
-// fn app_with_data(app: App) -> App {
-//     let sec = Security {
-//         id: 1,
-//         namespace: Some("AMS".to_owned()),
-//         symbol: "IPRP".to_owned(),
-//         currency: Some("EUR".to_owned()),
-//         ledger_symbol: Some("IPRP_AS".to_owned()),
-//         updater: Some("yahoo_finance".to_owned()),
-//         notes: None,
-//     };
-//     app.get_dal().add_security(&sec);
-//     app
-// }
+#[fixture]
+fn app_with_data(app: App) -> App {
+    // let sec = Security {
+    //     id: 1,
+    //     namespace: Some("AMS".to_owned()),
+    //     symbol: "IPRP".to_owned(),
+    //     currency: Some("EUR".to_owned()),
+    //     ledger_symbol: Some("IPRP_AS".to_owned()),
+    //     updater: Some("yahoo_finance".to_owned()),
+    //     notes: None,
+    // };
+    // app.get_dal().add_security(&sec);
+
+    // add some prices
+    let mut price = Price::new();
+    price.symbol = "AMS:VHYL".into();
+    app.get_dal().add_price(&price);
+
+    app
+}
 
 /**
  * Just a basic smoke test to see that the pruninng runs.
@@ -64,6 +71,15 @@ fn test_prune(app: App) {
 
     let expected = 1;
     assert_eq!(actual, expected);
+}
+
+#[rstest]
+fn test_prune_all(app_with_data: App) {
+    let actual = app_with_data.prune(&None);
+
+    log::debug!("deleted: {:?}", actual);
+    assert_ne!(0, actual);
+    assert_eq!(1, actual);
 }
 
 /// Try multiple actions
