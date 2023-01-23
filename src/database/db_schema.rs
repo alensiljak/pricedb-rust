@@ -44,15 +44,14 @@ pub(crate) fn create_price() -> String {
     Table::create()
             .table(PriceIden::Table)
             .if_not_exists()
-            // .col(
-            //     ColumnDef::new(PriceIden::Id)
-            //         .integer()
-            //         .not_null()
-            //         .auto_increment()
-            //         .primary_key(),
-            // )
             .col(ColumnDef::new(PriceIden::Symbol).string())
-            .col(ColumnDef::new(PriceIden::Id).integer())
+            .col(
+                ColumnDef::new(PriceIden::Id)
+                    .integer()
+                    .not_null()
+                    .auto_increment()
+                    .primary_key(),
+            )
             .col(ColumnDef::new(PriceIden::SecurityId).integer())
             .col(ColumnDef::new(PriceIden::Date).string())
             .col(ColumnDef::new(PriceIden::Time).string().null())

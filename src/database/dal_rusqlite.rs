@@ -87,6 +87,9 @@ impl Dal for RuSqliteDal {
 
         let prices = statement
             .query_map(&*values.as_params(), |row| {
+                let x: Result<String, rusqlite::Error> = row.get(0);
+                log::debug!("row {:?}", x);
+
                 // map
                 let sec = map_row_to_price(row);
                 Ok(sec)
@@ -389,7 +392,7 @@ mod tests {
         let date: String = chrono::Local::now().date_naive().to_string();
         Price {
             symbol: symbol.to_owned(),
-            id: 0,
+            id: 1,
             security_id: 0,
             date,
             time: Price::default_time(),
