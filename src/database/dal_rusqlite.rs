@@ -531,17 +531,6 @@ mod tests {
     //     assert_eq!(actual.namespace, Some("XETRA".to_string()));
     // }
 
-    // #[test]
-    // fn test_select_securities_having_prices() {
-    //     let (sql, values) = generate_select_securities_having_prices();
-
-    //     assert_eq!(
-    //         r#"SELECT "security"."id", "security"."namespace", "security"."symbol", "security"."updater", "security"."currency", "security"."ledger_symbol", "security"."notes" FROM "security" INNER JOIN "price" ON "security"."id" = "price"."security_id" ORDER BY "security"."namespace" ASC, "security"."symbol" ASC"#,
-    //         sql
-    //     );
-    //     assert!(values.0.len() == 0);
-    // }
-
     #[rstest::rstest]
     fn test_get_securitiess_having_prices(test_dal: RuSqliteDal) {
         let actual = test_dal.get_securitiess_having_prices();

@@ -190,7 +190,7 @@ mod tests {
     fn create_dummy_price() -> Price {
         Price {
             symbol: "".to_owned(),
-            id: 0,
+            id: 13,
             security_id: 155,
             date: "2022-12-07".to_owned(),
             time: "12:00:01".to_owned(),
@@ -203,7 +203,7 @@ mod tests {
     #[test]
     fn test_price_insert_statement() {
         let new_price = Price {
-            symbol: "".to_owned(),
+            symbol: "TEST:TEST".to_owned(),
             id: i64::default(),
             security_id: 111,
             date: "2022-12-01".to_string(),
@@ -218,25 +218,26 @@ mod tests {
 
         // println!("sql: {:?}, values: {:?}", sql, values);
 
-        let expected = r#"INSERT INTO "price" ("security_id", "date", "time", "value", "denom", "currency") VALUES (?, ?, ?, ?, ?, ?)"#;
+        let expected = r#"INSERT INTO "price" ("symbol", "security_id", "date", "time", "value", "denom", "currency") VALUES (?, ?, ?, ?, ?, ?, ?)"#;
         assert_eq!(expected, sql);
 
         // Assert parameters
 
-        assert_eq!(values.0[0].0, sea_query::Value::BigInt(Some(111)));
+        assert_eq!(values.0[0].0, sea_query::Value::String(Some(Box::new("TEST:TEST".to_string()))));
+        assert_eq!(values.0[1].0, sea_query::Value::BigInt(Some(111)));
         assert_eq!(
-            values.0[1].0,
+            values.0[2].0,
             sea_query::Value::String(Some(Box::new("2022-12-01".to_string())))
         );
 
         assert_eq!(
-            values.0[2].0,
+            values.0[3].0,
             sea_query::Value::String(Some(Box::new("00:00:00".to_owned())))
         );
-        assert_eq!(values.0[3].0, sea_query::Value::Int(Some(100)));
-        assert_eq!(values.0[4].0, sea_query::Value::Unsigned(Some(10)));
+        assert_eq!(values.0[4].0, sea_query::Value::BigInt(Some(100)));
+        assert_eq!(values.0[5].0, sea_query::Value::BigInt(Some(10)));
         assert_eq!(
-            values.0[5].0,
+            values.0[6].0,
             sea_query::Value::String(Some(Box::new("AUD".to_string())))
         );
     }
