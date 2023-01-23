@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- reading securities from the CSV file in get_securities
+
 ## [1.5.2] - 2023-01-23
 
 ### Removed

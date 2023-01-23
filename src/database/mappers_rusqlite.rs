@@ -6,7 +6,7 @@ use rusqlite::Row;
 use sea_query::{Expr, Query, SqliteQueryBuilder};
 use sea_query_rusqlite::{RusqliteBinder, RusqliteValues};
 
-use crate::model::{Price, PriceIden, Security, SecurityIden};
+use crate::model::{Price, PriceIden};
 
 pub fn get_price_columns() -> Vec<(PriceIden, PriceIden)> {
     vec![
@@ -21,30 +21,6 @@ pub fn get_price_columns() -> Vec<(PriceIden, PriceIden)> {
     ]
 }
 
-pub fn get_security_columns() -> Vec<(SecurityIden, SecurityIden)> {
-    vec![
-        (SecurityIden::Table, SecurityIden::Id),
-        (SecurityIden::Table, SecurityIden::Namespace),
-        (SecurityIden::Table, SecurityIden::Symbol),
-        (SecurityIden::Table, SecurityIden::Updater),
-        (SecurityIden::Table, SecurityIden::Currency),
-        (SecurityIden::Table, SecurityIden::LedgerSymbol),
-        (SecurityIden::Table, SecurityIden::Notes),
-    ]
-}
-
-// pub fn get_security_columns_wo_table() -> Vec<SecurityIden> {
-//     vec![
-//         SecurityIden::Id,
-//         SecurityIden::Namespace,
-//         SecurityIden::Symbol,
-//         SecurityIden::Updater,
-//         SecurityIden::Currency,
-//         SecurityIden::LedgerSymbol,
-//         SecurityIden::Notes,
-//     ]
-// }
-
 pub(crate) fn map_row_to_price(row: &Row) -> Price {
     Price {
         symbol: row.get(0).expect("symbol string"),
@@ -55,18 +31,6 @@ pub(crate) fn map_row_to_price(row: &Row) -> Price {
         value: row.get(5).expect("value"),
         denom: row.get(6).expect("value"),
         currency: row.get(7).expect("value"),
-    }
-}
-
-pub(crate) fn map_row_to_security(row: &Row) -> Security {
-    Security {
-        id: row.get_unwrap(0),
-        namespace: row.get_unwrap(1),
-        symbol: row.get_unwrap(2),
-        updater: row.get_unwrap(3),
-        currency: row.get_unwrap(4),
-        ledger_symbol: row.get_unwrap(5),
-        notes: row.get_unwrap(6),
     }
 }
 
@@ -96,23 +60,6 @@ pub(crate) fn generate_insert_price(price: &Price) -> (String, RusqliteValues) {
     //.to_string(SqliteQueryBuilder);
     result
 }
-
-// pub(crate) fn generate_insert_security(security: &Security) -> (String, RusqliteValues) {
-//     let columns = get_security_columns_wo_table();
-//     Query::insert()
-//         .into_table(SecurityIden::Table)
-//         .columns(columns)
-//         .values_panic([
-//             security.id.into(),
-//             security.namespace.to_owned().into(),
-//             security.symbol.to_owned().into(),
-//             security.updater.to_owned().into(),
-//             security.currency.to_owned().into(),
-//             security.ledger_symbol.to_owned().into(),
-//             security.notes.to_owned().into(),
-//         ])
-//         .build_rusqlite(SqliteQueryBuilder)
-// }
 
 pub(crate) fn generate_update_price(price: &Price) -> (String, RusqliteValues) {
     let mut stmt = Query::update()

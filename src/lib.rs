@@ -20,7 +20,7 @@ mod quote;
 
 use crate::{database::Dal, model::*, quote::Quote};
 
-use std::{fs, vec, path::PathBuf};
+use std::{fs, path::PathBuf, vec};
 
 use anyhow::Error;
 
@@ -86,8 +86,7 @@ impl App {
     pub async fn download_prices(&self, filter: SecurityFilter) {
         log::debug!("download filter: {:?}", filter);
 
-        let dal = self.get_dal();
-        let securities = dal.get_securities(Some(filter));
+        let securities = self.get_securities(Some(filter));
 
         // Debug
         log_securities(&securities);
@@ -108,7 +107,7 @@ impl App {
                 mnemonic: sec.symbol.to_owned(),
             };
 
-            let mut price = download_price(
+            let price = download_price(
                 symbol,
                 sec.currency.unwrap().as_str(),
                 sec.updater.unwrap().as_str(),
@@ -116,7 +115,7 @@ impl App {
             .await
             .expect("Error fetching price");
 
-            price.security_id = sec.id;
+            //price.security_id = sec.id;
 
             log::debug!("the fetched price for {:?} is {:?}", sec.symbol, price);
 
@@ -175,7 +174,11 @@ impl App {
         for pws in prices {
             let output = format!(
                 "{} {} {} {:?} {}",
-                pws.symbol, pws.date, pws.time, pws.to_decimal(), pws.currency
+                pws.symbol,
+                pws.date,
+                pws.time,
+                pws.to_decimal(),
+                pws.currency
             );
             println!("{output}");
             result += &output;
@@ -246,16 +249,10 @@ impl App {
     pub fn export(&self) {
         let mut prices = self.get_dal().get_prices(None);
 
-        prices.sort_unstable_by_key(|p| {
-            (
-                p.date.to_owned(),
-                p.time.to_owned(),
-                p.symbol.to_owned(),
-            )
-        });
+        prices
+            .sort_unstable_by_key(|p| (p.date.to_owned(), p.time.to_owned(), p.symbol.to_owned()));
 
-        let symbols = self.load_symbols()
-            .expect("symbols loaded");
+        let symbols = self.load_symbols().expect("symbols loaded");
 
         // format in ledger format
         let output = ledger_formatter::format_prices(prices, symbols);
@@ -284,6 +281,44 @@ impl App {
     }
 
     // Private
+
+    fn get_securities(&self, filter: Option<SecurityFilter>) -> Vec<SymbolMetadata> {
+        let list = self.load_symbols().expect("symbols loaded");
+
+        if filter.is_none() {
+            return list;
+        }
+
+        let filter_val = filter.unwrap();
+
+        list.into_iter()
+            .filter(|sym| match &filter_val.agent {
+                Some(agent) => match &sym.updater {
+                    Some(updater) => agent == updater,
+                    None => true,
+                },
+                None => true,
+            })
+            .filter(|sym| match &filter_val.currency {
+                Some(currency) => match &sym.currency {
+                    Some(sym_currency) => currency == sym_currency,
+                    None => true,
+                },
+                None => true,
+            })
+            .filter(|sym| match &filter_val.exchange {
+                Some(exchange) => match &sym.namespace {
+                    Some(sym_namespace) => sym_namespace == exchange,
+                    None => true,
+                }
+                None => true,
+            })
+            .filter(|sym| match &filter_val.symbol {
+                Some(symbol) => &sym.symbol == symbol,
+                None => true,
+            })
+            .collect()
+    }
 
     // fn get_security_by_symbol(&self, symbol: &str) -> Option<SecuritySymbol> {
     // use std::{fs, path::PathBuf, vec};
@@ -315,7 +350,6 @@ impl App {
     //     let dal = self.get_dal();
     //     let prices = dal.get_prices(None);
     //     let securities = dal.get_securities(None);
-
     //     prices
     //         .iter()
     //         .map(|price| {
@@ -323,7 +357,6 @@ impl App {
     //                 .iter()
     //                 .find(|sec| sec.id == price.security_id)
     //                 .expect("a related security");
-
     //             PriceWSymbol::from(price, sec)
     //         })
     //         .collect()
@@ -443,7 +476,7 @@ async fn download_price(symbol: SecuritySymbol, currency: &str, agent: &str) -> 
     Some(price)
 }
 
-fn log_securities(securities: &Vec<Security>) {
+fn log_securities(securities: &Vec<SymbolMetadata>) {
     let symbols: Vec<String> = securities
         .iter()
         .map(|sec| {
@@ -473,4 +506,31 @@ pub fn load_config() -> PriceDbConfig {
         confy::load(APP_NAME, APP_NAME).expect("valid config should be loaded");
 
     config
+}
+
+#[cfg(test)]
+mod tests {
+    use rstest::fixture;
+
+    use crate::{App, config::PriceDbConfig};
+
+    #[fixture]
+    fn dbg_config() -> PriceDbConfig {
+        let mut cfg = PriceDbConfig::default();
+        cfg.symbols_path = "tests/symbols.csv".into();
+        cfg
+    }
+
+    #[fixture]
+    fn app_dbg(dbg_config: PriceDbConfig) -> App {
+        App::new(dbg_config)
+    }
+
+    #[rstest::rstest]
+    fn test_getting_securities(app_dbg: App) {
+        let actual = app_dbg.get_securities(None);
+
+        assert!(!actual.is_empty());
+        assert_eq!(3, actual.len());
+    }
 }

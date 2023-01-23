@@ -134,34 +134,28 @@ impl Dal for RuSqliteDal {
         prices
     }
 
-    /// Search for the securities with the given filter.
-    fn get_securities(&self, filter: Option<SecurityFilter>) -> Vec<Security> {
-        let filter_int = match filter {
-            Some(value) => value,
-            None => SecurityFilter::default(),
-        };
-
-        // assemble the sql statement
-        // let sql = "select * from security";
-        let (sql, values) = generate_select_security_with_filter(&filter_int);
-
-        log::debug!("securities sql: {:?}", sql);
-
-        let mut statement = self.conn.prepare(&sql).unwrap();
-
-        let result = statement
-            .query_map(&*values.as_params(), |row| {
-                let sec = map_row_to_security(row);
-                Ok(sec)
-            })
-            .expect("Filtered Securities")
-            .flatten()
-            .collect();
-
-        // log::debug!("securities: {:?}", result);
-
-        result
-    }
+    //// Search for the securities with the given filter.
+    // fn get_securities(&self, filter: Option<SecurityFilter>) -> Vec<Security> {
+    //     let filter_int = match filter {
+    //         Some(value) => value,
+    //         None => SecurityFilter::default(),
+    //     };
+    //     // assemble the sql statement
+    //     // let sql = "select * from security";
+    //     let (sql, values) = generate_select_security_with_filter(&filter_int);
+    //     log::debug!("securities sql: {:?}", sql);
+    //     let mut statement = self.conn.prepare(&sql).unwrap();
+    //     let result = statement
+    //         .query_map(&*values.as_params(), |row| {
+    //             let sec = map_row_to_security(row);
+    //             Ok(sec)
+    //         })
+    //         .expect("Filtered Securities")
+    //         .flatten()
+    //         .collect();
+    //     // log::debug!("securities: {:?}", result);
+    //     result
+    // }
 
     fn update_price(&self, price: &Price) -> anyhow::Result<usize> {
         let (sql, params) = generate_update_price(price);
@@ -284,61 +278,6 @@ fn generate_select_prices_symbols(order: PriceSymbolOrder) -> String {
     sql.to_owned() + order_str
 }
 
-/// Generates SELECT statement with the given parameters/filters.
-fn generate_select_security_with_filter(filter: &SecurityFilter) -> (String, RusqliteValues) {
-    let query = Query::select()
-        // Order of columns:
-        .columns(get_security_columns())
-        //
-        .from(SecurityIden::Table)
-        .conditions(
-            filter.agent.is_some(),
-            |q| {
-                if let Some(agent) = filter.agent.to_owned() {
-                    q.and_where(Expr::col(SecurityIden::Updater).eq(agent));
-                }
-            },
-            |_q| {},
-        )
-        .conditions(
-            filter.currency.is_some(),
-            |q| {
-                if let Some(cur) = filter.currency.to_owned() {
-                    let uppercase_cur = cur.to_uppercase();
-                    q.and_where(Expr::col(SecurityIden::Currency).eq(uppercase_cur));
-                }
-            },
-            |_q| {},
-        )
-        .conditions(
-            filter.exchange.is_some(),
-            |q| {
-                if let Some(exc) = filter.exchange.to_owned() {
-                    let uppercase_exc = exc.to_uppercase();
-                    q.and_where(Expr::col(SecurityIden::Namespace).eq(uppercase_exc));
-                }
-            },
-            |_q| {},
-        )
-        .conditions(
-            filter.symbol.is_some(),
-            |q| {
-                if let Some(sym) = filter.symbol.to_owned() {
-                    let uppercase_sym = sym.to_uppercase();
-                    q.and_where(Expr::col(SecurityIden::Symbol).eq(uppercase_sym));
-                }
-            },
-            |_q| {},
-        )
-        // .to_owned();
-        .build_rusqlite(SqliteQueryBuilder);
-
-    // query.build(SqliteQueryBuilder)
-    // query.to_string(SqliteQueryBuilder)
-    // query.build_rusqlite(SqliteQueryBuilder)
-    query
-}
-
 /// Select all securities that have linked price records.
 fn generate_select_securities_having_prices() -> (String, RusqliteValues) {
     // Query::select()
@@ -372,10 +311,8 @@ enum PriceSymbolOrder {
 #[cfg(test)]
 mod tests {
     use rstest::fixture;
-    use sea_query_rusqlite::RusqliteValue;
+    
     use test_log::test;
-
-    use crate::model::SecurityFilter;
 
     use super::*;
 
@@ -414,57 +351,6 @@ mod tests {
         dal.add_price(&create_dummy_price("XETRA:EL49", 1234, None));
         dal.add_price(&create_dummy_price("ASX:VAS", 123456789, Some(10000)));
         dal.add_price(&create_dummy_price("LSE:VHYL", 123456, Some(1000)));
-    }
-
-    // fn insert_dummy_securities(dal: &RuSqliteDal) {
-    //     let sql = "INSERT INTO Security (id, namespace, symbol, currency) VALUES (?1, ?2, ?3, ?4)";
-    //     dal.conn
-    //         .execute(sql, (1, "NULL", "VTI", "USD"))
-    //         .expect("inserted record");
-    //     dal.conn
-    //         .execute(sql, (2, "XETRA", "EL49", "EUR"))
-    //         .expect("inserted record");
-    //     dal.conn
-    //         .execute(sql, (3, "ASX", "VAS", "AUD"))
-    //         .expect("inserted record");
-    //     dal.conn
-    //         .execute(sql, (4, "LSE", "VHYL", "GBP"))
-    //         .expect("inserted record");
-    // }
-
-    #[test]
-    fn test_sec_query_wo_params() {
-        let filter = SecurityFilter {
-            currency: None,
-            agent: None,
-            exchange: None,
-            symbol: None,
-        };
-        let (sql, values) = generate_select_security_with_filter(&filter);
-
-        let expected = r#"SELECT "security"."id", "security"."namespace", "security"."symbol", "security"."updater", "security"."currency", "security"."ledger_symbol", "security"."notes" FROM "security""#;
-        assert_eq!(expected, sql);
-
-        // There are no parameters.
-        assert!(values.0.len() == 0);
-    }
-
-    #[test]
-    fn test_sec_query_w_params() {
-        let filter = SecurityFilter {
-            currency: Some("AUD".to_owned()),
-            agent: None,
-            exchange: None,
-            symbol: None,
-        };
-        let (sql, values) = generate_select_security_with_filter(&filter);
-
-        print!("{:?}", values);
-
-        let expected = r#"SELECT "security"."id", "security"."namespace", "security"."symbol", "security"."updater", "security"."currency", "security"."ledger_symbol", "security"."notes" FROM "security" WHERE "currency" = ?"#;
-        assert_eq!(expected, sql);
-        let exp_val = RusqliteValue(sea_query::Value::String(Some(Box::new("AUD".to_owned()))));
-        assert_eq!(exp_val, values.0[0]);
     }
 
     // #[test]

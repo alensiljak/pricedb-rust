@@ -1,0 +1,4 @@
+namespace,symbol,currency,updater,updater_symbol,ledger_symbol,ib_symbol,remarks
+CURRENCY,AUD,EUR,fixerio,,,,a currency
+AMS,VHYL,EUR,yahoo_finance,,VHYL_AS,,
+XETRA,EL4X,EUR,yahoo_finance,,EL4X_DE,,ETF
