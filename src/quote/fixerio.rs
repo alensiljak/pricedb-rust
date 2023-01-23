@@ -188,8 +188,18 @@ fn read_rates_from_cache() -> Value {
 #[cfg(test)]
 mod tests {
     use chrono::Local;
+    use rstest::fixture;
+    use serde_json::json;
 
     use super::*;
+
+    #[fixture]
+    fn fixerio_json() -> Value {
+        json!({
+            "date": "some-date",
+            "test": "test"
+        })
+    }
 
     /// This test depends on having a value 
     #[test]
@@ -201,10 +211,14 @@ mod tests {
     }
 
     /// Cached rates must exist after fetching.
-    #[tokio::test]
-    async fn test_cache_check() {
+    /// Testing only the caching mechanism.
+    // #[tokio::test]
+    #[rstest::rstest]
+    fn test_cache_check(fixerio_json: Value) {
         let f = Fixerio::new();
-        f.download_rates("EUR").await.expect("rates fetched");
+        //f.download_rates("EUR").await.expect("rates fetched");
+        f.cache_rates(&fixerio_json);
+
         let result = f.latest_rates_exist();
 
         assert_eq!(true, result);
