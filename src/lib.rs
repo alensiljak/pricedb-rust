@@ -300,21 +300,21 @@ impl App {
                 None => true,
             })
             .filter(|sym| match &filter_val.currency {
-                Some(currency) => match &sym.currency {
-                    Some(sym_currency) => currency == sym_currency,
+                Some(filter_currency) => match &sym.currency {
+                    Some(sym_currency) => sym_currency == &filter_currency.to_uppercase(),
                     None => true,
                 },
                 None => true,
             })
             .filter(|sym| match &filter_val.exchange {
-                Some(exchange) => match &sym.namespace {
-                    Some(sym_namespace) => sym_namespace == exchange,
+                Some(filter_exchange) => match &sym.namespace {
+                    Some(sym_namespace) => sym_namespace == &filter_exchange.to_uppercase(),
                     None => true,
                 }
                 None => true,
             })
             .filter(|sym| match &filter_val.symbol {
-                Some(symbol) => &sym.symbol == symbol,
+                Some(filter_symbol) => &sym.symbol == &filter_symbol.to_uppercase(),
                 None => true,
             })
             .collect()

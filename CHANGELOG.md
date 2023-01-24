@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.4] - 2023-01-24
+
+### Fixed
+
+- Converting the filter values (exchange, currency, and symbol) to uppercase on comparison
+
 ## [1.5.3] - 2023-01-24
 
 ### Changed
