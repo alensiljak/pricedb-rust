@@ -52,8 +52,6 @@ pub trait Dal {
     /// Inserts a new price record.
     fn add_price(&self, new_price: &Price) -> usize;
 
-    // fn add_security(&self, security: &Security) -> usize;
-
     /// Deletes a price record.
     fn delete_price(&self, id: i64) -> anyhow::Result<usize>;
 
@@ -63,15 +61,9 @@ pub trait Dal {
 
     fn get_prices_with_symbols(&self) -> Vec<Price>;
 
-    // fn get_securities(&self, filter: Option<SecurityFilter>) -> Vec<Security>;
-
     /// Returns all the ids of the symbols that have prices in the database.
     /// Used for pruning.
     fn get_securitiess_having_prices(&self) -> Vec<SecuritySymbol>;
-
-    // fn get_security_by_symbol(&self, symbol: &str) -> Security;
-
-    // fn get_symbols(&self) -> Vec<SecuritySymbol>;
 
     fn update_price(&self, price: &Price) -> anyhow::Result<usize>;
 

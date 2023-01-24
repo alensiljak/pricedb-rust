@@ -43,14 +43,6 @@ impl Dal for RuSqliteDal {
         result
     }
 
-    // fn add_security(&self, security: &Security) -> usize {
-    //     let (sql, values) = generate_insert_security(security);
-    //     self
-    //         .conn
-    //         .execute(sql.as_str(), &*values.as_params())
-    //         .expect("price inserted")
-    // }
-
     fn delete_price(&self, id: i64) -> anyhow::Result<usize> {
         let (sql, values) = generate_delete_price(id);
         let result = self.conn.execute(&sql, &*values.as_params())?;
@@ -170,15 +162,6 @@ impl Dal for RuSqliteDal {
     //// Schema
 
     fn create_tables(&self) {
-        // drop Security table, if exists
-
-        let sql = crate::database::db_schema::get_drop_security();
-        self.conn.execute(&sql, []).expect("result");
-
-        // create Security table
-        let sql = crate::database::db_schema::create_security();
-        self.conn.execute(&sql, []).expect("result");
-
         // drop Prices table, if exists
 
         let sql = crate::database::db_schema::get_drop_price();
@@ -280,23 +263,6 @@ fn generate_select_prices_symbols(order: PriceSymbolOrder) -> String {
 
 /// Select all securities that have linked price records.
 fn generate_select_securities_having_prices() -> (String, RusqliteValues) {
-    // Query::select()
-    //     .columns(get_security_columns())
-    //     .from(SecurityIden::Table)
-    //     // .inner_join(
-    //     //     PriceIden::Table,
-    //     //     Expr::col((SecurityIden::Table, SecurityIden::Id))
-    //     //         .equals((PriceIden::Table, PriceIden::SecurityId)),
-    //     // )
-    //     .order_by(
-    //         (SecurityIden::Table, SecurityIden::Namespace),
-    //         sea_query::Order::Asc,
-    //     )
-    //     .order_by(
-    //         (SecurityIden::Table, SecurityIden::Symbol),
-    //         sea_query::Order::Asc,
-    //     )
-    //     .build_rusqlite(SqliteQueryBuilder)
     let sql = "select distinct symbol from price".to_string();
     let values = RusqliteValues(vec![]);
     (sql, values)
