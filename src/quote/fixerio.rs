@@ -237,27 +237,6 @@ mod tests {
         assert!(result.contains(&year));
     }
 
-    // #[test_log::test(tokio::test)]
-    // async fn test_download() {
-    //     let f = Fixerio::new();
-    //     let symbol = SecuritySymbol::parse("AUD");
-    //     let price = f
-    //         .download(&symbol, "EUR")
-    //         .await
-    //         .expect("Error downloading price");
-
-    //     assert_eq!(price.currency, "EUR");
-    // }
-
-    // Frequent downloads consume the API quota. Use the cached version.
-    // #[test_log::test(tokio::test)]
-    // async fn test_dl_rates() {
-    //     let f = Fixerio::new();
-    //     let result = f.download_rates("EUR").await.expect("Error");
-    //     assert_eq!(result["base"], "EUR");
-    //     assert_ne!(result["rates"]["BAM"], String::default());
-    // }
-
     #[test_log::test(tokio::test)]
     async fn test_price_parsing_aud() {
         let symbol = SecuritySymbol::new("CURRENCY:AUD");

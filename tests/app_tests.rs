@@ -37,17 +37,6 @@ fn new_price() -> Price {
 /// Populates the database
 #[fixture]
 fn app_with_data(app: App) -> App {
-    // let sec = Security {
-    //     id: 1,
-    //     namespace: Some("AMS".to_owned()),
-    //     symbol: "IPRP".to_owned(),
-    //     currency: Some("EUR".to_owned()),
-    //     ledger_symbol: Some("IPRP_AS".to_owned()),
-    //     updater: Some("yahoo_finance".to_owned()),
-    //     notes: None,
-    // };
-    // app.get_dal().add_security(&sec);
-
     // add some prices
     let mut price = Price::new();
     price.symbol = "AMS:VHYL".into();
