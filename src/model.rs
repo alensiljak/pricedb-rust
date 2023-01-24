@@ -14,7 +14,6 @@ pub struct Price {
     /// Symbol in format NAMESPACE:SYMBOL
     pub symbol: String,
     pub id: i64,
-    pub security_id: i64,
     pub date: String,
     pub time: String,
     pub value: i64,
@@ -47,33 +46,12 @@ impl Price {
 
 #[derive(Debug, Default)]
 pub struct PriceFilter {
-    // pub security_id: Option<i64>,
     pub symbol: Option<String>,
     pub date: Option<String>,
     pub time: Option<String>,
 }
 
 impl PriceFilter {
-    pub fn new() -> Self {
-        Self::default()
-    }
-}
-
-#[derive(Debug, Default)]
-#[enum_def]
-pub struct Security {
-    pub id: i64,
-    pub namespace: Option<String>,
-    pub symbol: String,
-    pub updater: Option<String>,
-    pub currency: Option<String>,
-    pub ledger_symbol: Option<String>,
-    pub notes: Option<String>,
-    // prices
-}
-
-impl Security {
-    /// Creates a new instance
     pub fn new() -> Self {
         Self::default()
     }

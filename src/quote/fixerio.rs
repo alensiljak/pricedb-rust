@@ -162,7 +162,6 @@ fn map_rates_to_price(rates: Value, symbol: &str) -> Price {
     Price {
         symbol: String::default(),
         id: i64::default(),
-        security_id: i64::default(),
         date: date_str,
         time: Price::default_time(),
         value: rounded.mantissa().to_i64().unwrap(),

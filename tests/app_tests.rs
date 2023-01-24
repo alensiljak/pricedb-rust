@@ -26,7 +26,6 @@ fn new_price() -> Price {
     Price {
         symbol: "VTI".to_owned(),
         id: 0,
-        security_id: 1,
         date: "2022-12-01".into(),
         time: "13:25:44".into(),
         value: 1033,

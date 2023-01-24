@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - reading securities from the CSV file in get_securities
+- removed Security table from use (and the schema)
 
 ## [1.5.2] - 2023-01-23
 

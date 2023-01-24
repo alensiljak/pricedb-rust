@@ -299,7 +299,6 @@ mod tests {
         Price {
             symbol: symbol.to_owned(),
             id: 0,
-            security_id: 0,
             date,
             time: Price::default_time(),
             value,

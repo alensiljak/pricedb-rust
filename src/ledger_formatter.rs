@@ -13,11 +13,11 @@ pub(crate) fn format_prices(prices: Vec<Price>, securities: Vec<SymbolMetadata>)
         // log::debug!("fomatting {price:?}");
         // log::debug!("sec: {securities:?}");
 
-        // find the matching security by id
+        // find the matching symbol by id
         let sec = securities
             .iter()
             .find(|sm| sm.symbol_w_namespace() == price.symbol)
-            .expect("a matching security");
+            .expect("a matching symbol");
         // let sec = securities[&price.symbol];
 
         output += format_price(&price, sec).as_str();
@@ -64,7 +64,6 @@ mod tests {
         let price = Price {
             symbol: "EL4X".to_string(),
             id: 113,
-            security_id: 26,
             date: "2022-12-01".into(),
             time: "12:25:34".into(),
             value: 12534,
@@ -88,7 +87,6 @@ mod tests {
         let price = Price {
             symbol: "VAS".into(),
             id: 113,
-            security_id: 26,
             date: "2022-12-01".into(),
             time: Price::default_time(),
             value: 12534,
