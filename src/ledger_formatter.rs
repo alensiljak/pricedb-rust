@@ -10,15 +10,11 @@ pub(crate) fn format_prices(prices: Vec<Price>, securities: Vec<SymbolMetadata>)
     let mut output = String::default();
 
     for price in prices {
-        // log::debug!("fomatting {price:?}");
-        // log::debug!("sec: {securities:?}");
-
         // find the matching symbol by id
         let sec = securities
             .iter()
             .find(|sm| sm.symbol_w_namespace() == price.symbol)
             .expect("a matching symbol");
-        // let sec = securities[&price.symbol];
 
         output += format_price(&price, sec).as_str();
         output += "\n";
@@ -33,7 +29,11 @@ pub(crate) fn format_prices(prices: Vec<Price>, securities: Vec<SymbolMetadata>)
 fn format_price(price: &Price, sec: &SymbolMetadata) -> String {
     let date = price.date.to_owned();
     let time = price.time.to_owned();
-    let date_time = format!("{date} {time}");
+    let date_time = if time == String::default() {
+         format!("{date}")
+    } else {
+        format!("{date} {time}")
+    };
 
     let symbol = match &sec.ledger_symbol {
         Some(ledger_symbol) => Some(ledger_symbol.to_owned()),
@@ -99,5 +99,26 @@ mod tests {
         // println!("{actual:?}");
 
         assert_eq!(actual, "P 2022-12-01 00:00:00 VAS_AX 125.34 AUD");
+    }
+
+    #[test]
+    fn test_price_w_empty_time() {
+        let mut sm = SymbolMetadata::new();
+        sm.symbol = "HY".into();
+        //sm.ledger_symbol = Some("VAS_AX".into());
+
+        let price = Price {
+            symbol: "HY".into(),
+            id: 1,
+            date: "2023-01-01".into(),
+            time: String::default(),
+            value: 12534,
+            denom: 100,
+            currency: "AUD".into(),
+        };
+
+        let actual = format_price(&price, &sm);
+
+        assert_eq!(actual, "P 2023-01-01 HY 125.34 AUD");
     }
 }

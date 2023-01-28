@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.5] - 2023-01-28
+
+### Fixed
+
+- fixed spacing when no time provided for the price
+
+### Security
+
+- update `clap`
+
 ## [1.5.4] - 2023-01-24
 
 ### Fixed

@@ -1,6 +1,6 @@
 [package]
 name = "pricedb"
-version = "1.5.4"
+version = "1.5.5"
 authors = ["Alen Šiljak <dev@alensiljak.eu.org>"]
 edition = "2021"
 description = "Commodity price retrieval, storage, and export in format compatible with Plain-Text Accounting applications."
@@ -17,7 +17,7 @@ as-symbols = "0.4.2"
 # as-symbols = { git="https://github.com/alensiljak/as-symbols", tag="v0.4.2"}
 async-trait = "0.1.63"
 chrono = "0.4.23"
-clap = { version = "4.1.3", features = ["cargo", "derive"] }
+clap = { version = "4.1.4", features = ["cargo", "derive"] }
 confy = "0.5.1"
 env_logger = "0.10.0"
 indicatif = "0.17.2"
