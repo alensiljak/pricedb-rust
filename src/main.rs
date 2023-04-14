@@ -65,6 +65,10 @@ async fn main() {
             app.prune(symbol);
         }
         
+        Some(Commands::Quote { symbols_file, price_file }) => { 
+            app.dl_quote(symbols_file, price_file); 
+        }
+
         None => println!("No command issued."),
     }
 }

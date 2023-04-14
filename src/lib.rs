@@ -252,7 +252,8 @@ impl App {
         prices
             .sort_unstable_by_key(|p| (p.date.to_owned(), p.time.to_owned(), p.symbol.to_owned()));
 
-        let symbols = self.load_symbols().expect("symbols loaded");
+        let symbols = self.load_symbols(&self.config.symbols_path)
+            .expect("symbols loaded");
 
         // format in ledger format
         let output = ledger_formatter::format_prices(prices, symbols);
@@ -263,6 +264,29 @@ impl App {
         println!("Prices exported to {target}");
 
         save_text_file(&output, target);
+    }
+
+    /// Download directly into the price file in ledger format.
+    /// Maintains the latest prices in the price file by updating the prices for 
+    /// existing symbols and adding any new ones.
+    pub fn dl_quote(&self, symbols_file: &str, price_file: &str) {
+        // todo: load the symbols table for mapping
+        let symbols = self.load_symbols(symbols_file).expect("symbols loaded");
+
+        // todo: load existing prices from the file
+        // price_file
+
+        // todo: form the data store
+        //let data = 
+
+        // todo: download prices, as per filters
+        // self.download_prices(filter);
+
+        // todo: update existing records. Use symbol as the key
+
+        // todo: save the file
+
+        todo!("complete");
     }
 
     pub fn get_dal(&self) -> &Box<dyn Dal> {
@@ -283,7 +307,8 @@ impl App {
     // Private
 
     fn get_securities(&self, filter: Option<SecurityFilter>) -> Vec<SymbolMetadata> {
-        let list = self.load_symbols().expect("symbols loaded");
+        let list = self.load_symbols(&self.config.symbols_path)
+            .expect("symbols loaded");
 
         if filter.is_none() {
             return list;
@@ -362,8 +387,8 @@ impl App {
     //         .collect()
     // }
 
-    fn load_symbols(&self) -> Result<Vec<SymbolMetadata>, Error> {
-        let path = PathBuf::from(&self.config.symbols_path);
+    fn load_symbols(&self, symbols_path: &str) -> Result<Vec<SymbolMetadata>, Error> {
+        let path = PathBuf::from(symbols_path);
         as_symbols::read_symbols(&path)
     }
 

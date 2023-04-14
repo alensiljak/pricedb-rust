@@ -61,6 +61,14 @@ pub(crate) enum Commands {
     },
 
     // securities
+
+    // New functionality
+    Quote {
+        #[arg(short, long)]
+        price_file: String,
+        #[arg(short, long)]
+        symbols_file: String
+    }
 }
 
 #[derive(clap::Subcommand, Debug)]
