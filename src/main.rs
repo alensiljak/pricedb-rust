@@ -31,10 +31,10 @@ async fn main() {
     match &args.command {
         // config
         Some(Commands::Config(interface::ConfigCmd::Show)) => app.config_show(),
-        
+
         // export
         Some(Commands::Export {}) => app.export(),
-        
+
         // download
         Some(Commands::Dl {
             currency,
@@ -50,7 +50,7 @@ async fn main() {
             };
             app.download_prices(filter).await;
         }
-        
+
         // list
         Some(Commands::List {
             date,
@@ -59,14 +59,28 @@ async fn main() {
         }) => {
             app.list_prices(date, currency, last);
         }
-        
+
         // prune
         Some(Commands::Prune { symbol }) => {
             app.prune(symbol);
         }
-        
-        Some(Commands::Quote { symbols_file, price_file }) => { 
-            app.dl_quote(symbols_file, price_file); 
+
+        Some(Commands::Quote {
+            symbols_file,
+            price_file,
+            currency,
+            agent,
+            exchange,
+            symbol,
+        }) => {
+            let filter = SecurityFilter {
+                currency: currency.clone(),
+                agent: agent.clone(),
+                exchange: exchange.clone(),
+                symbol: symbol.clone(),
+            };
+
+            app.dl_quote(symbols_file, price_file, filter);
         }
 
         None => println!("No command issued."),

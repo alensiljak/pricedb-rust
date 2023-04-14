@@ -16,6 +16,7 @@ pub mod config;
 mod database;
 mod ledger_formatter;
 pub mod model;
+mod price;
 mod quote;
 
 use crate::{database::Dal, model::*, quote::Quote};
@@ -269,15 +270,15 @@ impl App {
     /// Download directly into the price file in ledger format.
     /// Maintains the latest prices in the price file by updating the prices for 
     /// existing symbols and adding any new ones.
-    pub fn dl_quote(&self, symbols_file: &str, price_file: &str) {
+    pub fn dl_quote(&self, symbols_path: &str, price_path: &str, filter: SecurityFilter) {
         // todo: load the symbols table for mapping
-        let symbols = self.load_symbols(symbols_file).expect("symbols loaded");
+        let symbols = self.load_symbols(symbols_path)
+            .expect("symbols loaded");
+        // log::debug!("symbols: {:?}", symbols);
 
         // todo: load existing prices from the file
-        // price_file
-
-        // todo: form the data store
-        //let data = 
+        let prices = price::load_prices(price_path);
+        // log::debug!("prices: {:?}", prices);
 
         // todo: download prices, as per filters
         // self.download_prices(filter);

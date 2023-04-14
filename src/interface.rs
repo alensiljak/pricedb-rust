@@ -66,9 +66,18 @@ pub(crate) enum Commands {
     Quote {
         #[arg(short, long)]
         price_file: String,
+        #[arg(short='f', long)]
+        symbols_file: String,
+        // Symbol filters
         #[arg(short, long)]
-        symbols_file: String
-    }
+        currency: Option<String>,
+        #[arg(short, long)]
+        agent: Option<String>,
+        #[arg(short = 'x', long)]
+        exchange: Option<String>,
+        #[arg(short, long)]
+        symbol: Option<String>,
+}
 }
 
 #[derive(clap::Subcommand, Debug)]
