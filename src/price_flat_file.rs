@@ -7,7 +7,7 @@ use std::{collections::HashMap, fs, fmt::Display};
 use chrono::NaiveDateTime;
 use rust_decimal::Decimal;
 
-use crate::model::{Price, SecuritySymbol};
+use crate::model::Price;
 
 const DATE_TIME_FORMAT: &str = "%Y-%m-%d %H:%M:%S";
 
@@ -34,7 +34,7 @@ impl Display for PriceRecord {
 
 impl From<&Price> for PriceRecord {
     fn from(item: &Price) -> Self {
-        let symbol = SecuritySymbol::from(item.symbol.as_str());
+        // let symbol = SecuritySymbol::from(item.symbol.as_str());
         let date_time = format!("{0} {1}", item.date, item.time);
 
         PriceRecord {
@@ -173,7 +173,8 @@ mod tests {
     fn test_load() {
         let actual = PriceFlatFile::load("tests/prices.txt");
 
-        assert_eq!(1, actual.prices.len());
+        // test the number of records in the file.
+        assert_eq!(3, actual.prices.len());
     }
 
     #[test]
@@ -232,5 +233,33 @@ mod tests {
             Decimal::from_i16(155).unwrap(),
             prices_file.prices.values().next().expect("got first").value
         );
+    }
+
+    #[test]
+    fn test_format_wo_time() {
+        let price = PriceRecord {
+            datetime: NaiveDateTime::parse_from_str("2023-04-15 00:00:00", DATE_TIME_FORMAT).unwrap(),
+            symbol: "VEUR_AS".into(),
+            value: Decimal::from_f32(13.24).unwrap(),
+            currency: "EUR".into(),
+        };
+
+        let actual = price.to_string();
+
+        assert_eq!("P 2023-04-15 VEUR_AS 13.24 EUR", actual);
+    }
+
+    #[test]
+    fn test_format_with_time() {
+        let price = PriceRecord {
+            datetime: NaiveDateTime::parse_from_str("2023-04-15 10:00:00", DATE_TIME_FORMAT).unwrap(),
+            symbol: "VEUR_AS".into(),
+            value: Decimal::from_f32(13.24).unwrap(),
+            currency: "EUR".into(),
+        };
+
+        let actual = price.to_string();
+
+        assert_eq!("P 2023-04-15 10:00:00 VEUR_AS 13.24 EUR", actual);
     }
 }

@@ -62,7 +62,7 @@ pub(crate) enum Commands {
 
     // securities
 
-    // New functionality
+    #[command(about = "Download latest prices and add to the prices text file")]
     Quote {
         #[arg(short, long)]
         price_file: String,

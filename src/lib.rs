@@ -16,7 +16,7 @@ pub mod config;
 mod database;
 mod ledger_formatter;
 pub mod model;
-mod price_flat_file;
+pub mod price_flat_file;
 mod quote;
 
 use crate::{database::Dal, model::*, quote::Quote, price_flat_file::{PriceFlatFile, PriceRecord}};
