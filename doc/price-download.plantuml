@@ -1,0 +1,12 @@
+@startuml Price Download
+
+database symbols
+control dl_prices as function
+cloud internet
+database prices
+
+internet --> function : fetch
+symbols -> function : load symbols
+function -> [prices] : update / add
+
+@enduml

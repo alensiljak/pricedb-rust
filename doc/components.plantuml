@@ -1,0 +1,13 @@
+@startuml Components
+
+database symbols
+[app]
+cloud internet
+database prices
+
+internet --> [app] : download prices
+symbols -> [app] : load symbols
+[app] -> [prices] : save prices
+prices -> [app] : load existing
+
+@enduml
