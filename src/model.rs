@@ -6,7 +6,6 @@ use std::fmt::Display;
 
 use rust_decimal::Decimal;
 use sea_query::enum_def;
-// use crate::database::schema::price;
 
 #[derive(Debug, Default, Clone, Eq, PartialEq, PartialOrd, Ord)]
 #[enum_def]
@@ -115,6 +114,12 @@ impl Display for SecuritySymbol {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}:{}", self.namespace, self.mnemonic)?;
         Ok(())
+    }
+}
+
+impl From<&str> for SecuritySymbol {
+    fn from(item: &str) -> Self {
+        SecuritySymbol::new(item)
     }
 }
 

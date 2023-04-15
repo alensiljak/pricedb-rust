@@ -8,7 +8,6 @@ Project [Documentation](https://github.com/alensiljak/pricedb-rust).
 */
 
 use as_symbols::SymbolMetadata;
-use chrono::NaiveDateTime;
 use config::PriceDbConfig;
 use once_cell::unsync::OnceCell;
 use rust_decimal::prelude::ToPrimitive;
@@ -17,10 +16,10 @@ pub mod config;
 mod database;
 mod ledger_formatter;
 pub mod model;
-mod price;
+mod price_flat_file;
 mod quote;
 
-use crate::{database::Dal, model::*, quote::Quote};
+use crate::{database::Dal, model::*, quote::Quote, price_flat_file::{PriceFlatFile, PriceRecord}};
 
 use std::{fs, path::PathBuf, vec};
 
@@ -285,7 +284,7 @@ impl App {
         // log::debug!("symbols: {:?}", symbols);
 
         // load existing prices from the file
-        let prices = price::load_prices(price_path);
+        let mut prices_file = PriceFlatFile::load(price_path);
         // log::debug!("prices: {:?}", prices);
 
         // progress bar init.
@@ -314,13 +313,13 @@ impl App {
 
             log::debug!("the fetched price for {:?} is {:?}", sec.symbol, price);
 
-            // todo: update existing records. Use symbol as the key.
-            let mut existing_price = prices.iter().find(|&price| price.symbol == sec.get_symbol())
-                .expect("existing price");
-            log::debug!("found price record {:?}", existing_price);
-            let date_time_string = format!("{0} {1}", price.date, price.time);
-            // existing_price.datetime = NaiveDateTime::parse_from_str(&date_time_string, "%Y-%m-%d %H:%M:%S").expect("parsed date/time");
-            //existing_price.value = price.
+            // convert
+            let mut price_record = PriceRecord::from(&price);
+            // Use ledger symbol.
+            price_record.symbol = sec.get_symbol();
+
+            // Add the record. The symbol is used as the key.
+            prices_file.prices.insert(price.symbol.to_owned(), price_record);
 
             // update progress bar
             counter_updated += 1;
