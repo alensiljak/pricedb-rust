@@ -332,8 +332,6 @@ impl App {
 
         pb.finish();
         println!("Added/updated {counter_updated} prices.\n");
-
-        todo!("complete");
     }
 
     pub fn get_dal(&self) -> &Box<dyn Dal> {

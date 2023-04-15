@@ -88,9 +88,8 @@ impl PriceFlatFile {
             output += &price.1.to_string();
             output += "\n";
         }
-        // fs::write(self.file_path, contents);
-
-        todo!("complete")
+        
+        fs::write(&self.file_path, output).expect("saved successfully");
     }
 }
 
