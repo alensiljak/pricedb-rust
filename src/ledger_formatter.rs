@@ -24,7 +24,8 @@ pub(crate) fn format_prices(prices: Vec<Price>, securities: Vec<SymbolMetadata>)
 
 /** Formats a single Price record.
  * ledger price format, ISO format supported:
- * P 2004-06-21 02:17:58 VTI $27.76
+ * ~~P 2004-06-21 02:17:58 VTI $27.76~~
+ * P 2004-06-21 02:17:58 VTI 27.76 USD
  */
 fn format_price(price: &Price, sec: &SymbolMetadata) -> String {
     let date = price.date.to_owned();

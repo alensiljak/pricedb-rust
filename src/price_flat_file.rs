@@ -2,7 +2,7 @@
 * Maintains the prices in a flat-file in Ledger format.
 * P 2023-04-14 00:00:00 GBP 1.132283 EUR
 */
-use std::{collections::HashMap, fs};
+use std::{collections::HashMap, fs, fmt::Display};
 
 use chrono::NaiveDateTime;
 use rust_decimal::Decimal;
@@ -17,6 +17,19 @@ pub struct PriceRecord {
     pub symbol: String,
     pub value: Decimal,
     pub currency: String,
+}
+
+impl Display for PriceRecord {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let date_time_string = if self.datetime.time().to_string() == "00:00:00" {
+            format!("{}", self.datetime.date().to_string())
+        } else {
+            format!("{} {}", self.datetime.date().to_string(), self.datetime.time().to_string())
+        };
+
+        write!(f, "P {} {} {} {}", date_time_string, self.symbol, self.value, self.currency)?;
+        Ok(())
+    }
 }
 
 impl From<&Price> for PriceRecord {
@@ -63,6 +76,18 @@ impl PriceFlatFile {
     }
 
     pub fn save(&self) {
+        // order by date/time
+        let mut sorted: Vec<(&String, &PriceRecord)> = self.prices.iter().collect();
+        sorted.sort_by_key(|item| item.1.datetime);
+
+        let mut output = String::default();
+
+        // self.prices.values()
+        for price in sorted {
+            // log::debug!("price output {:?}", price.1.to_string());
+            output += &price.1.to_string();
+            output += "\n";
+        }
         // fs::write(self.file_path, contents);
 
         todo!("complete")

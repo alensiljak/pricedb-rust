@@ -319,14 +319,16 @@ impl App {
             price_record.symbol = sec.get_symbol();
 
             // Add the record. The symbol is used as the key.
-            prices_file.prices.insert(price.symbol.to_owned(), price_record);
+            prices_file.prices.insert(price_record.symbol.to_owned(), price_record);
 
             // update progress bar
             counter_updated += 1;
             pb.inc(1);
         }
 
-        // todo: save the file
+        // save the file
+        // log::debug!("current values: {:?}", self.prices);
+        prices_file.save();
 
         pb.finish();
         println!("Added/updated {counter_updated} prices.\n");
