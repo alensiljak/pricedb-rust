@@ -16,11 +16,7 @@ pub struct PriceRecord {
     currency: String,
 }
 
-impl PriceRecord {
-    pub fn new() -> Self {
-        PriceRecord::default()
-    }
-}
+impl PriceRecord {}
 
 pub fn load_prices(prices_path: &str) -> Vec<PriceRecord> {
     let content = fs::read_to_string(prices_path).expect("Error reading rates file");
@@ -41,10 +37,10 @@ pub fn load_prices(prices_path: &str) -> Vec<PriceRecord> {
 /// P 2023-04-14 00:00:00 GBP 1.132283 EUR
 fn parse_line(line: &str) -> PriceRecord {
     let line_parts: Vec<&str> = line.split_whitespace().collect();
-    log::debug!("line parts: {:?}", line_parts);
+    // log::debug!("line parts: {:?}", line_parts);
 
     let parts_num = line_parts.len();
-    log::debug!("parts count: {:?}", parts_num);
+    // log::debug!("parts count: {:?}", parts_num);
 
     // parse
     let result;
@@ -57,7 +53,7 @@ fn parse_line(line: &str) -> PriceRecord {
     } else {
         panic!("invalid number of parts parsed from the line!");
     }
-    log::debug!("result: {:?}", result);
+    // log::debug!("result: {:?}", result);
 
     result
 }
@@ -65,7 +61,7 @@ fn parse_line(line: &str) -> PriceRecord {
 fn parse_with_time(items: &Vec<&str>) -> PriceRecord {
     // now add time
     let date_time_string = format!("{0} {1}", items[1].to_owned(), items[2].to_owned());
-    log::debug!("date time string: {:?}", date_time_string);
+    // log::debug!("date time string: {:?}", date_time_string);
 
     PriceRecord {
         datetime: NaiveDateTime::parse_from_str(&date_time_string, "%Y-%m-%d %H:%M:%S")

@@ -48,7 +48,7 @@ async fn main() {
                 exchange: exchange.clone(),
                 symbol: symbol.clone(),
             };
-            app.download_prices(filter).await;
+            app.download(filter).await;
         }
 
         // list
@@ -80,7 +80,7 @@ async fn main() {
                 symbol: symbol.clone(),
             };
 
-            app.dl_quote(symbols_file, price_file, filter);
+            app.dl_quote(symbols_file, price_file, filter).await;
         }
 
         None => println!("No command issued."),

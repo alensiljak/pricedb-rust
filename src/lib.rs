@@ -84,10 +84,10 @@ impl App {
         println!("{cfg:?}");
     }
 
-    pub async fn download_prices(&self, filter: SecurityFilter) {
+    pub async fn download(&self, filter: SecurityFilter) {
         log::debug!("download filter: {:?}", filter);
 
-        let securities = self.get_securities(Some(filter));
+        let securities = self.get_securities(None, Some(filter));
 
         // Debug
         log_securities(&securities);
@@ -97,6 +97,9 @@ impl App {
             return;
         }
 
+        // download
+
+        // progress bar init.
         let mut counter_updated = 0;
         let sec_count = securities.len().try_into().unwrap();
         let pb = indicatif::ProgressBar::new(sec_count);
@@ -119,6 +122,8 @@ impl App {
             //price.security_id = sec.id;
 
             log::debug!("the fetched price for {:?} is {:?}", sec.symbol, price);
+
+            // save to database
 
             let saved = self.add_price(&price);
 
@@ -151,6 +156,7 @@ impl App {
                 counter_updated += 1;
             }
 
+            // update progress bar
             pb.inc(1);
         }
 
@@ -253,7 +259,8 @@ impl App {
         prices
             .sort_unstable_by_key(|p| (p.date.to_owned(), p.time.to_owned(), p.symbol.to_owned()));
 
-        let symbols = self.load_symbols(&self.config.symbols_path)
+        let symbols = self
+            .load_symbols(&self.config.symbols_path)
             .expect("symbols loaded");
 
         // format in ledger format
@@ -268,24 +275,51 @@ impl App {
     }
 
     /// Download directly into the price file in ledger format.
-    /// Maintains the latest prices in the price file by updating the prices for 
+    /// Maintains the latest prices in the price file by updating the prices for
     /// existing symbols and adding any new ones.
-    pub fn dl_quote(&self, symbols_path: &str, price_path: &str, filter: SecurityFilter) {
-        // todo: load the symbols table for mapping
-        let symbols = self.load_symbols(symbols_path)
-            .expect("symbols loaded");
+    pub async fn dl_quote(&self, symbols_path: &str, price_path: &str, filter: SecurityFilter) {
+        // load the symbols table for mapping
+        let securities = self.get_securities(Some(symbols_path), Some(filter));
+        // let symbols = self.load_symbols(symbols_path).expect("symbols loaded");
         // log::debug!("symbols: {:?}", symbols);
 
-        // todo: load existing prices from the file
+        // load existing prices from the file
         let prices = price::load_prices(price_path);
         // log::debug!("prices: {:?}", prices);
 
-        // todo: download prices, as per filters
-        // self.download_prices(filter);
+        // progress bar init.
+        let mut counter_updated = 0;
+        let sec_count = securities.len().try_into().unwrap();
+        let pb = indicatif::ProgressBar::new(sec_count);
+        pb.set_style(indicatif::ProgressStyle::default_bar().progress_chars("=>-"));
 
-        // todo: update existing records. Use symbol as the key
+        // todo: download prices, as per filters
+        for sec in securities {
+            let symbol = SecuritySymbol {
+                namespace: sec.namespace.unwrap().to_owned(),
+                mnemonic: sec.symbol.to_owned(),
+            };
+
+            let price = download_price(
+                symbol,
+                sec.currency.unwrap().as_str(),
+                sec.updater.unwrap().as_str(),
+            )
+            .await
+            .expect("Error fetching price");
+
+            log::debug!("the fetched price for {:?} is {:?}", sec.symbol, price);
+
+            // todo: update existing records. Use symbol as the key
+
+            // update progress bar
+            pb.inc(1);
+        }
 
         // todo: save the file
+
+        pb.finish();
+        println!("Added/updated {counter_updated} prices.\n");
 
         todo!("complete");
     }
@@ -307,8 +341,18 @@ impl App {
 
     // Private
 
-    fn get_securities(&self, filter: Option<SecurityFilter>) -> Vec<SymbolMetadata> {
-        let list = self.load_symbols(&self.config.symbols_path)
+    /// Load symbols list, applying the filters.
+    fn get_securities(
+        &self,
+        symbols_path: Option<&str>,
+        filter: Option<SecurityFilter>,
+    ) -> Vec<SymbolMetadata> {
+        let symbols_file_path = match symbols_path {
+            Some(path) => path,
+            None => &self.config.symbols_path,
+        };
+        let list = self
+            .load_symbols(symbols_file_path)
             .expect("symbols loaded");
 
         if filter.is_none() {
@@ -336,7 +380,7 @@ impl App {
                 Some(filter_exchange) => match &sym.namespace {
                     Some(sym_namespace) => sym_namespace == &filter_exchange.to_uppercase(),
                     None => true,
-                }
+                },
                 None => true,
             })
             .filter(|sym| match &filter_val.symbol {
@@ -538,7 +582,7 @@ pub fn load_config() -> PriceDbConfig {
 mod tests {
     use rstest::fixture;
 
-    use crate::{App, config::PriceDbConfig};
+    use crate::{config::PriceDbConfig, App};
 
     #[fixture]
     fn dbg_config() -> PriceDbConfig {
@@ -554,7 +598,7 @@ mod tests {
 
     #[rstest::rstest]
     fn test_getting_securities(app_dbg: App) {
-        let actual = app_dbg.get_securities(None);
+        let actual = app_dbg.get_securities(None, None);
 
         assert!(!actual.is_empty());
         assert_eq!(3, actual.len());
