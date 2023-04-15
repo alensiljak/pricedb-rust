@@ -39,7 +39,7 @@ impl Quote {
     }
 
     /// Fetch prices for the given symbols.
-    pub async fn fetch(&self, exchange: &str, symbols: Vec<String>) -> Vec<Price> {
+    pub async fn fetch(&self, exchange: &str, symbols: Vec<&String>) -> Vec<Price> {
         let mut result = vec![];
 
         for symbol in symbols {

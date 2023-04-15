@@ -10,10 +10,10 @@ use rust_decimal::Decimal;
 
 #[derive(Debug, Default)]
 pub struct PriceRecord {
-    datetime: NaiveDateTime,
-    symbol: String,
-    value: Decimal,
-    currency: String,
+    pub datetime: NaiveDateTime,
+    pub symbol: String,
+    pub value: Decimal,
+    pub currency: String,
 }
 
 impl PriceRecord {}

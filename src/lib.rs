@@ -8,6 +8,7 @@ Project [Documentation](https://github.com/alensiljak/pricedb-rust).
 */
 
 use as_symbols::SymbolMetadata;
+use chrono::NaiveDateTime;
 use config::PriceDbConfig;
 use once_cell::unsync::OnceCell;
 use rust_decimal::prelude::ToPrimitive;
@@ -112,7 +113,7 @@ impl App {
             };
 
             let price = download_price(
-                symbol,
+                &symbol,
                 sec.currency.unwrap().as_str(),
                 sec.updater.unwrap().as_str(),
             )
@@ -293,26 +294,36 @@ impl App {
         let pb = indicatif::ProgressBar::new(sec_count);
         pb.set_style(indicatif::ProgressStyle::default_bar().progress_chars("=>-"));
 
-        // todo: download prices, as per filters
+        // download prices, as per filters
         for sec in securities {
             let symbol = SecuritySymbol {
-                namespace: sec.namespace.unwrap().to_owned(),
+                namespace: sec.namespace.as_ref().unwrap().to_owned(),
                 mnemonic: sec.symbol.to_owned(),
             };
 
             let price = download_price(
-                symbol,
-                sec.currency.unwrap().as_str(),
-                sec.updater.unwrap().as_str(),
+                &symbol,
+                &sec.currency.as_ref().unwrap().to_owned(),
+                match &sec.updater {
+                    Some(ag) => ag,
+                    None => "",
+                },
             )
             .await
             .expect("Error fetching price");
 
             log::debug!("the fetched price for {:?} is {:?}", sec.symbol, price);
 
-            // todo: update existing records. Use symbol as the key
+            // todo: update existing records. Use symbol as the key.
+            let mut existing_price = prices.iter().find(|&price| price.symbol == sec.get_symbol())
+                .expect("existing price");
+            log::debug!("found price record {:?}", existing_price);
+            let date_time_string = format!("{0} {1}", price.date, price.time);
+            // existing_price.datetime = NaiveDateTime::parse_from_str(&date_time_string, "%Y-%m-%d %H:%M:%S").expect("parsed date/time");
+            //existing_price.value = price.
 
             // update progress bar
+            counter_updated += 1;
             pb.inc(1);
         }
 
@@ -528,14 +539,14 @@ impl App {
     }
 }
 
-async fn download_price(symbol: SecuritySymbol, currency: &str, agent: &str) -> Option<Price> {
+async fn download_price(symbol: &SecuritySymbol, currency: &str, agent: &str) -> Option<Price> {
     // todo: there must be a symbol
     let mut dl = Quote::new();
 
     dl.set_source(agent);
     dl.set_currency(currency);
 
-    let prices = dl.fetch(&symbol.namespace, vec![symbol.mnemonic]).await;
+    let prices = dl.fetch(&symbol.namespace, vec![&symbol.mnemonic]).await;
 
     if prices.is_empty() {
         println!("Did not receive any prices");
