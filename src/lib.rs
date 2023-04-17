@@ -220,9 +220,9 @@ async fn download_price(symbol: &SecuritySymbol, currency: &str, agent: &str) ->
 }
 
 pub fn load_config() -> PriceDbConfig {
-    let config_path = confy::get_configuration_file_path(APP_NAME, APP_NAME)
-        .expect("config path retrieved");
-    println!("Using config {:?}", config_path);
+    // let config_path = confy::get_configuration_file_path(APP_NAME, APP_NAME)
+    //     .expect("config path retrieved");
+    // println!("Using config {:?}", config_path);
 
     let config: PriceDbConfig =
         confy::load(APP_NAME, APP_NAME).expect("valid config should be loaded");
