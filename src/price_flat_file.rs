@@ -34,8 +34,12 @@ impl Display for PriceRecord {
 
 impl From<&Price> for PriceRecord {
     fn from(item: &Price) -> Self {
-        // let symbol = SecuritySymbol::from(item.symbol.as_str());
-        let date_time = format!("{0} {1}", item.date, item.time);
+        let time = if item.time == "" {
+            "00:00:00"
+        } else {
+            item.time.as_str()
+        };
+        let date_time = format!("{0} {1}", item.date, time);
 
         PriceRecord {
             datetime: NaiveDateTime::parse_from_str(&date_time, DATE_TIME_FORMAT).expect("parsed date/time"),
@@ -149,7 +153,7 @@ mod tests {
     use chrono::{Datelike, NaiveDateTime, Timelike};
     use rust_decimal::{prelude::FromPrimitive, Decimal};
 
-    use crate::price_flat_file::{PriceFlatFile, DATE_TIME_FORMAT};
+    use crate::{price_flat_file::{PriceFlatFile, DATE_TIME_FORMAT}, model::Price};
 
     use super::PriceRecord;
 
@@ -167,6 +171,28 @@ mod tests {
         assert_eq!(17, actual.time().hour());
         assert_eq!(1, actual.time().minute());
         assert_eq!(2, actual.time().second());
+    }
+
+    #[test]
+    fn test_parsing_empty_time() {
+        // Price -> PriceRecord
+        let price = Price {
+            symbol: "HY".into(),
+            id: 1,
+            date: "2023-03-04".into(),
+            time: "".into(),
+            value: 150.into(),
+            denom: 10,
+            currency: "EUR".into(),
+        };
+
+        let date_time_string = "2023-03-04 00:00:00";
+        let result = NaiveDateTime::parse_from_str(&date_time_string, DATE_TIME_FORMAT);
+        assert!(result.is_ok());
+
+        let actual = PriceRecord::from(&price);
+
+        assert_eq!(result.unwrap(), actual.datetime);
     }
 
     #[test]

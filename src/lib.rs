@@ -629,12 +629,13 @@ pub fn load_config() -> PriceDbConfig {
 mod tests {
     use rstest::fixture;
 
-    use crate::{config::PriceDbConfig, App};
+    use crate::{config::PriceDbConfig, App, model::SecurityFilter};
 
     #[fixture]
     fn dbg_config() -> PriceDbConfig {
         let mut cfg = PriceDbConfig::default();
         cfg.symbols_path = "tests/symbols.csv".into();
+        // cfg.prices_path = "tests/prices.txt".into();
         cfg
     }
 
@@ -649,5 +650,19 @@ mod tests {
 
         assert!(!actual.is_empty());
         assert_eq!(3, actual.len());
+    }
+
+    // debugging test
+    #[tokio::test]
+    async fn test_vanguard_datetime() {
+        let cfg = dbg_config();
+        let app = App::new(cfg);
+        
+        let mut filter = SecurityFilter::new();
+        filter.symbol = Some("hy".into());
+
+        app.dl_quote(&None, &Some("tests/prices.txt".into()), filter).await;
+
+        
     }
 }
