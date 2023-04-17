@@ -65,9 +65,9 @@ pub(crate) enum Commands {
     #[command(about = "Download latest prices and add to the prices text file")]
     Quote {
         #[arg(short, long)]
-        price_file: String,
+        price_file: Option<String>,
         #[arg(short='f', long)]
-        symbols_file: String,
+        symbols_file: Option<String>,
         // Symbol filters
         #[arg(short, long)]
         currency: Option<String>,

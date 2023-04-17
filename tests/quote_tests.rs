@@ -1,17 +1,16 @@
-use std::fs;
+// use std::fs;
+// use pricedb::{App, config::PriceDbConfig, model::SecurityFilter};
 
-use pricedb::{App, config::PriceDbConfig, model::SecurityFilter};
-
-/**
+/* *
  * Tests for the `quote` functionality.
  */
 
-fn create_test_file(filename: &str, content: &str) {
-    //let path = format!("")
-    fs::write(filename, content).unwrap();
+// fn create_test_file(filename: &str, content: &str) {
+//     //let path = format!("")
+//     fs::write(filename, content).unwrap();
 
-    //PriceFlatFile::
-}
+//     //PriceFlatFile::
+// }
 
 // #[tokio::test]
 // async fn test_addition() {
@@ -36,5 +35,6 @@ fn create_test_file(filename: &str, content: &str) {
 // "#;
 
 //     let actual = fs::read_to_string(price_path).unwrap();
+// todo: clean-up price_path
 //     assert_eq!(expected, actual);
 // }

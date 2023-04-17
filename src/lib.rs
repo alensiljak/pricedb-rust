@@ -19,7 +19,12 @@ pub mod model;
 pub mod price_flat_file;
 mod quote;
 
-use crate::{database::Dal, model::*, quote::Quote, price_flat_file::{PriceFlatFile, PriceRecord}};
+use crate::{
+    database::Dal,
+    model::*,
+    price_flat_file::{PriceFlatFile, PriceRecord},
+    quote::Quote,
+};
 
 use std::{fs, path::PathBuf, vec};
 
@@ -277,14 +282,22 @@ impl App {
     /// Download directly into the price file in ledger format.
     /// Maintains the latest prices in the price file by updating the prices for
     /// existing symbols and adding any new ones.
-    pub async fn dl_quote(&self, symbols_path: &str, price_path: &str, filter: SecurityFilter) {
+    pub async fn dl_quote(
+        &self,
+        symbols_path_param: &Option<String>,
+        price_path_param: &Option<String>,
+        filter: SecurityFilter,
+    ) {
+        let (symbols_path, price_path) =
+            self.get_quote_params(symbols_path_param, price_path_param);
+
         // load the symbols table for mapping
-        let securities = self.get_securities(Some(symbols_path), Some(filter));
+        let securities = self.get_securities(Some(&symbols_path), Some(filter));
         // let symbols = self.load_symbols(symbols_path).expect("symbols loaded");
         // log::debug!("symbols: {:?}", symbols);
 
         // load existing prices from the file
-        let mut prices_file = PriceFlatFile::load(price_path);
+        let mut prices_file = PriceFlatFile::load(&price_path);
         // log::debug!("prices: {:?}", prices);
 
         // progress bar init.
@@ -319,7 +332,9 @@ impl App {
             price_record.symbol = sec.get_symbol();
 
             // Add the record. The symbol is used as the key.
-            prices_file.prices.insert(price_record.symbol.to_owned(), price_record);
+            prices_file
+                .prices
+                .insert(price_record.symbol.to_owned(), price_record);
 
             // update progress bar
             counter_updated += 1;
@@ -350,6 +365,28 @@ impl App {
     }
 
     // Private
+
+    /// Gets the configuration parameters for quote dl.
+    /// Reads from the configuration file if not provided on the command line.
+    fn get_quote_params(
+        &self,
+        symbols_path_param: &Option<String>,
+        price_path_param: &Option<String>,
+    ) -> (String, String) {
+        // symbols
+        let symbol_path = match symbols_path_param {
+            Some(path) => path.to_string(),
+            None => self.config.symbols_path.to_owned(),
+        };
+
+        // prices
+        let prices_path = match price_path_param {
+            Some(path) => path.to_string(),
+            None => self.config.price_database_path.to_owned(),
+        };
+
+        (symbol_path, prices_path)
+    }
 
     /// Load symbols list, applying the filters.
     fn get_securities(

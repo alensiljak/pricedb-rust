@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2023-04-17
+
+### Added
+
+- Read parameters for Quote download from the configuration file, if not provided.
+
+### Security
+
+- updated dependencies
+
 ## [2.0.0] - 2023-04-15
 
 ### Added
