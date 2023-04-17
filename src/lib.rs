@@ -272,7 +272,7 @@ impl App {
         let output = ledger_formatter::format_prices(prices, symbols);
 
         // get export destination from configuration
-        let target = &self.config.export_destination;
+        let target = &self.config.prices_path;
 
         println!("Prices exported to {target}");
 
@@ -382,7 +382,7 @@ impl App {
         // prices
         let prices_path = match price_path_param {
             Some(path) => path.to_string(),
-            None => self.config.price_database_path.to_owned(),
+            None => self.config.prices_path.to_owned(),
         };
 
         (symbol_path, prices_path)

@@ -12,7 +12,7 @@ pub struct PriceDbConfig {
     pub alphavantage_api_key: String,
     pub fixerio_api_key: String,
     /// The full path to the file where the prices will be exported.
-    pub export_destination: String,
+    pub prices_path: String,
     pub symbols_path: String,
 }
 
@@ -22,7 +22,7 @@ impl Default for PriceDbConfig {
             price_database_path: ":memory:".to_owned(),
             alphavantage_api_key: Default::default(),
             fixerio_api_key: Default::default(),
-            export_destination: Default::default(),
+            prices_path: Default::default(),
             symbols_path: Default::default(),
         }
     }

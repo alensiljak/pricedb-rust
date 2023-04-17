@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2023-04-17
+
+### Changed
+
+- Renaming `export_destination` configuration parameter to `prices_path` as it is now also used for flat-file operations.
+
 ## [2.1.0] - 2023-04-17
 
 ### Added
