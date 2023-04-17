@@ -5,10 +5,8 @@
 use std::fmt::Display;
 
 use rust_decimal::Decimal;
-use sea_query::enum_def;
 
 #[derive(Debug, Default, Clone, Eq, PartialEq, PartialOrd, Ord)]
-#[enum_def]
 pub struct Price {
     /// Symbol in format NAMESPACE:SYMBOL
     pub symbol: String,

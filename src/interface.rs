@@ -17,53 +17,14 @@ pub(crate) struct Cli {
 
 #[derive(clap::Subcommand, Debug)]
 pub(crate) enum Commands {
-    // Add
-
     // Cfg
     #[command(about = "Configuration")]
     #[command(arg_required_else_help(true))]
     #[clap(subcommand)]
     Config(ConfigCmd),
 
-    #[command(about = "Download prices")]
-    Dl {
-        #[arg(short = 'x', long)]
-        exchange: Option<String>,
-
-        #[arg(short, long)]
-        symbol: Option<String>,
-
-        #[arg(short, long)]
-        agent: Option<String>,
-
-        #[arg(short, long)]
-        currency: Option<String>,
-    },
-
-    #[command(about = "Export prices in ledger format")]
-    Export {},
-
-    // todo: import
-
-    // todo: last
-
-    #[command(about="Display all prices")]
-    List {
-        date: Option<String>,
-        currency: Option<String>,
-        last: Option<String>,
-    },
-
-    #[command(about = "Prune old prices, leaving just the latest")]
-    Prune {
-        #[arg(short, long)]
-        symbol: Option<String>,
-    },
-
-    // securities
-
     #[command(about = "Download latest prices and add to the prices text file")]
-    Quote {
+    Dl {
         #[arg(short, long)]
         price_file: Option<String>,
         #[arg(short='f', long)]

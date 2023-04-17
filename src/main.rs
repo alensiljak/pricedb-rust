@@ -32,40 +32,7 @@ async fn main() {
         // config
         Some(Commands::Config(interface::ConfigCmd::Show)) => app.config_show(),
 
-        // export
-        Some(Commands::Export {}) => app.export(),
-
-        // download
         Some(Commands::Dl {
-            currency,
-            agent,
-            exchange,
-            symbol,
-        }) => {
-            let filter = SecurityFilter {
-                currency: currency.clone(),
-                agent: agent.clone(),
-                exchange: exchange.clone(),
-                symbol: symbol.clone(),
-            };
-            app.download(filter).await;
-        }
-
-        // list
-        Some(Commands::List {
-            date,
-            currency,
-            last,
-        }) => {
-            app.list_prices(date, currency, last);
-        }
-
-        // prune
-        Some(Commands::Prune { symbol }) => {
-            app.prune(symbol);
-        }
-
-        Some(Commands::Quote {
             symbols_file,
             price_file,
             currency,

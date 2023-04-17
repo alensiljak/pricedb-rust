@@ -9,8 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- quote download command renamed to `dl`
 - sorting output by date/time + symbol
 - showing the config file path when loaded
+
+### Removed
+
+- removed operations on Sqlite database, leaving only the flat-file command
 
 ## [2.2.1] - 2023-04-17
 
