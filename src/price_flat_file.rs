@@ -82,7 +82,7 @@ impl PriceFlatFile {
     pub fn save(&self) {
         // order by date/time
         let mut sorted: Vec<(&String, &PriceRecord)> = self.prices.iter().collect();
-        sorted.sort_by_key(|item| item.1.datetime);
+        sorted.sort_by_key(|item| (&item.1.datetime, &item.1.symbol));
 
         let mut output = String::default();
 

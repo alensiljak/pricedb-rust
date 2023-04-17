@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- sorting output by date/time + symbol
+- showing the config file path when loaded
+
 ## [2.2.1] - 2023-04-17
 
 ### Fixed
