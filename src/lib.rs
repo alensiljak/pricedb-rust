@@ -619,7 +619,7 @@ pub struct AdditionResult {
 pub fn load_config() -> PriceDbConfig {
     let config_path = confy::get_configuration_file_path(APP_NAME, APP_NAME)
         .expect("config path retrieved");
-    println!("Using config {0}", config_path);
+    println!("Using config {:?}", config_path);
 
     let config: PriceDbConfig =
         confy::load(APP_NAME, APP_NAME).expect("valid config should be loaded");
