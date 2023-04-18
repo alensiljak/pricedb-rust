@@ -74,8 +74,12 @@ impl App {
         // progress bar init.
         let mut counter_updated = 0;
         let sec_count = securities.len().try_into().unwrap();
+        // let pb_style = indicatif::ProgressStyle::default_bar().progress_chars("=>-");
+        let pb_style = indicatif::ProgressStyle::with_template("{wide_bar} {pos}/{len} {msg}")
+            .unwrap()
+            .progress_chars("=>-");
         let pb = indicatif::ProgressBar::new(sec_count);
-        pb.set_style(indicatif::ProgressStyle::default_bar().progress_chars("=>-"));
+        pb.set_style(pb_style);
 
         // download prices, as per filters
         for sec in securities {
@@ -83,6 +87,10 @@ impl App {
                 namespace: sec.namespace.as_ref().unwrap().to_owned(),
                 mnemonic: sec.symbol.to_owned(),
             };
+
+            // show the currently-downloading symbol
+            let msg = format!("{0}", sec.get_symbol());
+            pb.set_message(msg);
 
             let price = download_price(
                 &symbol,
@@ -155,8 +163,7 @@ impl App {
             Some(path) => path,
             None => &self.config.symbols_path,
         };
-        let list = self
-            .load_symbols(symbols_file_path)
+        let list = load_symbols(symbols_file_path)
             .expect("symbols loaded");
 
         if filter.is_none() {
@@ -193,12 +200,6 @@ impl App {
             })
             .collect()
     }
-
-    fn load_symbols(&self, symbols_path: &str) -> Result<Vec<SymbolMetadata>, Error> {
-        let path = PathBuf::from(symbols_path);
-        as_symbols::read_symbols(&path)
-    }
-
 }
 
 async fn download_price(symbol: &SecuritySymbol, currency: &str, agent: &str) -> Option<Price> {
@@ -229,6 +230,12 @@ pub fn load_config() -> PriceDbConfig {
 
     config
 }
+
+fn load_symbols(symbols_path: &str) -> Result<Vec<SymbolMetadata>, Error> {
+    let path = PathBuf::from(symbols_path);
+    as_symbols::read_symbols(&path)
+}
+
 
 #[cfg(test)]
 mod tests {

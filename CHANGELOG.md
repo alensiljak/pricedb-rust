@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.3.0] - 2023-04-17
 
+### Added
+
+- showing the currently-downloading symbol
+
 ### Changed
 
 - quote download command renamed to `dl`
