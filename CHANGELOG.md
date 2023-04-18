@@ -7,11 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [2.3.0] - 2023-04-17
+## [2.4.0] - 2023-04-18
 
 ### Added
 
 - showing the currently-downloading symbol
+
+### Changed
+
+- not displaying the config path on every load
+
+## [2.3.0] - 2023-04-17
 
 ### Changed
 
