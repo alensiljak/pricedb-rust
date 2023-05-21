@@ -2,7 +2,7 @@
 /// Vanguard AU price downloader.
 /// Valid as of 2023-05.
 ///
-use super::{vanguard_au::FundInfo, Downloader};
+use super::Downloader;
 use crate::model::{Price, SecuritySymbol};
 use anyhow::Result;
 use async_trait::async_trait;
@@ -115,7 +115,7 @@ mod tests {
     }
 
     /// Dev debug test. Uncomment to execute.
-    #[tokio::test]
+    // #[tokio::test]
     async fn test_hy_price_dl() {
         let dl = VanguardAu2Downloader::new();
         let symbol = SecuritySymbol::new("VANGUARD:HY");
