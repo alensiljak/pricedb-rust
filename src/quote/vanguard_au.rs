@@ -1,3 +1,7 @@
+/**
+ * Vanguard AU price downloader.
+ * Deprecated as of 2023-04.
+ */
 use std::{collections::HashMap, str::FromStr};
 
 use anyhow::Result;
@@ -32,7 +36,6 @@ impl VanguardAuDownloader {
             "https://api.vanguard.com/rs/gre/gra/1.7.0/datasets/auw-retail-listview-data.jsonp";
 
         let response = reqwest::get(url).await?;
-
         let content = response.text().await?;
 
         // clean-up the response
@@ -128,17 +131,36 @@ impl Downloader for VanguardAuDownloader {
 }
 
 #[derive(Debug, Default)]
-struct FundInfo {
-    name: String,
-    identifier: String,
-    date: String,
-    value: String,
-    mstar_id: String,
+pub(crate) struct FundInfo {
+    pub name: String,
+    pub identifier: String,
+    pub date: String,
+    pub value: String,
+    pub mstar_id: String,
     // currency: String,
 }
 
 impl FundInfo {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self::default()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{quote::Downloader, model::SecuritySymbol};
+
+    use super::VanguardAuDownloader;
+
+    /// Dev debug test. Uncomment to execute.
+    #[tokio::test]
+    async fn test_hy_price_dl() {
+        let dl = VanguardAuDownloader::new();
+        let symbol = SecuritySymbol::new("VANGUARD:HY");
+
+        let actual = dl.download(&symbol, "AUD").await.expect("downloaded price");
+
+        assert!(!actual.currency.is_empty());
+        assert!(actual.value != 0);
     }
 }

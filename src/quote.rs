@@ -7,6 +7,7 @@
  */
 mod fixerio;
 mod vanguard_au;
+mod vanguard_au_2023;
 mod yahoo_finance_downloader;
 
 use anyhow::Result;
@@ -15,8 +16,8 @@ use async_trait::async_trait;
 use crate::{
     model::{Price, SecuritySymbol},
     quote::{
-        fixerio::Fixerio, vanguard_au::VanguardAuDownloader,
-        yahoo_finance_downloader::YahooFinanceDownloader,
+        fixerio::Fixerio, 
+        yahoo_finance_downloader::YahooFinanceDownloader, vanguard_au_2023::VanguardAu2Downloader,
     },
 };
 
@@ -108,7 +109,7 @@ impl Quote {
             }
             "vanguard_au" => {
                 log::trace!("using vanguard");
-                Box::new(VanguardAuDownloader::new())
+                Box::new(VanguardAu2Downloader::new())
             }
             _ => {
                 panic!("unknown downloader: {}", self.source.as_ref().unwrap());

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- new Vanguard_AU downloader
+
+### Security
+
+- dependency updates
+
 ## [2.4.0] - 2023-04-18
 
 ### Added
