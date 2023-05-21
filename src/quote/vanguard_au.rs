@@ -148,19 +148,19 @@ impl FundInfo {
 
 #[cfg(test)]
 mod tests {
-    use crate::{quote::Downloader, model::SecuritySymbol};
+    // use crate::{quote::Downloader, model::SecuritySymbol};
 
-    use super::VanguardAuDownloader;
+    // use super::VanguardAuDownloader;
 
-    /// Dev debug test. Uncomment to execute.
-    #[tokio::test]
-    async fn test_hy_price_dl() {
-        let dl = VanguardAuDownloader::new();
-        let symbol = SecuritySymbol::new("VANGUARD:HY");
+    // Dev debug test. Uncomment to execute.
+    // #[tokio::test]
+    // async fn test_hy_price_dl() {
+    //     let dl = VanguardAuDownloader::new();
+    //     let symbol = SecuritySymbol::new("VANGUARD:HY");
 
-        let actual = dl.download(&symbol, "AUD").await.expect("downloaded price");
+    //     let actual = dl.download(&symbol, "AUD").await.expect("downloaded price");
 
-        assert!(!actual.currency.is_empty());
-        assert!(actual.value != 0);
-    }
+    //     assert!(!actual.currency.is_empty());
+    //     assert!(actual.value != 0);
+    // }
 }

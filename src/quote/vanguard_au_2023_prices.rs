@@ -1,5 +1,5 @@
 ///
-/// Vanguard AU price downloader.
+/// Vanguard AU price downloader using the historical prices data.
 /// Valid as of 2023-05.
 ///
 use super::Downloader;
