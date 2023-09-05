@@ -83,9 +83,14 @@ impl App {
 
         // download prices, as per filters
         for sec in securities {
+            // Use the Updater Symbol, if specified.
+            let mnemonic = match sec.updater_symbol {
+                Some(_) => sec.updater_symbol.as_ref().unwrap().to_owned(),
+                None => sec.symbol.to_owned()
+            };
             let symbol = SecuritySymbol {
                 namespace: sec.namespace.as_ref().unwrap().to_owned(),
-                mnemonic: sec.symbol.to_owned(),
+                mnemonic: mnemonic.to_owned(),
             };
 
             // show the currently-downloading symbol
