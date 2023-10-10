@@ -1,7 +1,13 @@
-///
 /// Vanguard AU price downloader using the detail data.
+/// https://www.vanguard.com.au/personal/api/products/personal/fund/8105/detail
+/// 
 /// Valid as of 2023-05.
-///
+/// As of 2023-10, the fund codes have changed.
+/// 
+/// The fund page is at 
+/// https://www.vanguard.com.au/personal/invest-with-us/fund?productType=managed+fund&portId=8105&tab=prices-and-distributions
+/// but the prices are retrieved as JSON from
+/// https://www.vanguard.com.au/personal/api/products/personal/fund/8105/prices?limit=-1
 use super::Downloader;
 use crate::model::{Price, SecuritySymbol};
 use anyhow::Result;
@@ -18,10 +24,10 @@ pub(crate) struct VanguardAu3Downloader {
 impl VanguardAu3Downloader {
     pub fn new() -> Self {
         let funds_map = HashMap::from([
-            ("VANGUARD:BOND", "8123"),
-            ("VANGUARD:HINT", "8146"),
-            ("VANGUARD:PROP", "8147"),
-            ("VANGUARD:HY", "8148"),
+            // ("VANGUARD:BOND", "8123"),
+            // ("VANGUARD:HINT", "8146"),
+            ("VANGUARD:PROP", "8105"), // VAN0004AU
+            ("VANGUARD:HY", "8106"), // VAN0104AU
         ]);
 
         Self { funds_map }
@@ -110,9 +116,10 @@ mod tests {
         let actual = dl.get_url(&symbol);
 
         assert_eq!(
-            "https://www.vanguard.com.au/personal/api/products/personal/fund/8148/prices?limit=-1",
+            "https://www.vanguard.com.au/personal/api/products/personal/fund/8106/detail?limit=-1",
             actual
         );
+        // "https://www.vanguard.com.au/personal/api/products/personal/fund/8106/prices?limit=-1",
     }
 
     /// Dev debug test. Uncomment to execute.
