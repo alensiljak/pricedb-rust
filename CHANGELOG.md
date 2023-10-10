@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.8.0] - 2023-10-10
+
+### Changed
+
+- the Vanguard Australia retail mutual fund codes have changed
+
+### Security
+
+- dependency updates
+
 ## [2.7.0] - 2023-09-05
 
 ### Added
