@@ -12,25 +12,25 @@ categories = ["command-line-utilities", "finance"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1.0.71"
+anyhow = "1.0.75"
 as-symbols = "0.5.0"
-async-trait = "0.1.68"
-chrono = "0.4.24"
-clap = { version = "4.3.0", features = ["cargo", "derive"] }
+async-trait = "0.1.73"
+chrono = "0.4.31"
+clap = { version = "4.4.6", features = ["cargo", "derive"] }
 confy = "0.5.1"
 env_logger = "0.10.0"
-indicatif = "0.17.3"
-log = "0.4.17"
-reqwest = { version = "0.11.20", features = ["json"] }
-rust_decimal = "1.29.1"
-rust_decimal_macros = "1.29.1"
+indicatif = "0.17.7"
+log = "0.4.20"
+reqwest = { version = "0.11.22", features = ["json"] }
+rust_decimal = "1.32.0"
+rust_decimal_macros = "1.32.0"
 serde = "1.0.188"
 serde_derive = "1.0.188"
-serde_json = "1.0.105"
-tempfile = "3.5.0"
-tokio = { version = "1.32.0", features = ["full"] }
+serde_json = "1.0.107"
+tempfile = "3.8.0"
+tokio = { version = "1.33.0", features = ["full"] }
 
 [dev-dependencies]
 env_logger = "0.10.0"
 rstest = "0.18.2"
-test-log = "0.2.11"
+test-log = "0.2.12"
