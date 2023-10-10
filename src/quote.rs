@@ -6,7 +6,6 @@
  * Python library.
  */
 mod fixerio;
-mod vanguard_au;
 mod vanguard_au_2023_detail;
 mod yahoo_finance_downloader;
 
