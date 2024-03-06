@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.8.1] - 2024-03-06
+
+- add a user agent so that the requests don't get blocked
+- update dependencies
+
 ## [2.8.0] - 2023-10-10
 
 ### Changed
