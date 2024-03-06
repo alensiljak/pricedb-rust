@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use async_trait::async_trait;
 use chrono::{NaiveDateTime, TimeZone, FixedOffset};
+use reqwest::header::{HeaderMap, USER_AGENT};
 use rust_decimal::{
     prelude::{FromPrimitive, ToPrimitive},
     Decimal,
@@ -120,8 +121,23 @@ impl Downloader for YahooFinanceDownloader {
 
         log::debug!("fetching from {:?}", url);
 
-        let body = reqwest::get(url)
-            .await?
+        let user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0";
+        let mut headers = HeaderMap::new();
+        headers.insert(USER_AGENT, user_agent.parse().unwrap());
+
+        let client = reqwest::Client::new();
+        // let response = reqwest::get(url)
+        let response = client.get(url)
+            .headers(headers)
+            .send()
+            .await?;
+
+            if !response.status().is_success() {
+            println!("Received a non-success status: {}", response.status());
+            //println!("Response message: {}", response.text());
+        }
+
+        let body = response
             //.text()
             .json::<Value>()
             .await?;

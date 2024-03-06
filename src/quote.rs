@@ -15,8 +15,8 @@ use async_trait::async_trait;
 use crate::{
     model::{Price, SecuritySymbol},
     quote::{
-        fixerio::Fixerio, 
-        yahoo_finance_downloader::YahooFinanceDownloader, vanguard_au_2023_detail::VanguardAu3Downloader,
+        fixerio::Fixerio, vanguard_au_2023_detail::VanguardAu3Downloader,
+        yahoo_finance_downloader::YahooFinanceDownloader,
     },
 };
 
@@ -45,7 +45,7 @@ impl Quote {
         for symbol in symbols {
             // log::debug!("Downloading price for {:?}", symbol);
             let sec_sym = SecuritySymbol::new_separated(&exchange, &symbol);
-            
+
             let price = self
                 .download(&sec_sym)
                 .await
@@ -85,15 +85,20 @@ impl Quote {
             currency
         );
 
-        let mut price = actor
-            .download(security_symbol, currency)
-            .await
-            .expect("downloaded price");
+        let result = actor.download(security_symbol, currency).await;
+        //.expect("downloaded price");
+        match result {
+            Err(error) => {
+                // let x = result.err().unwrap();
+                panic!("Error downloading price: {}", error);
+            }
+            Ok(mut price) => {
+                // Set the symbol here.
+                price.symbol = security_symbol.to_string();
 
-        // Set the symbol here.
-        price.symbol = security_symbol.to_string();
-
-        Some(price)
+                Some(price)
+            }
+        }
     }
 
     fn get_downloader(&self) -> Box<dyn Downloader> {
